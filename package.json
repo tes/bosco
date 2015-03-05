@@ -60,6 +60,7 @@
     "moment": "^2.8.3",
     "multimeter": "^0.1.1",
     "nconf": "^0.7.1",
+    "node-sass": "^2.0.1",
     "nplugm": "^1.0.1",
     "nsp": "^0.4.2",
     "octonode": "^0.6.13",
