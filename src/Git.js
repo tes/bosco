@@ -6,8 +6,8 @@ module.exports = function(bosco) {
     function getLastCommitForAssets(staticAssets, next) {
         async.map(staticAssets, function(asset, cb) {
             getCommit(asset, function(err, commit) {
-                asset.commit = commit;
-                cb(err, asset);
+                asset.commit = commit || 'Unable to retrieve commit';
+                cb(null, asset);
             });
         }, next);
     }

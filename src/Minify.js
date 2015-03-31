@@ -16,9 +16,8 @@ module.exports = function(bosco) {
           cssAssets = {},
           otherAssets = [];
 
-          console.dir(staticAssets);
-
       _.forEach(staticAssets, function(asset) {
+
           if (asset.type === 'js') {
               if (!(asset.bundleKey in jsAssets)) jsAssets[asset.bundleKey] = {};
               jsAssets[asset.bundleKey][asset.assetKey] = {

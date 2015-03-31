@@ -342,7 +342,6 @@ describe("Bosco Static Asset Handling", function() {
             var assetKeys = _.keys(assets);
             expect(assetKeys).to.contain('formattedRepos');
             done();
-
         });
 
     });
