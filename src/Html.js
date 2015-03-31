@@ -10,7 +10,7 @@ module.exports = function(bosco) {
 
         var htmlAssets = {};
 
-        _.forOwn(staticAssets, function(asset, key) {
+        _.forEach(staticAssets, function(asset) {
 
             var htmlFile = createKey(asset.serviceName, asset.buildNumber, asset.tag, asset.type, 'html', 'html');
 
@@ -20,6 +20,7 @@ module.exports = function(bosco) {
                 content: '',
                 type: 'html',
                 assetType: asset.type,
+                assetKey: htmlFile,
                 tag: asset.tag,
                 isMinifiedFragment: true,
                 extname: '.html'
@@ -27,18 +28,19 @@ module.exports = function(bosco) {
 
             if (isJavascript(asset)) {
                 htmlAssets[htmlFile].content += _.template('<script src="<%= url %>"></script>\n')({
-                    'url': bosco.getAssetCdnUrl(key)
+                    'url': bosco.getAssetCdnUrl(asset.assetKey)
                 });
             }
 
             if (isStylesheet(asset)) {
                 htmlAssets[htmlFile].content += _.template('<link rel="stylesheet" href="<%=url %>" type="text/css" media="screen" />\n')({
-                    'url': bosco.getAssetCdnUrl(key)
+                    'url': bosco.getAssetCdnUrl(asset.assetKey)
                 });
             }
+
         });
 
-        staticAssets = _.merge(htmlAssets, staticAssets);
+        staticAssets = _.union(_.values(htmlAssets), staticAssets);
 
         staticAssets.formattedAssets = formattedAssets(staticAssets);
 
@@ -59,7 +61,6 @@ module.exports = function(bosco) {
 
     function attachFormattedRepos(repos, next) {
         repos.formattedRepos = formattedRepos(repos);
-
         next(null, repos);
     }
 
@@ -70,20 +71,22 @@ module.exports = function(bosco) {
         var templateContent = fs.readFileSync(__dirname + '/../templates/assetList.html');
         var template = hb.compile(templateContent.toString());
 
-        _.map(staticAssets, function(asset, key) {
+        _.map(staticAssets, function(asset) {
 
             var assetType = asset.isMinifiedFragment ? 'fragment-' + asset.type : asset.type;
 
             if (!Array.isArray(assets[assetType])) {
                 assets[assetType] = [];
             }
+
             assets[assetType].push({
-                asset: key,
+                asset: asset.assetKey,
                 tag: asset.tag,
                 repo: asset.repo || 'Minified',
                 path: asset.relativePath || 'Minified',
-                url: bosco.getAssetCdnUrl(key)
+                url: bosco.getAssetCdnUrl(asset.assetKey)
             });
+
         });
 
         assets.user = bosco.config.get('github:user');

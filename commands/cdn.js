@@ -40,8 +40,9 @@ function cmd(bosco, args) {
 
             var url = request.url.replace('/','');
 
-            if(staticAssets[url]) {
-                var asset = staticAssets[url];
+            var asset = getAsset(staticAssets, url);
+
+            if(asset) {
                 response.writeHead(200, {
                     'Content-Type': asset.mimeType,
                     'Cache-Control': 'no-cache, must-revalidate',
@@ -49,7 +50,7 @@ function cmd(bosco, args) {
                     'Expires': 'Sat, 21 May 1952 00:00:00 GMT'
                 });
 
-                getContent(staticAssets[url], function(err, content) {
+                getContent(asset, function(err, content) {
                     if(err) {
                         response.writeHead(500, {'Content-Type': 'text/html'});
                         response.end('<h2>There was an error: ' + err.message + '</h2>');
@@ -71,6 +72,14 @@ function cmd(bosco, args) {
         server.listen(serverPort);
         bosco.log('Server is listening on ' + serverPort);
 
+    }
+
+    var getAsset = function(staticAssets, url) {
+      return _.filter(staticAssets, function(item) {
+        if(item.assetKey === url) {
+          return item;
+        }
+      })[0];
     }
 
     var startMonitor = function(staticAssets) {

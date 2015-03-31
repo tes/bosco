@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "lint": "jshint .",
-    "test": "istanbul cover _mocha -- -R spec test/* && istanbul check-coverage --statements 80",
+    "test": "mocha test/*",
     "coveralls": "NODE_ENV=test mocha --require blanket --reporter mocha-lcov-reporter test/* | ./node_modules/coveralls/bin/coveralls.js"
   },
   "precommit": [
@@ -42,7 +42,6 @@
     "colors": "^1.0.3",
     "commander": "2.7.0",
     "dateformat": "^1.0.8-1.2.3",
-    "diff": "^1.0.8",
     "dockerode": "^2.0.3",
     "event-stream": "^3.1.7",
     "figlet": "~1.1.0",

@@ -37,7 +37,7 @@ module.exports = function(bosco) {
                     newAsset.content = newAsset.data.toString();
                     newAsset.checksum = checksum(newAsset.content, 'sha1', 'hex');
                     newAsset.uniqueKey = newAsset.bundleKey + ':' + assetKey;
-                    staticAssets[newAsset.uniqueKey] = newAsset;
+                    staticAssets.push(newAsset);
                 }
             }
 
