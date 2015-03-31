@@ -39,9 +39,10 @@ function cmd(bosco, args) {
         var server = http.createServer(function(request, response) {
 
             var url = request.url.replace('/','');
+            var asset = getAssetForUrl(staticAssets, url);
 
-            if(staticAssets[url]) {
-                var asset = staticAssets[url];
+            if(asset) {
+
                 response.writeHead(200, {
                     'Content-Type': asset.mimeType,
                     'Cache-Control': 'no-cache, must-revalidate',
@@ -49,7 +50,7 @@ function cmd(bosco, args) {
                     'Expires': 'Sat, 21 May 1952 00:00:00 GMT'
                 });
 
-                getContent(staticAssets[url], function(err, content) {
+                getContent(asset, function(err, content) {
                     if(err) {
                         response.writeHead(500, {'Content-Type': 'text/html'});
                         response.end('<h2>There was an error: ' + err.message + '</h2>');
@@ -162,6 +163,77 @@ function cmd(bosco, args) {
         });
 
       });
+
+    }
+
+    var getAssetForUrl = function(staticAssets, url) {
+
+      if(staticAssets[url]) {
+        return staticAssets[url];
+      }
+
+      return dynamicBundle(staticAssets, url);
+
+    }
+
+    var dynamicBundle = function(staticAssets, url) {
+
+      /**
+       * This is added to allow the local mode to serve bundles in un-minified mode now that
+       * the individual items are  prefixed with the bundle name to allow duplication
+       * of resources across bundles (a good thing).
+       *
+       *    https://github.com/tes/bosco/issues/68
+       *
+       * It very specifically looks for a request for a bundle (css or js only)
+       *
+       *    app-resource/local/js/adyen.js
+       *
+       * vs
+       *
+       *    app-resource/bottom-v2/local/js/ratings.js
+       *
+       * This is clearly quite brittle, but I can't currently think of a better way
+       * short of completely refactoring the entire static asset code to no longer use a
+       * map keyed by the asset as the final output.
+       *
+       * This will work with 'watch' as it always dynamically retrieves the asset content.
+       */
+
+      var splitUrl = url.split('/');
+
+      if(splitUrl.length === 4) {
+
+        var serviceName = splitUrl[0];
+        var buildName = splitUrl[1];
+        var type = splitUrl[2];
+        var bundle = splitUrl[3];
+
+        var isBundleRequest = buildName === 'local' && (type === 'js' || type === 'css');
+
+        if(isBundleRequest) {
+
+          var bundleName = splitUrl[3].split('.')[0];
+          var bundleContent = '';
+          var bundleMimetype = '';
+
+          _.mapValues(staticAssets, function(item) {
+            if(item.serviceName === serviceName && item.tag === bundleName && item.type === type) {
+              bundleContent += item.content;
+              bundleMimetype = bundle.mimeType;
+            }
+          });
+
+          if(bundleContent) {
+            return {
+              mimeType: bundleMimetype,
+              content: bundleContent
+            }
+          }
+
+        }
+
+      }
 
     }
 
