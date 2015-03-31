@@ -75,11 +75,7 @@ function cmd(bosco, args) {
     }
 
     var getAsset = function(staticAssets, url) {
-      return _.filter(staticAssets, function(item) {
-        if(item.assetKey === url) {
-          return item;
-        }
-      })[0];
+      return _.find(staticAssets, 'assetKey', url);
     }
 
     var startMonitor = function(staticAssets) {
@@ -176,7 +172,6 @@ function cmd(bosco, args) {
 
           if(reloading[fileKey]) return;
           reloading[fileKey] = true;
-
           reloadFile(fileKey);
 
         });
