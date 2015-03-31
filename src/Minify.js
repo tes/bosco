@@ -3,7 +3,6 @@ var fs = require('fs');
 var path = require('path');
 var UglifyJS = require('uglify-js');
 var CleanCSS = require('clean-css');
-var async = require('async');
 
 module.exports = function(bosco) {
 
@@ -11,47 +10,22 @@ module.exports = function(bosco) {
 
   function minify(staticAssets, next) {
 
-      // Create simple collections of css and js
-      var jsAssets = {},
-          cssAssets = {},
-          otherAssets = [];
-
-      _.forEach(staticAssets, function(asset) {
-
-          if (asset.type === 'js') {
-              if (!(asset.bundleKey in jsAssets)) jsAssets[asset.bundleKey] = {};
-              jsAssets[asset.bundleKey][asset.assetKey] = {
-                serviceName: asset.serviceName,
-                buildNumber: asset.buildNumber,
-                tag: asset.tag,
-                path: asset.path
-              }
-          } else if (asset.type === 'css') {
-              if (!(asset.bundleKey in cssAssets)) cssAssets[asset.bundleKey] = {};
-              cssAssets[asset.bundleKey][asset.assetKey] = {
-                serviceName: asset.serviceName,
-                buildNumber: asset.buildNumber,
-                tag: asset.tag,
-                path: asset.path
-              }
-          } else {
-            otherAssets.push(asset);
-          }
+      var jsAssets = _.where(staticAssets, {type:'js'});
+      var cssAssets = _.where(staticAssets, {type:'css'});
+      var otherAssets = _.filter(staticAssets, function(item) {
+        return item.type !== 'css' && item.type !== 'css';
       });
 
-      staticAssets = createManifest(staticAssets);
+      // Start minification by adding the manifests
+      var minifiedStaticAssets = createManifest(staticAssets);
 
-      async.series([
-              function pcompileJs(next) {
-                  compileJs(staticAssets, jsAssets, next);
-              },
-              function pcompileCss(next) {
-                  compileCss(staticAssets, cssAssets, next);
-              }
-          ],
-          function(err) {
-              next(err, _.union(staticAssets, otherAssets));
-          });
+      // Now add the other assets
+      minifiedStaticAssets = _.union(minifiedStaticAssets, otherAssets);
+
+      // Now do the CSS and JS
+      compileJs(minifiedStaticAssets, jsAssets, function(err, minifiedStaticAssets) {
+        compileCss(minifiedStaticAssets, cssAssets, next);
+      });
 
   }
 
@@ -61,6 +35,7 @@ module.exports = function(bosco) {
 
   function createManifest(staticAssets) {
 
+      // Use a map as we normalise down to bundle.
       var manifests = {};
 
       _.forEach(staticAssets, function(value) {
@@ -102,7 +77,11 @@ module.exports = function(bosco) {
 
   function compileJs(staticAssets, jsAssets, next) {
 
-      _.forOwn(jsAssets, function(items, bundleKey) {
+      var bundleKeys = _.uniq(_.pluck(jsAssets, 'bundleKey'));
+
+      _.forEach(bundleKeys, function(bundleKey) {
+
+          var items = _.where(jsAssets, {bundleKey: bundleKey});
 
           if(items.length === 0) { return; }
 
@@ -113,7 +92,7 @@ module.exports = function(bosco) {
           var uglifyConfig = bosco.config.get('js:uglify');
 
           if(!serviceName) {
-            var firstItem = _.values(items)[0];
+            var firstItem = items[0];
             serviceName = firstItem.serviceName;
             buildNumber = firstItem.buildNumber;
             tag = firstItem.tag;
@@ -167,69 +146,60 @@ module.exports = function(bosco) {
 
       });
 
-      next(null);
+      next(null, staticAssets);
 
   }
 
   function compileCss(staticAssets, cssAssets, next) {
 
-      var compiledCss = [];
+       var bundleKeys = _.uniq(_.pluck(cssAssets, 'bundleKey'));
 
-      _.forOwn(cssAssets, function(items) {
 
-          var compiled = {
-              css: '',
-              count: 0
-          };
+      _.forEach(bundleKeys, function(bundleKey) {
 
-          _.forOwn(items, function(file) {
-              compiled.serviceName = file.serviceName;
-              compiled.buildNumber = file.buildNumber;
-              compiled.tag = file.tag;
-              compiled.css += fs.readFileSync(file.path);
-              compiled.count++;
+          var items = _.where(cssAssets, {bundleKey: bundleKey});
+          var cssContent = '', serviceName, buildNumber, tag;
+
+          if(items.length === 0) { return; }
+
+          if(!serviceName) {
+            var firstItem = items[0];
+            serviceName = firstItem.serviceName;
+            buildNumber = firstItem.buildNumber;
+            tag = firstItem.tag;
+          }
+
+          bosco.log('Compiling ' + _.size(items) + ' ' + tag.blue + ' CSS assets ...');
+
+          _.forEach(items, function(file) {
+              cssContent += fs.readFileSync(file.path);
           });
 
-          compiledCss.push(compiled)
+          var cleanCssConfig = bosco.config.get('css:clean');
+          if(cleanCssConfig && cleanCssConfig.enabled) {
+            cssContent = new CleanCSS(cleanCssConfig.options).minify(cssContent);
+          }
+          if (cssContent.length === 0) return next({
+              message: 'No css for tag ' + tag
+          });
 
-      });
+          var assetKey = createKey(serviceName, buildNumber, tag, null, 'css', 'css');
 
-      async.map(compiledCss, function(css, next) {
+          var minifiedItem = {};
+          minifiedItem.assetKey = assetKey;
+          minifiedItem.serviceName = serviceName;
+          minifiedItem.buildNumber = buildNumber;
+          minifiedItem.path = '';
+          minifiedItem.extname = '.css';
+          minifiedItem.tag = tag;
+          minifiedItem.type = 'css';
+          minifiedItem.mimeType = 'text/css';
+          minifiedItem.content = cssContent;
+          staticAssets.push(minifiedItem);
 
-          bosco.log('Compiling ' + css.count + ' ' + css.tag.blue + ' CSS assets ...');
+        });
 
-            var cssContent = css.css, serviceName = css.serviceName, buildNumber = css.buildNumber;
-
-            var cleanCssConfig = bosco.config.get('css:clean');
-
-            if(cleanCssConfig && cleanCssConfig.enabled) {
-              cssContent = new CleanCSS(cleanCssConfig.options).minify(cssContent);
-            }
-
-            if (cssContent.length === 0) return next({
-                message: 'No css for tag ' + css.tag
-            });
-
-            var assetKey = createKey(serviceName, buildNumber, css.tag, null, 'css', 'css');
-
-            var minifiedItem = {};
-            minifiedItem.assetKey = assetKey;
-            minifiedItem.serviceName = serviceName;
-            minifiedItem.buildNumber = buildNumber;
-            minifiedItem.path = '';
-            minifiedItem.extname = '.css';
-            minifiedItem.tag = css.tag;
-            minifiedItem.type = 'css';
-            minifiedItem.mimeType = 'text/css';
-            minifiedItem.content = cssContent;
-            staticAssets.push(minifiedItem);
-
-            next();
-
-      }, function(err) {
-          if (err) return bosco.warn('No CSS assets: ' + err.message);
-          next(null);
-      });
+        next(null, staticAssets);
 
   }
 

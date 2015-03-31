@@ -23,6 +23,7 @@ module.exports = function(bosco) {
                 assetKey: htmlFile,
                 tag: asset.tag,
                 isMinifiedFragment: true,
+                mimeType: 'text/html',
                 extname: '.html'
             };
 
