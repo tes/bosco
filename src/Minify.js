@@ -13,7 +13,7 @@ module.exports = function(bosco) {
       var jsAssets = _.where(staticAssets, {type:'js'});
       var cssAssets = _.where(staticAssets, {type:'css'});
       var otherAssets = _.filter(staticAssets, function(item) {
-        return item.type !== 'css' && item.type !== 'css';
+        return item.type !== 'js' && item.type !== 'css';
       });
 
       // Start minification by adding the manifests
@@ -52,6 +52,8 @@ module.exports = function(bosco) {
               assetType: value.type,
               tag: value.tag,
               isMinifiedFragment: true,
+              path: 'manifest',
+              relativePath: 'manifest',
               extname: '.manifest',
               files: []
           };
@@ -122,8 +124,8 @@ module.exports = function(bosco) {
           mapItem.assetKey = mapKey;
           mapItem.serviceName = serviceName;
           mapItem.buildNumber = buildNumber;
-          mapItem.path = '';
-          mapItem.path = '';
+          mapItem.path = 'js-source-map';
+          mapItem.relativePath = 'js-source-map';
           mapItem.extname = '.map';
           mapItem.tag = tag;
           mapItem.type = 'js';
@@ -136,7 +138,8 @@ module.exports = function(bosco) {
           minifiedItem.assetKey = minifiedKey;
           minifiedItem.serviceName = serviceName;
           minifiedItem.buildNumber = buildNumber;
-          minifiedItem.path = '';
+          minifiedItem.path = 'minified-js';
+          minifiedItem.relativePath = 'minified-js';
           minifiedItem.extname = '.js';
           minifiedItem.tag = tag;
           minifiedItem.type = 'js';
@@ -189,7 +192,8 @@ module.exports = function(bosco) {
           minifiedItem.assetKey = assetKey;
           minifiedItem.serviceName = serviceName;
           minifiedItem.buildNumber = buildNumber;
-          minifiedItem.path = '';
+          minifiedItem.path = 'minified-css';
+          minifiedItem.relativePath = 'minified-css';
           minifiedItem.extname = '.css';
           minifiedItem.tag = tag;
           minifiedItem.type = 'css';

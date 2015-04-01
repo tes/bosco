@@ -40,9 +40,9 @@ module.exports = function(bosco) {
 
                 // Now go and minify
                 if (options.minify) {
-                    getLastCommitForAssets(staticAssets, function(err, staticAssets) {
-                        minify(staticAssets, function(err, staticAssets) {
-                            createAssetHtmlFiles(staticAssets, next);
+                    getLastCommitForAssets(staticAssets, function(err, assetsWithCommits) {
+                        minify(assetsWithCommits, function(err, minifiedAssets) {
+                            createAssetHtmlFiles(minifiedAssets, next);
                         });
                     });
                 } else {

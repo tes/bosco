@@ -19,9 +19,14 @@ module.exports = function(bosco) {
             htmlAssets[htmlFile] = htmlAssets[htmlFile] || {
                 content: '',
                 type: 'html',
+                asset: htmlFile,
+                repo: asset.serviceName,
+                serviceName: asset.serviceName,
+                buildNumber: asset.buildNumber,
+                tag: asset.tag,
                 assetType: asset.type,
                 assetKey: htmlFile,
-                tag: asset.tag,
+                relativePath: 'cx-html-fragment',
                 isMinifiedFragment: true,
                 mimeType: 'text/html',
                 extname: '.html'
@@ -68,26 +73,24 @@ module.exports = function(bosco) {
 
     function formattedAssets(staticAssets) {
 
-        var assets = {};
+        var assets = {services:[]};
         var templateContent = fs.readFileSync(__dirname + '/../templates/assetList.html');
         var template = hb.compile(templateContent.toString());
 
-        _.map(staticAssets, function(asset) {
+        var assetsByService = _.groupBy(staticAssets,'serviceName');
 
-            var assetType = asset.isMinifiedFragment ? 'fragment-' + asset.type : asset.type;
-
-            if (!Array.isArray(assets[assetType])) {
-                assets[assetType] = [];
-            }
-
-            assets[assetType].push({
-                asset: asset.assetKey,
-                tag: asset.tag,
-                repo: asset.repo || 'Minified',
-                path: asset.relativePath || 'Minified',
-                url: bosco.getAssetCdnUrl(asset.assetKey)
+        _.forOwn(assetsByService, function(serviceAssets, serviceName) {
+            var service = {serviceName: serviceName, bundles: []};
+            var bundlesByTag = _.groupBy(serviceAssets, 'tag');
+            _.forOwn(bundlesByTag, function(bundleAssets, bundleTag) {
+                bundleAssets = _.map(bundleAssets, function(asset) {
+                    asset.url = bosco.getAssetCdnUrl(asset.assetKey);
+                    return asset;
+                })
+                var bundle = {bundle:bundleTag, assets:bundleAssets};
+                service.bundles.push(bundle);
             });
-
+            assets.services.push(service);
         });
 
         assets.user = bosco.config.get('github:user');
