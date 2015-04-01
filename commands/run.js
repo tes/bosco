@@ -22,10 +22,6 @@ module.exports = {
     {
         option: 'list',
         syntax: ['-l, --list [list]', 'Start a list of repos (comma separated).']
-    },
-    {
-        option: 'cdn',
-        syntax: ['-c, --cdn', 'Run bosco cdn as a service']
     }
     ]
 }
@@ -124,20 +120,6 @@ function cmd(bosco, args, cb) {
                 repoList.push(repo);
             }
         });
-
-        // If we are running the cdn at the same time.
-        if (bosco.options.cdn) {
-          svcConfig = {
-            name: 'bosco-cdn',
-            cwd: __dirname.substring(0, __dirname.indexOf('/commands')),
-            watch: false,
-            service: {
-              type: 'node',
-              start: 'node bin/bosco.js -- cdn'
-            }
-          }
-          runList.push(svcConfig);
-        }
 
         // Now iterate, but use the dependency tree to build the run list
         while (repoList.length > 0) {
