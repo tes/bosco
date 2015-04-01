@@ -27,6 +27,10 @@ var boscoMock = function() {
       exists: function(file) {
           return fs.existsSync(file);
       },
+      concurrency: {
+        cpu: 4,
+        network: 10
+      },
       config: {
           get: function(key) {
               if(key == 'css:clean') {
@@ -72,13 +76,13 @@ describe("Bosco Static Asset Handling", function() {
                 return done(err);
             }
 
-            var assetKeys = _.keys(assets);
+            var assetKeys = _.pluck(assets,'assetKey');
             arrayContains(assetKeys, [
               'project1/local/html/bottom.js.html',
               'project1/local/html/top.js.html',
-              'project1/bottom/local/js/bottom1.js',
-              'project1/bottom/local/js/jquery-1.11.0-min.js',
-              'project1/top/local/js/top1.js'
+              'project1/local/js/bottom1.js',
+              'project1/local/js/jquery-1.11.0-min.js',
+              'project1/local/js/top1.js'
             ]);
 
             done();
@@ -103,17 +107,17 @@ describe("Bosco Static Asset Handling", function() {
 
         utils.getStaticAssets(options, function(err, assets) {
 
-            var assetKeys = _.keys(assets);
+            var assetKeys = _.pluck(assets,'assetKey');
             arrayContains(assetKeys, [
                 'project1/local/html/bottom.js.html',
                 'project1/local/html/top.js.html',
                 'project2/local/html/bottom.js.html',
                 'project2/local/html/top.js.html',
-                'project1/bottom/local/js/bottom1.js',
-                'project1/bottom/local/js/jquery-1.11.0-min.js',
-                'project1/top/local/js/top1.js',
-                'project2/bottom/local/js/bottom2.js',
-                'project2/top/local/js/top2.js',
+                'project1/local/js/bottom1.js',
+                'project1/local/js/jquery-1.11.0-min.js',
+                'project1/local/js/top1.js',
+                'project2/local/js/bottom2.js',
+                'project2/local/js/top2.js',
                 'project2/local/img/bab.jpg',
                 'project2/local/html/html1.html',
                 'project2/local/html/html2.html',
@@ -139,7 +143,7 @@ describe("Bosco Static Asset Handling", function() {
         var utils = StaticUtils(localBosco);
         utils.getStaticAssets(options, function(err, assets) {
 
-            var assetKeys = _.keys(assets);
+            var assetKeys = _.pluck(assets,'assetKey');
             arrayContains(assetKeys, [
               'project1/local/html/bottom.js.html',
               'project1/local/html/top.js.html',
@@ -191,12 +195,12 @@ describe("Bosco Static Asset Handling", function() {
 
         utils.getStaticAssets(options, function(err, assets) {
 
-            var assetKeys = _.keys(assets);
+            var assetKeys = _.pluck(assets,'assetKey');
             arrayContains(assetKeys, [
                 'project4/local/html/glob.js.html',
-                'project4/glob/local/js/bottom1.js',
-                'project4/glob/local/js/jquery-1.11.0-min.js',
-                'project4/glob/local/js/top1.js'
+                'project4/local/js/bottom1.js',
+                'project4/local/js/jquery-1.11.0-min.js',
+                'project4/local/js/top1.js'
             ]);
 
             done();
@@ -220,7 +224,7 @@ describe("Bosco Static Asset Handling", function() {
 
         utils.getStaticAssets(options, function(err, assets) {
 
-            var assetKeys = _.keys(assets);
+            var assetKeys = _.pluck(assets,'assetKey');
             arrayContains(assetKeys, [
                 'project1/local/html/top.js.html',
                 'project2/local/html/top.js.html',
@@ -257,14 +261,17 @@ describe("Bosco Static Asset Handling", function() {
 
         utils.getStaticAssets(options, function(err, assets) {
 
-            var assetKeys = _.keys(assets);
+            var assetKeys = _.pluck(assets,'assetKey');
             arrayContains(assetKeys, [
               'project1/local/manifest/top.js.txt',
               'project2/local/manifest/top.js.txt'
             ]);
-            expect(assets['project1/local/manifest/top.js.txt'].content.toString()).to.contain('project1/public/js/top1.js');
-            expect(assets['project2/local/manifest/top.js.txt'].content.toString()).to.contain('project2/public/js/top2.js');
-            expect(assets['project2/local/manifest/top.js.txt'].content.toString()).to.contain('project2/public/js/jquery-1.12.0-min.js');
+
+            var manifest1 = _.find(assets, 'assetKey', 'project1/local/manifest/top.js.txt');
+            var manifest2 = _.find(assets, 'assetKey', 'project2/local/manifest/top.js.txt');
+            expect(manifest1.content.toString()).to.contain('project1/public/js/top1.js');
+            expect(manifest2.content.toString()).to.contain('project2/public/js/top2.js');
+            expect(manifest2.content.toString()).to.contain('project2/public/js/jquery-1.12.0-min.js');
             done();
 
         });
@@ -286,8 +293,8 @@ describe("Bosco Static Asset Handling", function() {
 
           utils.getStaticAssets(options, function(err, assets) {
 
-              var manifest = assets['project2/local/manifest/upload.html.txt'].content.toString();
-              var assetKeys = Object.keys(assets);
+              var manifest = _.find(assets, 'assetKey', 'project2/local/manifest/upload.html.txt').content.toString();
+              var assetKeys = _.pluck(assets,'assetKey');
               expect(assetKeys).to.contain('project2/local/manifest/upload.html.txt');
               expect(manifest).to.contain('project2/public/html/html1.html');
               expect(manifest).to.contain('project2/public/html/html2.html');
@@ -311,13 +318,11 @@ describe("Bosco Static Asset Handling", function() {
         var utils = StaticUtils(boscoMock());
 
         utils.getStaticAssets(options, function(err, assets) {
-            var assetKeys = _.keys(assets);
+            var assetKeys = _.pluck(assets,'assetKey');
             arrayContains(assetKeys, [
               'project1/local/js/top.js.map',
               'project2/local/js/top.js.map'
             ]);
-            expect(assets['project1/local/js/top.js'].content.toString()).to.contain('//# sourceMappingURL=top.js.map');
-            expect(assets['project2/local/js/top.js'].content.toString()).to.contain('//# sourceMappingURL=top.js.map');
             done();
 
         });
@@ -338,10 +343,9 @@ describe("Bosco Static Asset Handling", function() {
         var utils = StaticUtils(boscoMock());
 
         utils.getStaticRepos(options, function(err, assets) {
-            var assetKeys = Object.keys(assets);
+            var assetKeys = _.keys(assets);
             expect(assetKeys).to.contain('formattedRepos');
             done();
-
         });
 
     });
@@ -367,7 +371,7 @@ describe("Bosco Static Asset Handling - Custom Building", function() {
         var utils = StaticUtils(boscoMock());
 
         utils.getStaticAssets(options, function(err, assets) {
-            var assetKeys = _.keys(assets);
+            var assetKeys = _.pluck(assets,'assetKey');
             arrayContains(assetKeys, [
               'project3/local/html/compiled.js.html',
               'project3/local/html/compiled.css.html',
@@ -398,7 +402,7 @@ describe("Bosco Static Asset Handling - Custom Building", function() {
         var utils = StaticUtils(boscoMock());
 
         utils.getStaticAssets(options, function(err, assets) {
-            var assetKeys = _.keys(assets);
+            var assetKeys = _.pluck(assets,'assetKey');
             arrayContains(assetKeys, [
               'project3/local/html/compiled.js.html',
               'project3/local/html/compiled.css.html',
@@ -430,12 +434,12 @@ it('should execute bespoke build commands and use output, and execute the watch 
         var utils = StaticUtils(boscoMock());
 
         utils.getStaticAssets(options, function(err, assets) {
-            var assetKeys = _.keys(assets);
+            var assetKeys = _.pluck(assets,'assetKey');
             arrayContains(assetKeys, [
               'project3/local/html/compiled.js.html',
               'project3/local/html/compiled.css.html',
-              'project3/compiled/local/js/compiled.js',
-              'project3/compiled/local/css/compiled.css'
+              'project3/local/js/compiled.js',
+              'project3/local/css/compiled.css'
             ]);
             done();
 

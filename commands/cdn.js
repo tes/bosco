@@ -40,8 +40,9 @@ function cmd(bosco, args) {
 
             var url = request.url.replace('/','');
 
-            if(staticAssets[url]) {
-                var asset = staticAssets[url];
+            var asset = getAsset(staticAssets, url);
+
+            if(asset) {
                 response.writeHead(200, {
                     'Content-Type': asset.mimeType,
                     'Cache-Control': 'no-cache, must-revalidate',
@@ -49,7 +50,7 @@ function cmd(bosco, args) {
                     'Expires': 'Sat, 21 May 1952 00:00:00 GMT'
                 });
 
-                getContent(staticAssets[url], function(err, content) {
+                getContent(asset, function(err, content) {
                     if(err) {
                         response.writeHead(500, {'Content-Type': 'text/html'});
                         response.end('<h2>There was an error: ' + err.message + '</h2>');
@@ -73,11 +74,16 @@ function cmd(bosco, args) {
 
     }
 
+    var getAsset = function(staticAssets, url) {
+      return _.find(staticAssets, 'assetKey', url);
+    }
+
     var startMonitor = function(staticAssets) {
 
       var watchSet = {}, reloading = {};
 
-      _.forOwn(staticAssets, function(asset, key) {
+      _.forEach(staticAssets, function(asset) {
+          var key = asset.assetKey;
           if(asset.repo && !asset.repo.match(watchRegex)) {
             return;
           }
@@ -101,19 +107,33 @@ function cmd(bosco, args) {
         return f.match(watchRegex) && stat.isDirectory() || watchSet[f];
       }
 
-      var reloadFile = function(fileKey) {
+      var getIndexForKey = function(assetList, fileKey) {
+        var foundKey;
+        _.forEach(assetList, function(asset, key) {
+          if(asset.assetKey === fileKey) {
+            foundKey = key;
+          }
+        });
+        return foundKey;
+      }
 
+      var reloadFile = function(fileKey) {
           if(!minify) {
               if(fileKey) {
-                  fs.readFile(staticAssets[fileKey].path, function (err, data) {
+
+                  var assetIndex = getIndexForKey(staticAssets, fileKey);
+                  if(!assetIndex) {
+                    bosco.error('Unable to locate asset with key: ' + fileKey);
+                    return;
+                  }
+                  fs.readFile(staticAssets[assetIndex].path, function (err, data) {
                       if (err) {
                           bosco.log('Error reloading '+fileKey);
                           bosco.log(err.toString());
                           return;
                       }
-
-                      staticAssets[fileKey].data = data;
-                      staticAssets[fileKey].content = data.toString();
+                      staticAssets[assetIndex].data = data;
+                      staticAssets[assetIndex].content = data.toString();
                       bosco.log('Reloaded ' + fileKey);
                       reloading[fileKey] = false;
                   });
@@ -130,13 +150,9 @@ function cmd(bosco, args) {
                     reloadOnly: true
                   }
                   bosco.staticUtils.getStaticAssets(options, function(err, updatedAssets) {
-                      // Clear old for tag
-                      _.forOwn(staticAssets, function(value, key) {
-                          if(value.tag == fileKey) delete staticAssets[key];
-                      });
-                      // Add new
-                      _.forOwn(updatedAssets, function(value, key) {
-                          staticAssets[key] = value;
+                      _.forEach(updatedAssets, function(value) {
+                          var index = getIndexForKey(staticAssets, value.assetKey);
+                          staticAssets[index] = value;
                       });
                       bosco.log('Reloaded minified assets for tag ' + fileKey.blue);
                       reloading[fileKey] = false;
@@ -156,7 +172,6 @@ function cmd(bosco, args) {
 
           if(reloading[fileKey]) return;
           reloading[fileKey] = true;
-
           reloadFile(fileKey);
 
         });

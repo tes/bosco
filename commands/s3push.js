@@ -1,6 +1,5 @@
 var _ = require('lodash'),
      async = require('async'),
-    jsdiff = require('diff'),
     http = require('http'),
     url = require('url'),
     zlib = require('zlib'),
@@ -21,7 +20,6 @@ function cmd(bosco, args) {
 
     var cdnUrl = bosco.config.get('aws:cdn') + '/';
     var compoxureUrl = bosco.config.get('compoxure') ? bosco.config.get('compoxure')[bosco.options.environment] : '';
-    var force = bosco.options.force;
     noprompt = bosco.options.noprompt;
 
     var maxAge = bosco.config.get('aws:maxage');
@@ -32,21 +30,17 @@ function cmd(bosco, args) {
     var repos = bosco.getRepos();
     if(!repos) return bosco.error('You are repo-less :( You need to initialise bosco first, try \'bosco clone\'.');
 
-    var pushAllToS3 = function(staticAssets, confirmation, next) {
+    var pushAllToS3 = function(staticAssets, next) {
 
         var toPush = [];
-        _.forOwn(staticAssets, function(asset, key) {
+        _.forEach(staticAssets, function(asset) {
+
+            var key = asset.assetKey;
 
             if(key == 'formattedAssets') return;
             if(tag && tag !== asset.tag) return;
             if(isContentEmpty(asset)) {
                 bosco.log('Skipping asset: ' + key.blue + ' (content empty)');
-                return;
-            }
-
-            // Check confirmation by type and key
-            if (!isPushConfirmed(confirmation, asset)) {
-                bosco.log('Skipping asset: ' + key.blue + ' (not confirmed)');
                 return;
             }
 
@@ -177,68 +171,6 @@ function cmd(bosco, args) {
          });
     }
 
-    var checkManifests = function(staticAssets, next) {
-
-        if(!bosco.knox) return next({message: 'You don\'t appear to have any S3 config for this environment?'});
-
-        var manifestFiles = [];
-        _.forOwn(staticAssets, function(value, key) {
-            if(value.extname == '.manifest') {
-                value.file = key;
-                manifestFiles.push(value);
-            }
-        });
-
-        async.mapSeries(manifestFiles, function(file, cb) {
-            bosco.log('Pulling previous version of ' + file.file.blue + ' from S3');
-            bosco.knox.getFile(getS3Filename(file.file), function(err, res){
-                var currFile = '', isError;
-                if(!err && res.statusCode == 404) return cb(null, true);
-                if(err || res.statusCode !== 200) {
-                    bosco.error('There was an error talking to S3 to retrieve the file:')
-                    isError = true;
-                }
-                res.on('data', function(chunk) { currFile += chunk; });
-                res.on('end', function() {
-                    if(isError) {
-                        bosco.error(currFile);
-                        return cb(null, false);
-                    }
-                    if(currFile == file.content) {
-                        bosco.log('No changes'.green + ' found in ' + file.file.blue + '.' + (force ? ' Forcing push anyway.' : ''));
-                        return cb(null, force);
-                    }
-                    bosco.log('Changes found in ' + file.file.blue + ', diff:');
-                    showDiff(currFile, file.content, cb);
-                });
-            });
-        }, function(err, result) {
-            var results = {};
-            result.forEach(function(confirm, index) {
-                var mkey = manifestFiles[index].tag, atype = manifestFiles[index].assetType;
-                results[mkey] = results[mkey] || {};
-                results[mkey][atype] = confirm;
-            });
-            next(err, results);
-        });
-
-    }
-
-    var showDiff = function(original, changed, next) {
-
-        var diff = jsdiff.diffLines(original, changed);
-
-        diff.forEach(function(part){
-          var color = part.added ? 'green' :
-                part.removed ? 'red' : 'grey';
-            bosco.log(part.value[color]);
-        });
-
-        if(!noprompt) return confirm('Are you certain you want to push based on the changes above?'.white, next);
-        return next(null, true);
-
-    }
-
     var go = function() {
 
         bosco.log('Compiling front end assets, this can take a while ... ');
@@ -253,15 +185,10 @@ function cmd(bosco, args) {
         }
 
         bosco.staticUtils.getStaticAssets(options, function(err, staticAssets) {
-            checkManifests(staticAssets, function(err, confirmation) {
-                if(err) return bosco.error(err.message);
-                pushAllToS3(staticAssets, confirmation, function(err) {
-                    if(err) return bosco.error('There was an error: ' + err.message);
-                    bosco.log('Done');
-                });
-
-            })
-
+            pushAllToS3(staticAssets, function(err) {
+                if(err) return bosco.error('There was an error: ' + err.message);
+                bosco.log('Done');
+            });
         });
     }
 
@@ -272,37 +199,6 @@ function cmd(bosco, args) {
         })
     } else {
         go();
-    }
-
-    function isCompiledAsset(asset) {
-        if (asset.type === 'js') return true;
-        if (asset.type === 'css') return true;
-        return false;
-    }
-
-    function isSummaryAsset(asset) {
-        if(asset.isMinifiedFragment) return true;
-        return false;
-    }
-
-    function isPushConfirmed(confirmation, asset) {
-        if (isCompiledAsset(asset)) {
-            return isCompiledAssetConfirmed(confirmation, asset);
-        }
-        if (isSummaryAsset(asset)) {
-            return isSummaryAssetConfirmed(confirmation, asset);
-        }
-        return true;
-    }
-
-    function isCompiledAssetConfirmed(confirmation, asset) {
-        if (!confirmation[asset.tag]) return true;
-        return confirmation[asset.tag][asset.type] ? true : false;
-    }
-
-    function isSummaryAssetConfirmed(confirmation, asset) {
-        if (!confirmation[asset.tag]) return true;
-        return confirmation[asset.tag][asset.assetType] ? true : false;
     }
 
     function getS3Content(file) {

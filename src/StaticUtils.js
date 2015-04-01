@@ -18,7 +18,7 @@ module.exports = function(bosco) {
 
         var repoTag = options.repoTag;
 
-        async.mapSeries(options.repos, loadService, function(err, services) {
+        async.map(options.repos, loadService, function(err, services) {
 
             // Remove any service that doesnt have an assets child
             // or doesn't match repo tag
@@ -27,35 +27,22 @@ module.exports = function(bosco) {
                     (service.assets || service.files) && service.name.match(options.repoRegex);
             });
 
-            async.mapSeries(services, function(service, cb) {
+            async.mapLimit(services, bosco.concurrency.cpu, function(service, cb) {
 
-                doBuild(service, options, function(err) {
+                doBuild(service, options, function(err, externalBuild) {
                     if(err) return cb(err);
-                    createAssetList(service, options.buildNumber, options.minify, options.tagFilter, cb);
+                    createAssetList(service, options.buildNumber, options.minify, options.tagFilter, externalBuild, cb);
                 });
 
             }, function(err, assetList) {
 
-                var staticAssets = {};
-
-                // Flip through
-                assetList.forEach(function(asset) {
-                    _.forOwn(asset, function(value) {
-                        var fileKey;
-                        if(isMinifiable(value)) {
-                            fileKey = path.join(value.serviceName, value.tag, value.buildNumber, value.asset);
-                        } else {
-                            fileKey = path.join(value.serviceName, value.buildNumber, value.asset);
-                        }
-                        staticAssets[fileKey] = value;
-                    });
-                });
+                var staticAssets = _.flatten(assetList);
 
                 // Now go and minify
                 if (options.minify) {
-                    getLastCommitForAssets(staticAssets, function(err, staticAssets) {
-                        minify(staticAssets, function(err, staticAssets) {
-                            createAssetHtmlFiles(staticAssets, next);
+                    getLastCommitForAssets(staticAssets, function(err, assetsWithCommits) {
+                        minify(assetsWithCommits, function(err, minifiedAssets) {
+                            createAssetHtmlFiles(minifiedAssets, next);
                         });
                     });
                 } else {
@@ -66,19 +53,16 @@ module.exports = function(bosco) {
         });
     }
 
-    function isMinifiable(asset) {
-        return asset.type === 'js' || asset.type === 'css';
-    }
-
     function getStaticRepos(options, next) {
-        async.mapSeries(options.repos, loadService, function(err, repos){
+        async.map(options.repos, loadService, function(err, repos){
             attachFormattedRepos(repos, next);
         });
     }
 
-    function createAssetList(boscoRepo, buildNumber, minified, tagFilter, next) {
+    function createAssetList(boscoRepo, buildNumber, minified, tagFilter, externalBuild, next) {
 
-        var assetKey, staticAssets = {},
+        var assetKey,
+            staticAssets = [],
             assetBasePath,
             assetHelper = AssetHelper.getAssetHelper(boscoRepo, tagFilter);
 
@@ -90,8 +74,8 @@ module.exports = function(bosco) {
                     _.forEach(value, function (potentialAsset) {
                         var assets = globAsset(potentialAsset, path.join(boscoRepo.path, assetBasePath));
                         _.forEach(assets, function(asset) {
-                            assetKey = path.join(boscoRepo.serviceName, asset);
-                            assetHelper.addAsset(staticAssets, buildNumber, assetKey, asset, tag, type, assetBasePath);
+                            assetKey = path.join(boscoRepo.serviceName, buildNumber, asset);
+                            assetHelper.addAsset(staticAssets, buildNumber, assetKey, asset, tag, type, assetBasePath, externalBuild);
                         });
                     });
                 });
@@ -106,8 +90,8 @@ module.exports = function(bosco) {
                     _.forEach(value, function (potentialAsset) {
                         var assets = globAsset(potentialAsset, path.join(boscoRepo.path, assetBasePath));
                         _.forEach(assets, function(asset) {
-                            assetKey = path.join(boscoRepo.serviceName, asset);
-                            assetHelper.addAsset(staticAssets, buildNumber, assetKey, asset, tag, type, assetBasePath);
+                            assetKey = path.join(boscoRepo.serviceName, buildNumber, asset);
+                            assetHelper.addAsset(staticAssets, buildNumber, assetKey, asset, tag, type, assetBasePath, externalBuild);
                         });
                     });
                 });
