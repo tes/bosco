@@ -27,6 +27,10 @@ var boscoMock = function() {
       exists: function(file) {
           return fs.existsSync(file);
       },
+      concurrency: {
+        cpu: 4,
+        network: 10
+      },
       config: {
           get: function(key) {
               if(key == 'css:clean') {

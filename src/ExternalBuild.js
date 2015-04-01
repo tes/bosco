@@ -6,7 +6,7 @@ module.exports = function(bosco) {
 
 	function doBuild(service, options, next) {
 
-		if(!service.build) return next();
+		if(!service.build) return next(null, false);
 
 		var watchBuilds = options.watchBuilds,
 			reloadOnly = options.reloadOnly,
@@ -20,7 +20,7 @@ module.exports = function(bosco) {
 
 	        console.log(stdout);
 
-	        next(null);
+	        next(null, true);
 
 	    }
 

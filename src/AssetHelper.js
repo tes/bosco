@@ -10,7 +10,7 @@ module.exports = function(bosco) {
     function getAssetHelper(boscoRepo, tagFilter) {
 
         return {
-            addAsset: function(staticAssets, buildNumber, assetKey, asset, tag, type, basePath) {
+            addAsset: function(staticAssets, buildNumber, assetKey, asset, tag, type, basePath, externalBuild) {
 
                 if (tagFilter && tag !== tagFilter) return;
 
@@ -23,6 +23,7 @@ module.exports = function(bosco) {
                     newAsset.mimeType = mime.lookup(asset);
                     newAsset.assetKey = assetKey;
                     newAsset.asset = asset;
+                    newAsset.externalBuild = externalBuild;
                     newAsset.repoPath = boscoRepo.repoPath;
                     newAsset.basePath = path.join(newAsset.repoPath, basePath);
                     newAsset.relativePath = path.join('.', basePath || '', asset);

@@ -87,7 +87,7 @@ module.exports = function(bosco) {
 
           if(items.length === 0) { return; }
 
-          var compiled, serviceName, buildNumber, tag;
+          var compiled, serviceName, buildNumber, tag, externalBuild;
 
           bosco.log('Compiling ' + _.size(items) + ' ' + bundleKey.blue + ' JS assets ...');
 
@@ -98,6 +98,7 @@ module.exports = function(bosco) {
             serviceName = firstItem.serviceName;
             buildNumber = firstItem.buildNumber;
             tag = firstItem.tag;
+            externalBuild = firstItem.externalBuild;
           }
 
           var uglifyOptions = {
@@ -117,6 +118,7 @@ module.exports = function(bosco) {
                   code: ''
               };
           }
+
 
           var mapKey = createKey(serviceName, buildNumber, tag, 'js', 'js', 'map');
 
@@ -172,7 +174,7 @@ module.exports = function(bosco) {
             tag = firstItem.tag;
           }
 
-          bosco.log('Compiling ' + _.size(items) + ' ' + tag.blue + ' CSS assets ...');
+          bosco.log('Compiling ' + _.size(items) + ' ' + bundleKey.blue + ' CSS assets ...');
 
           _.forEach(items, function(file) {
               cssContent += fs.readFileSync(file.path);
