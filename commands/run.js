@@ -112,6 +112,14 @@ function cmd(bosco, args, cb) {
             });
         }
 
+        var addExternals = function(external) {
+            var externalConfig = _.isObject(external) ? external : _.find(bosco.config.stores.file.store.externals, function(externalConfig) {
+                return externalConfig.name === external
+            })
+            if (!externalConfig) return next(new Error('Trying to run ' + external + ' which does not exist in ~/.bosco/bosco.json' + '. This is a dependency for ' + revDepTree[currentRepo]));
+            runList.push(externalConfig)
+        }
+
         // First build the tree and filtered core list
         repos.forEach(function(repo) {
             svcConfig = getRunConfig(repo);
@@ -132,6 +140,8 @@ function cmd(bosco, args, cb) {
                 if (svcConfig.service.dependsOn) {
                     addDependencies(currentRepo, svcConfig.service.dependsOn);
                 }
+
+                _.each(svcConfig.service.externals, addExternals)
             }
         }
 
