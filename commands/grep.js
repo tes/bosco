@@ -13,7 +13,6 @@ module.exports = {
 }
 
 function cmd(bosco, args, next) {
-  console.log('first args',args);
   var repoPattern = bosco.options.repo;
   var repoRegex = new RegExp(repoPattern);
 
