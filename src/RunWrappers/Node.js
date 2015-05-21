@@ -123,7 +123,7 @@ Runner.prototype.stop = function(options, next) {
 function getInterpreter(bosco, service) {
 
   if(!service.nodeVersion) {
-    return;
+    return '';
   }
 
   var homeFolder = bosco.findHomeFolder(), nvmNodePath;
