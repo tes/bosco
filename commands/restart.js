@@ -1,7 +1,7 @@
 var async = require('async');
 
 module.exports = {
-    name:'rstart',
+    name:'restart',
     description:'Runs stop and then run with the same parameters - aka restart ;)',
     example:'bosco restart -r <repoPattern> -t <tag>',
     cmd:cmd
