@@ -3,6 +3,7 @@ var async = require('async');
 var fs = require('fs');
 var http = require('http');
 var watch = require('watch');
+var url = require('url');
 
 module.exports = {
     name:'cdn',
@@ -42,12 +43,13 @@ function cmd(bosco, args) {
         }
 
         var server = http.createServer(function(request, response) {
-            if (request.url === '/repos') {
+            var pathname = url.parse(request.url).pathname;
+            if (pathname === '/repos') {
                 response.writeHead(200, {'Content-Type': 'text/html'});
                 return response.end(staticRepos.formattedRepos);
             }
 
-            var asset = getAsset(request.url);
+            var asset = getAsset(pathname);
             if (!asset) {
                 response.writeHead(404, {'Content-Type': 'text/html'});
                 return response.end(staticAssets.formattedAssets);
