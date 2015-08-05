@@ -123,4 +123,4 @@ if(program.completion) {
     completion.print(program.completion);
 }
 
-bosco.init(options);
+bosco.run(options);

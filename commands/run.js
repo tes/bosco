@@ -1,10 +1,12 @@
 var _ = require('lodash');
 var async = require('async');
+var fs = require('fs-extra');
+
 var RunListHelper = require('../src/RunListHelper');
 var NodeRunner = require('../src/RunWrappers/Node');
 var DockerRunner = require('../src/RunWrappers/Docker');
 var DockerComposeRunner = require('../src/RunWrappers/DockerCompose');
-var mkdirp = require('mkdirp');
+
 var runningServices = [];
 var notRunningServices = [];
 
@@ -149,9 +151,7 @@ function cmd(bosco, args, cb) {
         ];
 
         async.map(folders, function(folder, cb) {
-            mkdirp(folder, function (err) {
-                cb(err);
-            });
+            fs.mkdirp(folder, cb);
         },function(err) {
             next(err);
         });

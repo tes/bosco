@@ -1,8 +1,7 @@
 var _ = require('lodash');
 var async = require('async');
-var fs = require('fs');
+var fs = require('fs-extra');
 var github = require('octonode');
-var rimraf = require('rimraf');
 var path = require('path');
 var exec = require('child_process').exec;
 var green = '\u001b[42m \u001b[0m';
@@ -107,7 +106,7 @@ function fetch(bosco, team, repos, repoRegex, args, next) {
                 }
 
                 bosco.log('Deleted project ' + orphan.green + ' as it is no longer in the github team and you have no local changes.');
-                rimraf(orphanPath, cb2)
+                fs.remove(orphanPath, cb2)
             });
         }
 
