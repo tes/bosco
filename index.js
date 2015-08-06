@@ -215,25 +215,33 @@ Bosco.prototype._initialiseConfig = function(next) {
 Bosco.prototype._cmd = function() {
 
     var self = this,
-        commands = self.options.args,
-        command = commands.shift(),
+        args = self.options.args,
+        command = args.shift(),
         commandModule = [self.getGlobalCommandFolder(), command, '.js'].join(''),
-        localCommandModule = [self.getLocalCommandFolder(), command, '.js'].join('');
+        localCommandModule = [self.getLocalCommandFolder(), command, '.js'].join(''),
+        module;
 
     if (self.exists(commandModule)) {
-        return require(commandModule).cmd(self, commands);
+        module = require(commandModule);
     }
 
-    if (self.exists(localCommandModule)) {
-        return require(localCommandModule).cmd(self, commands);
+    if (!module && self.exists(localCommandModule)) {
+        module = require(localCommandModule);
+    }
+    if (module) {
+        return module.cmd(self, args, function(err) {
+            var code = 0;
+            if (err) {
+              code = 1;
+              if (err.code > 0) code = err.code;
+            }
+            process.exit(code);
+        });
     }
 
-    if (self.options.shellCommands) {
-        self._shellCommands();
-    } else {
-        self._commands();
-    }
+    if (self.options.shellCommands) return self._shellCommands();
 
+    self._commands();
 }
 
 Bosco.prototype._shellCommands = function() {
