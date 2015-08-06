@@ -1,0 +1,231 @@
+'use strict';
+
+var _ = require('lodash');
+var expect = require('expect.js');
+var fs = require('fs');
+var zlib = require('zlib');
+
+var ExternalBuild = require('../src/ExternalBuild');
+var boscoMock = require('./boscoMock');
+
+describe('ExternalBuild', function() {
+    this.timeout(2000);
+    this.slow(500);
+
+    it('should do nothing without build config', function(done) {
+        var localBosco = boscoMock();
+        var doBuild = ExternalBuild(localBosco).doBuild;
+        var service = {
+            name: 'service',
+            repoPath: localBosco.getRepoPath('')
+        };
+
+        doBuild(service, {}, function(err) {
+          if (err) return done(err);
+
+          expect(localBosco).to.not.have.property('_log');
+          expect(localBosco).to.not.have.property('_error');
+          expect(localBosco).to.not.have.property('_warn');
+          expect(localBosco.console).to.not.have.property('_log');
+          expect(localBosco.console).to.not.have.property('_error');
+          expect(localBosco.console).to.not.have.property('_warn');
+          done();
+        });
+    });
+
+    it('should run build command', function(done) {
+        var localBosco = boscoMock();
+        var doBuild = ExternalBuild(localBosco).doBuild;
+        var service = {
+            name: 'service',
+            repoPath: localBosco.getRepoPath(''),
+            build: {
+                command: 'echo hi'
+            }
+        };
+
+        doBuild(service, {}, function(err) {
+          if (err) return done(err);
+
+          expect(localBosco.console).to.not.have.property('_log');
+          done();
+        });
+    });
+
+    it('should error and log failed command', function(done) {
+        var localBosco = boscoMock();
+        var doBuild = ExternalBuild(localBosco).doBuild;
+        var service = {
+            name: 'service',
+            repoPath: localBosco.getRepoPath(''),
+            build: {
+                command: ['bash', '-c', 'echo -n hi; echo -n bye >&2;false'],
+            }
+        };
+
+        doBuild(service, {}, function(err) {
+            expect(err).to.be.an(Error);
+            expect(err).to.have.property('code', 1);
+            expect(localBosco.console._log).to.eql(['hi']);
+            expect(localBosco._error).to.eql(['bye']);
+            done();
+        });
+    });
+
+    it('should error with exit code of failed command', function(done) {
+        var localBosco = boscoMock();
+        var doBuild = ExternalBuild(localBosco).doBuild;
+        var service = {
+            name: 'service',
+            repoPath: localBosco.getRepoPath(''),
+            build: {
+                command: ['bash', '-c', 'exit 7'],
+            }
+        };
+
+        doBuild(service, {}, function(err) {
+            expect(err).to.be.an(Error);
+            expect(err).to.have.property('code', 7);
+            done();
+        });
+    });
+
+    it('should not run if watchBuilds and reloadOnly', function(done) {
+        var localBosco = boscoMock();
+        var doBuild = ExternalBuild(localBosco).doBuild;
+        var service = {
+            name: 'service',
+            repoPath: localBosco.getRepoPath(''),
+            build: {
+                command: ['bash', '-c', 'echo -n hi; echo -n bye >&2;false'],
+            }
+        };
+        var options = {
+            watchBuilds: true,
+            watchRegex: /./,
+            reloadOnly: true
+        };
+
+        doBuild(service, options, function(err) {
+            if (err) done(err);
+            expect(localBosco).to.not.have.property('_log');
+            expect(localBosco).to.not.have.property('_error');
+            expect(localBosco.console).to.not.have.property('_log');
+            done();
+        });
+    });
+
+    it('should run build command as watch command', function(done) {
+        var localBosco = boscoMock();
+        var doBuild = ExternalBuild(localBosco).doBuild;
+        var service = {
+            name: 'service',
+            repoPath: localBosco.getRepoPath(''),
+            build: {
+                command: ['bash', '-c', 'echo hi; sleep 1'],
+                watch: {
+                  ready: 'hi',
+                  checkDelay: 10
+                }
+            }
+        };
+        var options = {
+            watchBuilds: true,
+            watchRegex: /./
+        };
+
+        doBuild(service, options, function(err) {
+          if (err) return done(err);
+
+          expect(localBosco.console).to.not.have.property('_log');
+          done();
+        });
+    });
+
+    it('should error and log if watch exits', function(done) {
+        var localBosco = boscoMock();
+        var doBuild = ExternalBuild(localBosco).doBuild;
+        var service = {
+            name: 'service',
+            repoPath: localBosco.getRepoPath(''),
+            build: {
+                command: 'bash -c echo',
+                watch: {
+                  ready: 'hi',
+                  checkDelay: 10
+                }
+            }
+        };
+        var options = {
+            watchBuilds: true,
+            watchRegex: /./
+        };
+
+        doBuild(service, options, function(err) {
+            expect(err).to.be.an(Error);
+            expect(err).to.have.property('code', 0);
+            expect(localBosco._error).to.be.an('array');
+            expect(localBosco._error).to.have.length(2);
+            expect(localBosco._error[0]).to.contain('died with code 0');
+            expect(localBosco._error[1]).to.equal('\n');
+            done();
+        });
+    });
+
+    it('should error and log if watch times out', function(done) {
+        var localBosco = boscoMock();
+        var doBuild = ExternalBuild(localBosco).doBuild;
+        var service = {
+            name: 'service',
+            repoPath: localBosco.getRepoPath(''),
+            build: {
+                command: 'sleep 1',
+                watch: {
+                  checkDelay: 1
+                }
+            }
+        };
+        var options = {
+            watchBuilds: true,
+            watchRegex: /./
+        };
+
+        doBuild(service, options, function(err) {
+            expect(err).to.be.an(Error);
+            expect(err).to.not.have.property('code');
+            expect(localBosco._error).to.be.an('array');
+            expect(localBosco._error).to.have.length(1);
+            expect(localBosco._error[0]).to.contain('timed out');
+            done();
+        });
+    });
+
+    it('should use watch command if provided', function(done) {
+        var localBosco = boscoMock();
+        var doBuild = ExternalBuild(localBosco).doBuild;
+        var service = {
+            name: 'service',
+            repoPath: localBosco.getRepoPath(''),
+            build: {
+                command: ['bash', '-c', 'echo -n build; echo -n bye >&2;false'],
+                watch: {
+                    command: ['bash', '-c', 'echo -n watch; echo -n bye >&2;sleep 1;false'],
+                    ready: 'watch',
+                    checkDelay: 10
+                }
+            }
+        };
+        var options = {
+            watchBuilds: true,
+            watchRegex: /./
+        };
+
+        doBuild(service, options, function(err) {
+            if (err) done(err);
+            expect(localBosco.console._log).to.eql(['watchbye']);
+            expect(localBosco).to.have.property('_log');
+            expect(localBosco).to.not.have.property('_error');
+            done();
+        });
+    });
+});

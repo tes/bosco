@@ -4,11 +4,9 @@
         "name":"project3"
     },
     "build":{
-        "command":"echo 'This is the pseudo output of a build command.'",
-        "watch":{
-            "command":["bash", "-c", "echo \"COMPLETA\"; sleep 1"],
-            "ready":"COMPLETA",
-            "checkDelay":10
+        "command":"false",
+        "watch": {
+            "checkDelay": 10
         }
     },
     "assets": {

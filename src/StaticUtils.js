@@ -18,6 +18,7 @@ module.exports = function(bosco) {
         var repoTag = options.repoTag;
 
         async.map(options.repos, loadService, function(err, services) {
+            if (err) return next(err);
 
             // Remove any service that doesnt have an assets child
             // or doesn't match repo tag
@@ -28,35 +29,37 @@ module.exports = function(bosco) {
 
             async.mapLimit(services, bosco.concurrency.cpu, function(service, cb) {
 
-                doBuild(service, options, function(err, externalBuild) {
-                    if(err) return cb(err);
-                    createAssetList(service, options.buildNumber, options.minify, options.tagFilter, externalBuild, cb);
+                doBuild(service, options, function(err) {
+                    if (err) return cb(err);
+                    createAssetList(service, options.buildNumber, options.minify, options.tagFilter, cb);
                 });
 
             }, function(err, assetList) {
+                if (err) return next(err);
 
                 var staticAssets = _.flatten(assetList);
 
-                // Now go and minify
-                if (options.minify) {
-                    minify(staticAssets, function(err, minifiedAssets) {
-                        createAssetHtmlFiles(minifiedAssets, next);
-                    });
-                } else {
-                  createAssetHtmlFiles(staticAssets, next);
+                if (!options.minify) {
+                  return createAssetHtmlFiles(staticAssets, next);
                 }
 
+                // Now go and minify
+                minify(staticAssets, function(err, minifiedAssets) {
+                    if (err) return next(err);
+                    createAssetHtmlFiles(minifiedAssets, next);
+                });
             });
         });
     }
 
     function getStaticRepos(options, next) {
         async.map(options.repos, loadService, function(err, repos){
+            if (err) return next(err);
             attachFormattedRepos(repos, next);
         });
     }
 
-    function createAssetList(boscoRepo, buildNumber, minified, tagFilter, externalBuild, next) {
+    function createAssetList(boscoRepo, buildNumber, minified, tagFilter, next) {
 
         var assetKey,
             staticAssets = [],
@@ -72,7 +75,7 @@ module.exports = function(bosco) {
                         var assets = globAsset(potentialAsset, path.join(boscoRepo.path, assetBasePath));
                         _.forEach(assets, function(asset) {
                             assetKey = path.join(boscoRepo.serviceName, buildNumber, asset);
-                            assetHelper.addAsset(staticAssets, buildNumber, assetKey, asset, tag, type, assetBasePath, externalBuild);
+                            assetHelper.addAsset(staticAssets, buildNumber, assetKey, asset, tag, type, assetBasePath, true);
                         });
                     });
                 });
@@ -88,7 +91,7 @@ module.exports = function(bosco) {
                         var assets = globAsset(potentialAsset, path.join(boscoRepo.path, assetBasePath));
                         _.forEach(assets, function(asset) {
                             assetKey = path.join(boscoRepo.serviceName, buildNumber, asset);
-                            assetHelper.addAsset(staticAssets, buildNumber, assetKey, asset, tag, type, assetBasePath, externalBuild);
+                            assetHelper.addAsset(staticAssets, buildNumber, assetKey, asset, tag, type, assetBasePath, true);
                         });
                     });
                 });

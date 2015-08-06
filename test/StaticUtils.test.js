@@ -1,47 +1,12 @@
 'use strict';
 
-var expect = require("expect.js");
-var async = require('async');
-var fs = require('fs');
 var _ = require('lodash');
+var async = require('async');
+var expect = require('expect.js');
+var fs = require('fs');
+
+var boscoMock = require('./boscoMock');
 var StaticUtils = require('../src/StaticUtils');
-
-var repos = ["project1","project2"];
-
-
-var boscoMock = function() {
-
-  return {
-      log: function(msg) { this._log = this._log || []; this._log.push(msg) },
-      error: function(msg) { this._error = this._error || []; this._error.push(msg) },
-      warn: function(msg) { this._warn = this._warn || []; this._warn.push(msg) },
-      options: {
-          environment:'test'
-      },
-      getRepoPath: function(repo) {
-          return __dirname + "/TestOrganisation/" + repo
-      },
-      getAssetCdnUrl: function (asset) {
-          return 'http://my-awesome-cdn.example.com/' + asset;
-      },
-      exists: function(file) {
-          return fs.existsSync(file);
-      },
-      concurrency: {
-        cpu: 4,
-        network: 10
-      },
-      config: {
-          get: function(key) {
-              if(key == 'css:clean') {
-                return {enabled: true};
-              }
-              return key;
-          }
-      }
-  }
-
-}
 
 var arrayContains = function(arr, contains) {
   contains.forEach(function(contain) {
@@ -49,8 +14,7 @@ var arrayContains = function(arr, contains) {
   });
 }
 
-
-describe("Bosco Static Asset Handling", function() {
+describe('Bosco Static Asset Handling', function() {
 
     this.timeout(10000);
     this.slow(5000);
@@ -58,8 +22,8 @@ describe("Bosco Static Asset Handling", function() {
     it('should load static assets in un-minified cdn mode', function(done) {
 
         var options = {
-            repos: ["project1","project2"],
-            repoTag: "testy",
+            repos: ['project1','project2'],
+            repoTag: 'testy',
             minify: false,
             buildNumber: 'local',
             tagFilter: null,
@@ -71,10 +35,7 @@ describe("Bosco Static Asset Handling", function() {
         var utils = StaticUtils(localBosco);
 
         utils.getStaticAssets(options, function(err, assets) {
-
-            if (err) {
-                return done(err);
-            }
+            if (err) return done(err);
 
             var assetKeys = _.pluck(assets,'assetKey');
             arrayContains(assetKeys, [
@@ -94,7 +55,7 @@ describe("Bosco Static Asset Handling", function() {
     it('should load static assets in un-minified cdn mode, deduping where necessary', function(done) {
 
         var options = {
-            repos: ["project1","project2"],
+            repos: ['project1','project2'],
             minify: false,
             buildNumber: 'local',
             tagFilter: null,
@@ -106,6 +67,7 @@ describe("Bosco Static Asset Handling", function() {
         var utils = StaticUtils(localBosco);
 
         utils.getStaticAssets(options, function(err, assets) {
+            if (err) return done(err);
 
             var assetKeys = _.pluck(assets,'assetKey');
             arrayContains(assetKeys, [
@@ -129,10 +91,10 @@ describe("Bosco Static Asset Handling", function() {
 
     });
 
-     it('should load static assets in minified cdn mode, deduping where necessary', function(done) {
+    it('should load static assets in minified cdn mode, deduping where necessary', function(done) {
 
         var options = {
-            repos: ["project1","project2"],
+            repos: ['project1','project2'],
             buildNumber: 'local',
             minify: true,
             tagFilter: null,
@@ -142,6 +104,7 @@ describe("Bosco Static Asset Handling", function() {
         var localBosco = boscoMock()
         var utils = StaticUtils(localBosco);
         utils.getStaticAssets(options, function(err, assets) {
+            if (err) return done(err);
 
             var assetKeys = _.pluck(assets,'assetKey');
             arrayContains(assetKeys, [
@@ -175,7 +138,7 @@ describe("Bosco Static Asset Handling", function() {
     it('should load static assets via globs', function(done) {
 
         var options = {
-            repos: ["project4"],
+            repos: ['project4'],
             minify: false,
             buildNumber: 'local',
             tagFilter: null,
@@ -187,6 +150,7 @@ describe("Bosco Static Asset Handling", function() {
         var utils = StaticUtils(localBosco);
 
         utils.getStaticAssets(options, function(err, assets) {
+            if (err) return done(err);
 
             var assetKeys = _.pluck(assets,'assetKey');
             arrayContains(assetKeys, [
@@ -202,10 +166,10 @@ describe("Bosco Static Asset Handling", function() {
 
     });
 
-   it('should load static assets in minified cdn mode, filtering by tag if specified', function(done) {
+    it('should load static assets in minified cdn mode, filtering by tag if specified', function(done) {
 
         var options = {
-            repos: ["project1","project2"],
+            repos: ['project1','project2'],
             minify: true,
             tagFilter: 'top',
             buildNumber: 'local',
@@ -216,6 +180,7 @@ describe("Bosco Static Asset Handling", function() {
         var utils = StaticUtils(boscoMock());
 
         utils.getStaticAssets(options, function(err, assets) {
+            if (err) return done(err);
 
             var assetKeys = _.pluck(assets,'assetKey');
             arrayContains(assetKeys, [
@@ -235,10 +200,10 @@ describe("Bosco Static Asset Handling", function() {
 
     });
 
-  it('should create a source map when minifying javascript', function(done) {
+    it('should create a source map when minifying javascript', function(done) {
 
         var options = {
-            repos: ["project1","project2"],
+            repos: ['project1','project2'],
             minify: true,
             tagFilter: 'top',
             buildNumber: 'local',
@@ -249,6 +214,8 @@ describe("Bosco Static Asset Handling", function() {
         var utils = StaticUtils(boscoMock());
 
         utils.getStaticAssets(options, function(err, assets) {
+            if (err) return done(err);
+
             var assetKeys = _.pluck(assets,'assetKey');
             arrayContains(assetKeys, [
               'project1/local/js/top.js.map',
@@ -260,10 +227,10 @@ describe("Bosco Static Asset Handling", function() {
 
     });
 
-   it('should create a formatted repo list when requested for cdn mode', function(done) {
+    it('should create a formatted repo list when requested for cdn mode', function(done) {
 
         var options = {
-            repos: ["project1","project2","project3"],
+            repos: ['project1','project2','project3'],
             minify: true,
             tagFilter: null,
             buildNumber: 'local',
@@ -274,6 +241,8 @@ describe("Bosco Static Asset Handling", function() {
         var utils = StaticUtils(boscoMock());
 
         utils.getStaticRepos(options, function(err, assets) {
+            if (err) return done(err);
+
             var assetKeys = _.keys(assets);
             expect(assetKeys).to.contain('formattedRepos');
             done();
@@ -283,15 +252,15 @@ describe("Bosco Static Asset Handling", function() {
 
 });
 
-describe("Bosco Static Asset Handling - Custom Building", function() {
+describe('Bosco Static Asset Handling - Custom Building', function() {
 
-  this.timeout(5000);
-  this.slow(5000);
+    this.timeout(5000);
+    this.slow(5000);
 
-  it('should execute bespoke build commands and use output', function(done) {
+    it('should execute bespoke build commands and use output', function(done) {
 
         var options = {
-            repos: ["project3"],
+            repos: ['project3'],
             minify: true,
             tagFilter: null,
             buildNumber: 'local',
@@ -302,6 +271,8 @@ describe("Bosco Static Asset Handling - Custom Building", function() {
         var utils = StaticUtils(boscoMock());
 
         utils.getStaticAssets(options, function(err, assets) {
+            if (err) return done(err);
+
             var assetKeys = _.pluck(assets,'assetKey');
             arrayContains(assetKeys, [
               'project3/local/html/compiled.js.html',
@@ -317,10 +288,29 @@ describe("Bosco Static Asset Handling - Custom Building", function() {
 
     });
 
-  it('should execute bespoke build commands and use output, and execute the watch command in watch mode', function(done) {
+    it('should fail if the build fails', function(done) {
+        var options = {
+            repos: ['projectFail'],
+            minify: true,
+            tagFilter: null,
+            buildNumber: 'local',
+            watchBuilds: false,
+            reloadOnly: false
+        }
+
+        var utils = StaticUtils(boscoMock());
+
+        utils.getStaticAssets(options, function(err, assets) {
+            expect(err).to.be.an(Error);
+            expect(err).to.have.property('code', 1);
+            done();
+        });
+    });
+
+    it('should execute bespoke watch commands in watch mode', function(done) {
 
         var options = {
-            repos: ["project3"],
+            repos: ['project3'],
             minify: true,
             tagFilter: null,
             buildNumber: 'local',
@@ -331,6 +321,8 @@ describe("Bosco Static Asset Handling - Custom Building", function() {
         var utils = StaticUtils(boscoMock());
 
         utils.getStaticAssets(options, function(err, assets) {
+            if (err) return done(err);
+
             var assetKeys = _.pluck(assets,'assetKey');
             arrayContains(assetKeys, [
               'project3/local/html/compiled.js.html',
@@ -345,12 +337,31 @@ describe("Bosco Static Asset Handling - Custom Building", function() {
 
     });
 
-it('should execute bespoke build commands and use output, and execute the watch command in watch mode and not minified', function(done) {
+    it('should fail if the watch command fails', function(done) {
+        var options = {
+            repos: ['projectFail'],
+            minify: true,
+            tagFilter: null,
+            buildNumber: 'local',
+            watchBuilds: true,
+            reloadOnly: false
+        }
+
+        var utils = StaticUtils(boscoMock());
+
+        utils.getStaticAssets(options, function(err, assets) {
+            expect(err).to.be.an(Error);
+            expect(err).to.have.property('code', 1);
+            done();
+        });
+    });
+
+    it('should execute bespoke watch commands in watch mode and not minified', function(done) {
 
         this.timeout(5000);
 
         var options = {
-            repos: ["project3"],
+            repos: ['project3'],
             minify: false,
             tagFilter: null,
             buildNumber: 'local',
@@ -361,6 +372,8 @@ it('should execute bespoke build commands and use output, and execute the watch 
         var utils = StaticUtils(boscoMock());
 
         utils.getStaticAssets(options, function(err, assets) {
+            if (err) return done(err);
+
             var assetKeys = _.pluck(assets,'assetKey');
             arrayContains(assetKeys, [
               'project3/local/html/compiled.js.html',
