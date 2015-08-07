@@ -29,8 +29,8 @@ function cmd(bosco, args, callback) {
 
     var repos = bosco.getRepos();
     if(!repos) {
-      bosco.error('You are repo-less :( You need to initialise bosco first, try \'bosco clone\'.');
-      callback(new Error('no repos'));
+        bosco.error('You are repo-less :( You need to initialise bosco first, try \'bosco clone\'.');
+        return callback(new Error('no repos'));
     }
 
     var pushAllToS3 = function(staticAssets, next) {
@@ -80,8 +80,8 @@ function cmd(bosco, args, callback) {
 
     var pushToS3 = function(file, next) {
         if(!bosco.knox) {
-          bosco.warn('Knox AWS not configured for environment ' + bosco.options.envrionment + ' - so not pushing ' + file.path + ' to S3.');
-          next(null, {file: file});
+            bosco.warn('Knox AWS not configured for environment ' + bosco.options.envrionment + ' - so not pushing ' + file.path + ' to S3.');
+            return next(null, {file: file});
         }
 
         gzip(file.content, function(err, buffer) {
