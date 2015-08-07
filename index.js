@@ -541,7 +541,7 @@ Bosco.prototype._log = function(identifier, msg, args) {
     console.log(sf('[{time:hh:mm:ss}] {identifier}: {message}', parts));
 }
 
-Bosco.console = global.console;
+Bosco.prototype.console = global.console;
 
 Bosco.prototype.exists = function(path) {
     return fs.existsSync(path);

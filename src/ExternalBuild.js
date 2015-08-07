@@ -16,21 +16,32 @@ module.exports = function(bosco) {
             args;
 
         var buildFinished = function(err, stdout, stderr) {
-            var log = 'Finished build command for ' + service.name.blue;
-            if (err || stderr) {
-                log += ':';
+            // watch stderr output isn't considered fatal
+            var realError = (err && err !== true) ? err : null;
+            var log;
+            if (realError) {
+                log = 'Failed'.red + ' build command for ' + service.name.blue;
+                if (err.code != null) {
+                  log += ' exited with code ' + err.code;
+                  if (err.signal != null) log += ' and signal ' + err.signal;
+                }
+
+                if (stderr || stdout) log += ':';
+
+                bosco.error(log);
+            } else {
+              log = 'Finished build command for ' + service.name.blue;
+              if (stderr || stdout) log += ':';
+
+              bosco.log(log);
             }
 
-            bosco.log(log);
             if (err || stderr) {
               if (stdout) bosco.console.log(stdout);
               if (stderr) bosco.error(stderr);
             }
 
-            // watch stderr output isn't considered fatal
-            if (err === true) err = null;
-
-            next(err);
+            next(realError);
         };
 
         if (arrayCommand) {
@@ -99,7 +110,9 @@ module.exports = function(bosco) {
                 childError.signal = signal;
             }
 
-            bosco.error('Watch'.red + ' command for ' + service.name.blue + ' died with code ' + code);
+            if (calledReady) {
+              bosco.error('Watch'.red + ' command for ' + service.name.blue + ' died with code ' + code);
+            }
         });
 
         wc.stdout.on('data', function(data) {

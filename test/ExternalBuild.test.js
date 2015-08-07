@@ -67,7 +67,9 @@ describe('ExternalBuild', function() {
             expect(err).to.be.an(Error);
             expect(err).to.have.property('code', 1);
             expect(localBosco.console._log).to.eql(['hi']);
-            expect(localBosco._error).to.eql(['bye']);
+            expect(localBosco._error).to.have.length(2);
+            expect(localBosco._error[0]).to.contain('with code 1');
+            expect(localBosco._error[1]).to.be('bye');
             done();
         });
     });
@@ -166,8 +168,8 @@ describe('ExternalBuild', function() {
             expect(err).to.have.property('code', 0);
             expect(localBosco._error).to.be.an('array');
             expect(localBosco._error).to.have.length(2);
-            expect(localBosco._error[0]).to.contain('died with code 0');
-            expect(localBosco._error[1]).to.equal('\n');
+            expect(localBosco._error[0]).to.contain('with code 0');
+            expect(localBosco._error[1]).to.be('\n');
             done();
         });
     });
@@ -194,7 +196,7 @@ describe('ExternalBuild', function() {
             expect(err).to.be.an(Error);
             expect(err).to.not.have.property('code');
             expect(localBosco._error).to.be.an('array');
-            expect(localBosco._error).to.have.length(1);
+            expect(localBosco._error.length).to.be.greaterThan(0);
             expect(localBosco._error[0]).to.contain('timed out');
             done();
         });
