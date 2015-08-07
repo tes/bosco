@@ -217,24 +217,24 @@ Bosco.prototype._cmd = function() {
     var self = this,
         args = self.options.args,
         command = args.shift(),
-        commandModule = [self.getGlobalCommandFolder(), command, '.js'].join(''),
+        globalCommandModule = [self.getGlobalCommandFolder(), command, '.js'].join(''),
         localCommandModule = [self.getLocalCommandFolder(), command, '.js'].join(''),
-        commandPath,
+        commandModule,
         module;
 
     if (self.exists(localCommandModule)) {
-        commandPath = localCommandModule;
+        commandModule = localCommandModule;
     }
 
-    if (self.exists(commandModule)) {
-        if (module) {
-            self.warn('global command', commandModule, 'overriding local command', localCommandModule);
+    if (self.exists(globalCommandModule)) {
+        if (commandModule) {
+            self.warn('global command ' + globalCommandModule + ' overriding local command ' + localCommandModule);
         }
-        commandPath = commandModule;
+        commandModule = globalCommandModule;
     }
 
-    if (commandPath) {
-        module = require(commandPath);
+    if (commandModule) {
+        module = require(commandModule);
     }
 
     if (module) {
