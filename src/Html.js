@@ -39,7 +39,7 @@ module.exports = function(bosco) {
             }
 
             if (isStylesheet(asset)) {
-                htmlAssets[htmlFile].content += _.template('<link rel="stylesheet" href="<%=url %>" type="text/css" media="screen" />\n')({
+                htmlAssets[htmlFile].content += _.template('<link rel="stylesheet" href="<%=url %>" type="text/css" media="all" />\n')({
                     'url': bosco.getAssetCdnUrl(asset.assetKey)
                 });
             }
