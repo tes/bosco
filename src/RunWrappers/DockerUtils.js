@@ -175,7 +175,7 @@ function buildImage(bosco, docker, fqn, options, next) {
     bosco.log('Building image for ' + options.service.name + ' ...');
     var lastStream = '';
     docker.buildImage(tarStream, {t: fqn}, function(err, stream) {
-        if (err) next(err);
+        if (err) return next(err);
 
         stream.on('data', function(data) {
             var json = JSON.parse(data);
