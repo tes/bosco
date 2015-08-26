@@ -109,7 +109,7 @@ describe('ExternalBuild', function() {
         };
 
         doBuild(service, options, function(err) {
-            if (err) done(err);
+            if (err) return done(err);
             expect(localBosco).to.not.have.property('_log');
             expect(localBosco).to.not.have.property('_error');
             expect(localBosco.console).to.not.have.property('_log');
@@ -223,7 +223,7 @@ describe('ExternalBuild', function() {
         };
 
         doBuild(service, options, function(err) {
-            if (err) done(err);
+            if (err) return done(err);
             expect(localBosco.console._log).to.eql(['watchbye']);
             expect(localBosco).to.have.property('_log');
             expect(localBosco).to.not.have.property('_error');
