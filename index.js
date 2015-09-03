@@ -446,10 +446,13 @@ Bosco.prototype.getLocalCommandFolder = function() {
 
 Bosco.prototype.getRepoUrl = function(repo) {
     var org;
+    var host = this.config.get('github:host') || 'github.com';
+    host     = "git@" + host + ":";
+
     if (repo.indexOf('/') < 0) {
         org = this.getOrg() + '/';
     }
-    return ['git@github.com:', org ? org : '', repo, '.git'].join('');
+    return [host, org ? org : '', repo, '.git'].join('');
 }
 
 Bosco.prototype.isLocalCdn = function () {

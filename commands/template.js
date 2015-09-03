@@ -56,6 +56,9 @@ function newServiceFromTemplate(bosco, args, next) {
     bosco.log('Creating new service: ' + targetServiceName.green + ' from template: ' + template.green);
 
     var gitCmd = 'git';
+    var host   = bosco.config.get('github:host') || 'github.com';
+    host       = "git@" + host + ":";
+
     var gitOptions = ['clone','--depth=1','git@github.com:' + template, targetServiceName];
 
     var serviceDirectory = path.resolve('.', targetServiceName);
