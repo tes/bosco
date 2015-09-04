@@ -446,8 +446,9 @@ Bosco.prototype.getLocalCommandFolder = function() {
 
 Bosco.prototype.getRepoUrl = function(repo) {
     var org;
-    var host = this.config.get('github:host') || 'github.com';
-    host     = "git@" + host + ":";
+    var host     = this.config.get('github:hostname') || 'github.com';
+    var hostUser = this.config.get('github:hostUser') || 'git';
+    host         = hostUser + "@" + host + ":";
 
     if (repo.indexOf('/') < 0) {
         org = this.getOrg() + '/';
