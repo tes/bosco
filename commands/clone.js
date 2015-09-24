@@ -32,7 +32,12 @@ function cmd(bosco, args, next) {
 
         // The user does not have a team, so just treat the repos config
         // as manually edited
-        return bosco.error('Looks like you havent linked this workspace to a team?  Try: ' + 'bosco team setup'.green);
+        return bosco.error([
+            'Looks like you havent linked this workspace to a team?  Try: ',
+            'bosco team setup'.green,
+            '. If you can\'t see your team in the list, Try: ',
+            'bosco team sync'.green
+        ].join(''));
 
     } else {
 
