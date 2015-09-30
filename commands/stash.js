@@ -6,7 +6,7 @@ var red = '\u001b[41m \u001b[0m';
 module.exports = {
     name:'stash',
     description:'Stashes any local changes across all repos',
-    example:'bosco stash -r <repoPattern>',
+    usage:'[-r <repoPattern>]',
     cmd:cmd
 }
 

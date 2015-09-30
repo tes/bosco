@@ -6,7 +6,7 @@ var red = '\u001b[41m \u001b[0m';
 module.exports = {
     name:'install',
     description:'Runs npm install against all repos',
-    example:'bosco install -r <repoPattern>',
+    usage:'[-r <repoPattern>]',
     cmd:cmd
 }
 

@@ -45,7 +45,6 @@
     "clean-css": "^3.1.9",
     "cli-table": "^0.3.0",
     "colors": "^1.0.3",
-    "commander": "^2.7.1",
     "dateformat": "^1.0.8-1.2.3",
     "dockerode": "^2.0.3",
     "figlet": "~1.1.0",
@@ -76,7 +75,8 @@
     "tail": "^0.4.0",
     "tar-fs": "^1.2.0",
     "uglify-js": "^2.4.19",
-    "watch": "^0.16.0"
+    "watch": "^0.16.0",
+    "yargs": "^3.26.0"
   },
   "devDependencies": {
     "coveralls": "^2.11.1",

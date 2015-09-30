@@ -9,7 +9,7 @@ var async = require('async');
 module.exports = {
     name:'team',
     description:'A command to keep your Github organisation and team setup in sync with Bosco',
-    example:'bosco team sync | bosco team ls | bosco team ln <team> <directory>',
+    usage:'sync|ls|ln <team> <directory>',
     cmd:cmd
 }
 

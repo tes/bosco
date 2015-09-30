@@ -8,13 +8,14 @@ var green = '\u001b[42m \u001b[0m';
 var red = '\u001b[41m \u001b[0m';
 
 module.exports = {
-    name:'clone',
-    description:'Gets an list of all repos in your team and runs git clone for each',
-    example: 'bosco clone',
-    cmd:cmd,
+    name: 'clone',
+    usage: '[-r <repoPattern>] [--clean]',
+    description: 'Gets a list of all repos in your team and runs git clone for each',
+    cmd: cmd,
     options: [{
-        option: 'clean',
-        syntax: ['--clean', 'Remove any repositories in the workspace that are no longer in the github team']
+        name: 'clean',
+        type: 'boolean',
+        desc: 'Remove any repositories in the workspace that are no longer in the github team'
     }]
 }
 

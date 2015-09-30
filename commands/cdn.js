@@ -6,17 +6,21 @@ var watch = require('watch');
 var url = require('url');
 
 module.exports = {
-    name:'cdn',
-    description:'Aggregates all the static assets across all microservices and serves them via a pseudo local CDN url',
-    example:'bosco cdn <minify>',
-    cmd:cmd,
+    name: 'cdn',
+    usage: '[-r <repoPattern>] [-w <repoPattern>] [<minify>]',
+    description: 'Aggregates all the static assets across all microservices and serves them via a pseudo local CDN url',
+    cmd: cmd,
     options: [{
-        option: 'tag',
-        syntax: ['-t, --tag [tag]', 'Filter by a tag defined within bosco-service.json']
+        name: 'tag',
+        alias: 't',
+        type: 'string',
+        desc: 'Filter by a tag defined within bosco-service.json'
     },
     {
-        option: 'watch',
-        syntax: ['-w, --watch [regex]', 'Filter by a regex of services to watch (similar to -r in run)']
+        name: 'watch',
+        alias: 'w',
+        type: 'string',
+        desc: 'Filter by a regex of services to watch (similar to -r in run)'
     }]
 }
 

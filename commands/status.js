@@ -4,7 +4,7 @@ var _ = require('lodash');
 module.exports = {
     name:'status',
     description:'Checks git status across all services',
-    example:'bosco status -r <repoPattern>',
+    usage:'[-r <repoPattern>]',
     cmd:cmd
 }
 var CHANGE_STRINGS = ['Changes not staged', 'Your branch is ahead', 'Untracked files', 'Changes to be committed'];

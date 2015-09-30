@@ -2,7 +2,6 @@
 module.exports = {
     name:'setup',
     description:'Runs clone and then install to get your environment ready for action.',
-    example:'bosco setup',
     cmd:cmd
 }
 

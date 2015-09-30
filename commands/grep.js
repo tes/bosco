@@ -4,7 +4,7 @@ var execFile = require('child_process').execFile;
 module.exports = {
   name: 'grep',
   description: 'runs git grep across your repos, use -- to separate bosco options from git grep options',
-  example: 'bosco grep <git grep args>',
+  usage: '<git grep args>',
   cmd: cmd
 }
 

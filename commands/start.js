@@ -1,7 +1,6 @@
 module.exports = {
     name:'start',
     description:'This is an alias for run',
-    example:'alias for "bosco run"',
     cmd:cmd
 }
 

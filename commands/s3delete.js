@@ -3,7 +3,7 @@ var _ = require('lodash');
 module.exports = {
     name:'s3delete',
     description:'Deletes a published asset set from S3',
-    example:'bosco -e <environmment> s3delete <build>',
+    usage:'[-e <environmment>] <build>',
     cmd:cmd
 }
 

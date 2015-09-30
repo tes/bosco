@@ -15,7 +15,6 @@ var prompt = require('prompt');
 var request = require('request');
 var semver = require('semver');
 var sf = require('sf');
-var Table = require('cli-table');
 var util = require('util');
 
 prompt.message = 'Bosco'.green;
@@ -253,7 +252,7 @@ Bosco.prototype._cmd = function() {
 
     if (self.options.shellCommands) return self._shellCommands();
 
-    self._commands();
+    self.options.program.showHelp();
 }
 
 Bosco.prototype._shellCommands = function() {
@@ -289,83 +288,6 @@ Bosco.prototype._shellCommands = function() {
             console.log('Available commands: ' + files.join(' '));
             process.exit(0);
         });
-}
-
-Bosco.prototype._commands = function() {
-
-    var self = this,
-        cmdPath = self.getGlobalCommandFolder(),
-        localPath =  self.getLocalCommandFolder();
-
-    var showTable = function(tableName, cPath, files, next) {
-
-        var table = new Table({
-            chars: {'mid': '', 'left-mid': '', 'mid-mid': '', 'right-mid': ''},
-            head: [tableName, 'Example'],
-            colWidths: [12, 80]
-        });
-
-        var showCommand = function(cmd) {
-            table.push([cmd.name, cmd.example || '']);
-        }
-
-        if (cPath) {
-            files = files.map(function(file) {
-            return path.join(cPath, file);
-            }).filter(function(file) {
-                return fs.statSync(file).isFile();
-            }).forEach(function(file) {
-                if (path.extname(file) !== '.js') { return null; }
-                showCommand(require(file));
-            });
-        } else {
-            files.forEach(function(file) {
-                showCommand(file);
-            });
-        }
-
-        console.log(table.toString());
-        console.log('\r');
-        next();
-    }
-
-    console.log('\r');
-    self.warn('Hey, to use bosco, you need to enter one of the following commands:')
-
-    async.series([
-
-            function(next) {
-                fs.readdir(cmdPath, function(err, files) {
-                    showTable('Core', cmdPath, files, next)
-                })
-            },
-            function(next) {
-                fs.readdir(localPath, function(err, files) {
-                    if (!files || files.length === 0) return next();
-                    showTable('Local', localPath, files, next)
-                })
-            },
-            function(next) {
-                var wait = function() {
-                    if (self._checkingVersion) {
-                        setTimeout(wait, 100);
-                    } else {
-                        next();
-                    }
-                }
-                wait();
-            },
-            function(next) {
-                console.log('You can also specify these parameters:')
-                console.log(self.options.program.help());
-                next();
-            }
-        ],
-        function() {
-            // Do nothing
-        });
-
-
 }
 
 Bosco.prototype._checkVersion = function() {

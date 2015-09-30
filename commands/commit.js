@@ -3,8 +3,8 @@ var exec = require('child_process').exec;
 
 module.exports = {
     name:'commit',
-    description:'Will run commit across all repos - useful for batch updates',
-    example:'bosco commit -r <repoPattern> \'Commit Message\'',
+    description:'Run git commit across all repos - useful for batch updates',
+    usage:'[-r <repoPattern>] \'<commit message>\'',
     cmd:cmd
 }
 

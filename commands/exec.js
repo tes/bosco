@@ -4,7 +4,7 @@ var _ = require('lodash');
 module.exports = {
     name: 'exec',
     description: 'Runs arbitrary commands across all services - take care!',
-    example: 'bosco exec -r <repoRegex> -- <command>',
+    usage: '[-r <repoRegex>] -- <command>',
     cmd: cmd
 }
 
