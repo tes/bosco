@@ -14,7 +14,7 @@ module.exports = {
 
 var tag = '', noprompt = false;
 
-function cmd(bosco, args) {
+function cmd(bosco, args, callback) {
 
     if(args.length > 0) tag = args[0];
 
@@ -28,7 +28,10 @@ function cmd(bosco, args) {
     bosco.log('Compile front end assets across services ' + (tag ? 'for tag: ' + tag.blue : ''));
 
     var repos = bosco.getRepos();
-    if(!repos) return bosco.error('You are repo-less :( You need to initialise bosco first, try \'bosco clone\'.');
+    if(!repos) {
+        bosco.error('You are repo-less :( You need to initialise bosco first, try \'bosco clone\'.');
+        return callback(new Error('no repos'));
+    }
 
     var pushAllToS3 = function(staticAssets, next) {
 
@@ -76,24 +79,36 @@ function cmd(bosco, args) {
     }
 
     var pushToS3 = function(file, next) {
-        if(!bosco.knox) return bosco.warn('Knox AWS not configured for environment ' + bosco.options.envrionment + ' - so not pushing ' + file.path + ' to S3.');
+        if(!bosco.knox) {
+            bosco.warn('Knox AWS not configured for environment ' + bosco.options.envrionment + ' - so not pushing ' + file.path + ' to S3.');
+            return next(null, {file: file});
+        }
+
         gzip(file.content, function(err, buffer) {
+            if (err) return next(err);
+
             var headers = {
               'Content-Type':file.mimeType,
               'Content-Encoding':'gzip',
               'Cache-Control': ('max-age=' + (maxAge === 0 ? '0, must-revalidate' : maxAge))
             };
             bosco.knox.putBuffer(buffer, file.path, headers, function(err, res) {
-              if(res.statusCode != 200 && !err) err = {message:'S3 error, code ' + res.statusCode};
-              bosco.log('Pushed to S3: ' + cdnUrl + file.path);
-              if(compoxureUrl && file.type == 'html') {
-                primeCompoxure(cdnUrl + file.path, file.content.toString(), function(err) {
-                    if(err) bosco.error('Error flushing compoxure: ' + err.message);
-                    next(err, {file: file});
-                });
-              } else {
-                next(err, {file: file});
+              if (!err && res.statusCode >= 300) {
+                  err = new Error('S3 error, code ' + res.statusCode);
+                  err.statusCode = res.statusCode;
               }
+
+              if (err) return next(err);
+
+              bosco.log('Pushed to S3: ' + cdnUrl + file.path);
+              if (!compoxureUrl || file.type != 'html') {
+                  return next(null, {file: file});
+              }
+
+              primeCompoxure(cdnUrl + file.path, file.content.toString(), function(err) {
+                  if (err) bosco.error('Error flushing compoxure');
+                  next(err, {file: file});
+              });
             });
         });
     }
@@ -138,12 +153,12 @@ function cmd(bosco, args) {
           });
         });
 
-        req.on('error', function(e) {
+        req.on('error', function(err) {
           // TODO: handle error.
-          bosco.error('There was an error posting fragment to Compoxure: ' + e.message);
+          bosco.error('There was an error posting fragment to Compoxure');
           if(!calledNext) {
             calledNext = true;
-            return next();
+            return next(err);
           }
         });
 
@@ -171,7 +186,7 @@ function cmd(bosco, args) {
          });
     }
 
-    var go = function() {
+    var go = function(next) {
 
         bosco.log('Compiling front end assets, this can take a while ... ');
 
@@ -185,21 +200,30 @@ function cmd(bosco, args) {
         }
 
         bosco.staticUtils.getStaticAssets(options, function(err, staticAssets) {
+            if (err) {
+                bosco.error('There was an error: ' + err.message);
+                return next(err);
+            }
+
             pushAllToS3(staticAssets, function(err) {
-                if(err) return bosco.error('There was an error: ' + err.message);
+                if (err) {
+                    bosco.error('There was an error: ' + err.message);
+                    return next(err);
+                }
                 bosco.log('Done');
+                next();
             });
         });
     }
 
-    if(!noprompt) {
-        var confirmMsg = 'Are you sure you want to publish '.white + (tag ? 'all ' + tag.blue + ' assets in ' : 'ALL'.red + ' assets in ').white + bosco.options.environment.blue + ' (y/N)?'.white
-        confirm(confirmMsg, function(err, confirmed) {
-            if(!err && confirmed) go();
-        })
-    } else {
-        go();
-    }
+    if (noprompt) return go(callback);
+
+    var confirmMsg = 'Are you sure you want to publish '.white + (tag ? 'all ' + tag.blue + ' assets in ' : 'ALL'.red + ' assets in ').white + bosco.options.environment.blue + ' (y/N)?'.white
+    confirm(confirmMsg, function(err, confirmed) {
+        if (err) return callback(err);
+        if (!confirmed) return callback(new Error('Not confirmed'));
+        go(callback);
+    })
 
     function getS3Content(file) {
         return file.data || new Buffer(file.content);

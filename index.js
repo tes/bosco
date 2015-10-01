@@ -215,25 +215,42 @@ Bosco.prototype._initialiseConfig = function(next) {
 Bosco.prototype._cmd = function() {
 
     var self = this,
-        commands = self.options.args,
-        command = commands.shift(),
-        commandModule = [self.getGlobalCommandFolder(), command, '.js'].join(''),
-        localCommandModule = [self.getLocalCommandFolder(), command, '.js'].join('');
-
-    if (self.exists(commandModule)) {
-        return require(commandModule).cmd(self, commands);
-    }
+        args = self.options.args,
+        command = args.shift(),
+        globalCommandModule = [self.getGlobalCommandFolder(), command, '.js'].join(''),
+        localCommandModule = [self.getLocalCommandFolder(), command, '.js'].join(''),
+        commandModule,
+        module;
 
     if (self.exists(localCommandModule)) {
-        return require(localCommandModule).cmd(self, commands);
+        commandModule = localCommandModule;
     }
 
-    if (self.options.shellCommands) {
-        self._shellCommands();
-    } else {
-        self._commands();
+    if (self.exists(globalCommandModule)) {
+        if (commandModule) {
+            self.warn('global command ' + globalCommandModule + ' overriding local command ' + localCommandModule);
+        }
+        commandModule = globalCommandModule;
     }
 
+    if (commandModule) {
+        module = require(commandModule);
+    }
+
+    if (module) {
+        return module.cmd(self, args, function(err) {
+            var code = 0;
+            if (err) {
+              code = 1;
+              if (err.code > 0) code = err.code;
+            }
+            process.exit(code);
+        });
+    }
+
+    if (self.options.shellCommands) return self._shellCommands();
+
+    self._commands();
 }
 
 Bosco.prototype._shellCommands = function() {
@@ -527,6 +544,8 @@ Bosco.prototype._log = function(identifier, msg, args) {
     };
     console.log(sf('[{time:hh:mm:ss}] {identifier}: {message}', parts));
 }
+
+Bosco.prototype.console = global.console;
 
 Bosco.prototype.exists = function(path) {
     return fs.existsSync(path);
