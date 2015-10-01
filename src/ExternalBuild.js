@@ -90,7 +90,7 @@ module.exports = function(bosco) {
 
         var wc = spawn(command, args, cwd);
         var output = '', childError = null, calledReady = false;
-        var timeout = checkDelay * 50; // Seems reasonable for build cycle
+        var timeout = checkDelay * 100; // Seems reasonable for build cycle
         var timer = 0;
 
         buildFinished = (function(buildFinished) {
