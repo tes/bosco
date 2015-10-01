@@ -43,26 +43,38 @@ function cmd(bosco, args) {
         }
 
         var server = http.createServer(function(request, response) {
+          if (request.method === 'OPTIONS') {
+            response.writeHead(200, {
+              'Access-Control-Allow-Origin': '*',
+              'Access-Control-Allow-Methods': 'POST, GET, PUT, DELETE, OPTIONS',
+              'Access-Control-Allow-Credentials': true,
+              'Access-Control-Max-Age': '86400', // 24 hours
+              'Access-Control-Allow-Headers': 'X-Requested-With, Access-Control-Allow-Origin, X-HTTP-Method-Override, Content-Type, Authorization, Accept'
+            });
+            return response.end();
+          } else {
             var pathname = url.parse(request.url).pathname;
             if (pathname === '/repos') {
-                response.writeHead(200, {'Content-Type': 'text/html'});
-                return response.end(staticRepos.formattedRepos);
+              response.writeHead(200, {'Content-Type': 'text/html'});
+              return response.end(staticRepos.formattedRepos);
             }
 
             var asset = getAsset(pathname);
             if (!asset) {
-                response.writeHead(404, {'Content-Type': 'text/html'});
-                return response.end(staticAssets.formattedAssets);
+              response.writeHead(404, {'Content-Type': 'text/html'});
+              return response.end(staticAssets.formattedAssets);
             }
 
             response.writeHead(200, {
-                'Content-Type': asset.mimeType,
-                'Cache-Control': 'no-cache, must-revalidate',
-                'Pragma': 'no-cache',
-                'Expires': 'Sat, 21 May 1952 00:00:00 GMT'
+              'Content-Type': asset.mimeType,
+              'Cache-Control': 'no-cache, must-revalidate',
+              'Pragma': 'no-cache',
+              'Expires': 'Sat, 21 May 1952 00:00:00 GMT',
+              'Access-Control-Allow-Origin' : '*'
             });
 
             response.end(asset.data || asset.content);
+          }
         });
 
         server.listen(serverPort);
