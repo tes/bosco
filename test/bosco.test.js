@@ -32,11 +32,15 @@ describe('bosco', function() {
           var oldPlatform = process.platform;
           var oldEnv = process.env;
           try {
-            process.platform = platform;
+            Object.defineProperty(process, 'platform', {
+              value: platform
+            });
             process.env = env;
             return bosco.findConfigFolder();
           } finally {
-            process.platform = oldPlatform;
+            Object.defineProperty(process, 'platform', {
+              value: oldPlatform
+            });
             process.env = oldEnv;
           }
         };
