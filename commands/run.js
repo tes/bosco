@@ -69,7 +69,7 @@ function cmd(bosco, args, cb) {
 
   var startRunnableServices = function(next) {
     var runService = function(runConfig, cb) {
-      if (runConfig.service && runConfig.service.type == 'docker') {
+      if (runConfig.service && runConfig.service.type === 'docker') {
         if (_.contains(runningServices, runConfig.name)) {
           bosco.warn('Service ' + runConfig.name.green + ' is already running ...');
           return cb();
@@ -78,12 +78,12 @@ function cmd(bosco, args, cb) {
         return DockerRunner.start(runConfig, cb);
       }
 
-      if (runConfig.service && runConfig.service.type == 'docker-compose') {
+      if (runConfig.service && runConfig.service.type === 'docker-compose') {
         bosco.log('Running docker-compose ' + runConfig.name.green + ' ...');
         return DockerComposeRunner.start(runConfig, cb);
       }
 
-      if (runConfig.service && runConfig.service.type == 'node') {
+      if (runConfig.service && runConfig.service.type === 'node') {
         if (_.contains(runningServices, runConfig.name)) {
           bosco.warn('Service ' + runConfig.name.green + ' is already running ...');
           return cb();

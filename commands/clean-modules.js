@@ -20,7 +20,7 @@ function cmd(bosco, args, next) {
   bosco.log('Clearing out node modules and re-running npm install across all repos ...');
 
   var cleanRepos = function(cb) {
-    var progressbar = bosco.config.get('progress') == 'bar',
+    var progressbar = bosco.config.get('progress') === 'bar',
       total = repos.length;
 
     var bar = progressbar ? new bosco.progress('Doing clean and npm install [:bar] :percent :etas', {

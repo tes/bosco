@@ -15,10 +15,10 @@ module.exports = {
 
 function cmd(bosco, args, next) {
   var action = args.shift();
-  if (action == 'sync') { return syncTeams(bosco, next); }
-  if (action == 'ls') { return showTeams(bosco); }
-  if (action == 'ln') { return linkTeam(bosco, args.shift(), args.shift(), next); }
-  if (action == 'setup') { return setupInitialLink(bosco, next); }
+  if (action === 'sync') { return syncTeams(bosco, next); }
+  if (action === 'ls') { return showTeams(bosco); }
+  if (action === 'ln') { return linkTeam(bosco, args.shift(), args.shift(), next); }
+  if (action === 'setup') { return setupInitialLink(bosco, next); }
   bosco.log('You are in team: ' + (bosco.getTeam() ? bosco.getTeam().cyan : 'Not in a workspace!'.red));
 }
 
@@ -75,7 +75,7 @@ function getTeams(client, cb) {
     var lastPage = parseInt(links.last.page);
 
     // If the last page is this first page, we're done
-    if (lastPage == 1) { return cb(null, teams); }
+    if (lastPage === 1) { return cb(null, teams); }
 
     // Create tasks to get the remaining pages of teams
     var tasks = _.range(2, lastPage + 1).map(createTeamPageRequestTask);

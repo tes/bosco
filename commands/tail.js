@@ -30,7 +30,7 @@ function cmd(bosco, args) {
               return;
             }
             var file = list[0].pm2_env.pm_out_log_path;
-            if (args[0] == 'err') {
+            if (args[0] === 'err') {
               file = list[0].pm2_env.pm_err_log_path;
             }
             bosco.log('Tailing ' + file);

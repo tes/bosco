@@ -287,7 +287,7 @@ Bosco.prototype._checkVersion = function() {
     url: npmUrl,
     timeout: 1000
   }, function(error, response, body) {
-    if (!error && response.statusCode == 200) {
+    if (!error && response.statusCode === 200) {
       var jsonBody = JSON.parse(body);
       var version = jsonBody['dist-tags'].latest;
       if (semver.lt(self.options.version, version)) {
@@ -307,7 +307,7 @@ Bosco.prototype.findConfigFolder = function() {
   var platform = process.platform;
   var oldConfig = [osenv.home(), '.bosco'].join('/');
 
-  if (platform == 'darwin' || platform == 'win32') {
+  if (platform === 'darwin' || platform === 'win32') {
     var env = process.env;
     if (!env.XDG_CONFIG_HOME || !env.XDG_DATA_HOME || !env.XDG_CACHE_HOME) {
       return oldConfig;
@@ -370,7 +370,7 @@ Bosco.prototype.getTeam = function() {
 Bosco.prototype.getRepos = function() {
   var self = this;
   var team = self.getTeam();
-  if (team == 'no-team') {
+  if (team === 'no-team') {
     return [path.relative('..', '.')]
   } else {
     return self.config.get('teams:' + team).repos;

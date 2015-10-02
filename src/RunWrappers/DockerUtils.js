@@ -228,7 +228,7 @@ function pullImage(bosco, docker, repoTag, next) {
     if (err || prettyError) return next(prettyError || err);
 
     function newBar(id, total) {
-      if (bosco.config.get('progress') == 'bar') {
+      if (bosco.config.get('progress') === 'bar') {
         return new bosco.progress('Downloading ' + id + ' [:bar] :percent :etas', {
           complete: green,
           incomplete: red,

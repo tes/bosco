@@ -121,7 +121,7 @@ function fetch(bosco, team, repos, repoRegex, args, next) {
   }
 
   var getRepos = function(cb) {
-    var progressbar = bosco.config.get('progress') == 'bar',
+    var progressbar = bosco.config.get('progress') === 'bar',
       total = repos.length,
       pullFlag = false;
 

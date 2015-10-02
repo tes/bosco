@@ -53,7 +53,7 @@ Runner.prototype.start = function(options, next) {
   // Remove node from the start script as not req'd for PM2
   var startCmd = options.service.start, startArr, start, ext;
 
-  if (startCmd.split(' ')[0] == 'node') {
+  if (startCmd.split(' ')[0] === 'node') {
     startArr = startCmd.split(' ');
     startArr.shift();
     start = startArr.join(' ');

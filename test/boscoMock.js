@@ -35,7 +35,7 @@ module.exports = function boscoMock(extra) {
     },
     config: {
       get: function(key) {
-        if (key == 'css:clean') {
+        if (key === 'css:clean') {
           return {enabled: true};
         }
         return key;

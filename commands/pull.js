@@ -21,7 +21,7 @@ function cmd(bosco, args, next) {
   bosco.log('Running ' + 'git pull --rebase'.blue + ' across all repos ...');
 
   var pullRepos = function(cb) {
-    var progressbar = bosco.config.get('progress') == 'bar',
+    var progressbar = bosco.config.get('progress') === 'bar',
       total = repos.length;
 
     var bar = progressbar ? new bosco.progress('Doing git pull [:bar] :percent :etas', {
@@ -44,7 +44,7 @@ function cmd(bosco, args, next) {
   var pullDockerImages = function(cb) {
     bosco.log('Checking for docker images to pull ...');
 
-    var progressbar = bosco.config.get('progress') == 'bar',
+    var progressbar = bosco.config.get('progress') === 'bar',
       total = repos.length;
 
     var bar = progressbar ? new bosco.progress('Doing docker pull [:bar] :percent :etas', {

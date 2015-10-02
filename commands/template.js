@@ -14,9 +14,9 @@ module.exports = {
 
 function cmd(bosco, args, next) {
   var action = args.shift();
-  if (action == 'create') { return newServiceFromTemplate(bosco, args, next); }
-  if (action == 'add') { return addTemplate(bosco, args, next); }
-  if (action == 'remove') { return removeTemplate(bosco, args, next); }
+  if (action === 'create') { return newServiceFromTemplate(bosco, args, next); }
+  if (action === 'add') { return addTemplate(bosco, args, next); }
+  if (action === 'remove') { return removeTemplate(bosco, args, next); }
   listTemplates(bosco, next);
 }
 

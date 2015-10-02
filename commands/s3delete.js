@@ -19,7 +19,7 @@ function cmd(bosco, args) {
       if (err || !confirmed) return;
       bosco.knox.deleteMultiple(files, function(err, res) {
         if (err) return bosco.error(err.message);
-        if (res.statusCode == '200') {
+        if (res.statusCode === '200') {
           bosco.log('Completed deleting ' + toDelete.blue);
         }
       });
@@ -36,7 +36,7 @@ function cmd(bosco, args) {
       }
     }, function(err, result) {
       if (!result) return next({message: 'Did not confirm'});
-      if (result.confirm == 'Y' || result.confirm == 'y') {
+      if (result.confirm === 'Y' || result.confirm === 'y') {
         next(null, true);
       } else {
         next(null, false);

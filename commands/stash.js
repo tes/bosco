@@ -20,7 +20,7 @@ function cmd(bosco, args) {
   bosco.log('Running git stash across all repos ...');
 
   var stashRepos = function(cb) {
-    var progressbar = bosco.config.get('progress') == 'bar',
+    var progressbar = bosco.config.get('progress') === 'bar',
       total = repos.length;
 
     var bar = progressbar ? new bosco.progress('Doing git stash [:bar] :percent :etas', {
@@ -61,7 +61,7 @@ function stash(bosco, args, progressbar, bar, orgPath, next) {
   }, function(err, stdout, stderr) {
     if (progressbar) bar.tick();
 
-    if (err && ignoreMissingStash && err.code == 1) {
+    if (err && ignoreMissingStash && err.code === 1) {
       err = null;
     }
     if (err) {

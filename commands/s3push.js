@@ -37,7 +37,7 @@ function cmd(bosco, args, callback) {
     _.forEach(staticAssets, function(asset) {
       var key = asset.assetKey;
 
-      if (key == 'formattedAssets') return;
+      if (key === 'formattedAssets') return;
       if (tag && tag !== asset.tag) return;
       if (isContentEmpty(asset)) {
         bosco.log('Skipping asset: ' + key.blue + ' (content empty)');
@@ -172,7 +172,7 @@ function cmd(bosco, args, callback) {
       }
     }, function(err, result) {
       if (!result) return next({message: 'Did not confirm'});
-      if (result.confirm == 'Y' || result.confirm == 'y') {
+      if (result.confirm === 'Y' || result.confirm === 'y') {
         next(null, true);
       } else {
         next(null, false);

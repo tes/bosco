@@ -126,7 +126,7 @@ Runner.prototype.matchWithoutVersion = function(a, b) {
 
 Runner.prototype.containerNameMatches = function(container, name) {
   return _.any(container.Names, function(val) {
-    return val == '/' + name;
+    return val === '/' + name;
   });
 }
 

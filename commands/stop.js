@@ -34,11 +34,11 @@ function cmd(bosco, args, next) {
   }
 
   var stopService = function(repo, boscoService, runningServices, cb) {
-    if (boscoService.service.type == 'docker') {
+    if (boscoService.service.type === 'docker') {
       if (_.contains(runningServices, repo)) {
         return DockerRunner.stop(boscoService, cb);
       }
-    } else if (boscoService.service.type == 'docker-compose') {
+    } else if (boscoService.service.type === 'docker-compose') {
       if (_.contains(runningServices, 'docker-compose')) {
         return DockerComposeRunner.stop(boscoService, cb);
       }

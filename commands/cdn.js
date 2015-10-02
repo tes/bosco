@@ -89,7 +89,7 @@ function cmd(bosco, args) {
     _.forEach(staticAssets, function(asset) {
       if (asset.repo && !asset.repo.match(watchRegex)) return;
 
-      if (minify && asset.extname == '.manifest') {
+      if (minify && asset.extname === '.manifest') {
         asset.files.forEach(function(file) {
           if (file) watchSet[file.path] = asset.tag;
         });
