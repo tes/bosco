@@ -1,5 +1,5 @@
 var _ = require('lodash'),
-     async = require('async'),
+    async = require('async'),
     http = require('http'),
     url = require('url'),
     zlib = require('zlib'),
@@ -88,27 +88,27 @@ function cmd(bosco, args, callback) {
             if (err) return next(err);
 
             var headers = {
-              'Content-Type':file.mimeType,
-              'Content-Encoding':'gzip',
-              'Cache-Control': ('max-age=' + (maxAge === 0 ? '0, must-revalidate' : maxAge))
+                'Content-Type':file.mimeType,
+                'Content-Encoding':'gzip',
+                'Cache-Control': ('max-age=' + (maxAge === 0 ? '0, must-revalidate' : maxAge))
             };
             bosco.knox.putBuffer(buffer, file.path, headers, function(err, res) {
-              if (!err && res.statusCode >= 300) {
-                  err = new Error('S3 error, code ' + res.statusCode);
-                  err.statusCode = res.statusCode;
-              }
+                if (!err && res.statusCode >= 300) {
+                    err = new Error('S3 error, code ' + res.statusCode);
+                    err.statusCode = res.statusCode;
+                }
 
-              if (err) return next(err);
+                if (err) return next(err);
 
-              bosco.log('Pushed to S3: ' + cdnUrl + file.path);
-              if (!compoxureUrl || file.type != 'html') {
-                  return next(null, {file: file});
-              }
+                bosco.log('Pushed to S3: ' + cdnUrl + file.path);
+                if (!compoxureUrl || file.type != 'html') {
+                    return next(null, {file: file});
+                }
 
-              primeCompoxure(cdnUrl + file.path, file.content.toString(), function(err) {
-                  if (err) bosco.error('Error flushing compoxure');
-                  next(err, {file: file});
-              });
+                primeCompoxure(cdnUrl + file.path, file.content.toString(), function(err) {
+                    if (err) bosco.error('Error flushing compoxure');
+                    next(err, {file: file});
+                });
             });
         });
     }
@@ -125,41 +125,41 @@ function cmd(bosco, args, callback) {
         var cacheUrl = url.parse(compoxureUrl + compoxureKey);
         var cacheString = JSON.stringify(cacheData);
         var headers = {
-          'Content-Type': 'application/json',
-          'Content-Length': cacheString.length
+            'Content-Type': 'application/json',
+            'Content-Length': cacheString.length
         };
         var calledNext = false;
 
         var options = {
-          host: cacheUrl.hostname,
-          port: cacheUrl.port,
-          path: cacheUrl.path,
-          method: 'POST',
-          headers: headers
+            host: cacheUrl.hostname,
+            port: cacheUrl.port,
+            path: cacheUrl.path,
+            method: 'POST',
+            headers: headers
         };
 
         var req = http.request(options, function(res) {
-          res.setEncoding('utf-8');
-          var responseString = '';
-          res.on('data', function(data) {
-            responseString += data;
-          });
-          res.on('end', function() {
-            bosco.log(res.statusCode + ' ' + responseString);
-            if(!calledNext) {
-                calledNext = true;
-                return next();
-            }
-          });
+            res.setEncoding('utf-8');
+            var responseString = '';
+            res.on('data', function(data) {
+                responseString += data;
+            });
+            res.on('end', function() {
+                bosco.log(res.statusCode + ' ' + responseString);
+                if(!calledNext) {
+                    calledNext = true;
+                    return next();
+                }
+            });
         });
 
         req.on('error', function(err) {
-          // TODO: handle error.
-          bosco.error('There was an error posting fragment to Compoxure');
-          if(!calledNext) {
-            calledNext = true;
-            return next(err);
-          }
+            // TODO: handle error.
+            bosco.error('There was an error posting fragment to Compoxure');
+            if(!calledNext) {
+                calledNext = true;
+                return next(err);
+            }
         });
 
         bosco.log('Priming compoxure cache at url: ' + compoxureUrl + compoxureKey);
@@ -169,21 +169,21 @@ function cmd(bosco, args, callback) {
     }
 
     var confirm = function(message, next) {
-         bosco.prompt.start();
-         bosco.prompt.get({
+        bosco.prompt.start();
+        bosco.prompt.get({
             properties: {
-              confirm: {
-                description: message
-              }
+                confirm: {
+                    description: message
+                }
             }
-          }, function (err, result) {
+        }, function (err, result) {
             if(!result) return next({message:'Did not confirm'});
             if(result.confirm == 'Y' || result.confirm == 'y') {
                 next(null, true);
             } else {
                 next(null, false);
             }
-         });
+        });
     }
 
     var go = function(next) {

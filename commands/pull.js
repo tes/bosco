@@ -27,18 +27,18 @@ function cmd(bosco, args, next) {
             total = repos.length;
 
         var bar = progressbar ? new bosco.progress('Doing git pull [:bar] :percent :etas', {
-              complete: green,
-              incomplete: red,
+            complete: green,
+            incomplete: red,
             width: 50,
             total: total
         }) : null;
 
         async.mapLimit(repos, bosco.concurrency.network, function repoStash(repo, repoCb) {
 
-          if(!repo.match(repoRegex)) return repoCb();
+            if(!repo.match(repoRegex)) return repoCb();
 
-          var repoPath = bosco.getRepoPath(repo);
-          pull(bosco, progressbar, bar, repoPath, repoCb);
+            var repoPath = bosco.getRepoPath(repo);
+            pull(bosco, progressbar, bar, repoPath, repoCb);
 
         }, function() {
             cb();
@@ -54,16 +54,16 @@ function cmd(bosco, args, next) {
             total = repos.length;
 
         var bar = progressbar ? new bosco.progress('Doing docker pull [:bar] :percent :etas', {
-              complete: green,
-              incomplete: red,
+            complete: green,
+            incomplete: red,
             width: 50,
             total: total
         }) : null;
 
         async.mapSeries(repos, function doDockerPull(repo, repoCb) {
-          if(!repo.match(repoRegex)) return repoCb();
-          var repoPath = bosco.getRepoPath(repo);
-          dockerPull(bosco, progressbar, bar, repoPath, repo, repoCb);
+            if(!repo.match(repoRegex)) return repoCb();
+            var repoPath = bosco.getRepoPath(repo);
+            dockerPull(bosco, progressbar, bar, repoPath, repo, repoCb);
         }, function() {
             cb();
         });
@@ -80,7 +80,7 @@ function cmd(bosco, args, next) {
         DockerRunner.init(bosco, cb);
     }
 
-     var disconnectRunners = function(cb) {
+    var disconnectRunners = function(cb) {
         DockerRunner.disconnect(cb);
     }
 
@@ -105,7 +105,7 @@ function pull(bosco, progressbar, bar, repoPath, next) {
     }
 
     exec('git pull --rebase', {
-      cwd: repoPath
+        cwd: repoPath
     }, function(err, stdout, stderr) {
         if(progressbar) bar.tick();
         if(err) {

@@ -3,8 +3,8 @@ var _ = require('lodash');
 var github = require('octonode');
 
 module.exports = {
-  getRunList: getRunList,
-  getServiceConfigFromGithub: getServiceConfigFromGithub
+    getRunList: getRunList,
+    getServiceConfigFromGithub: getServiceConfigFromGithub
 }
 
 function getRunConfig(bosco, repo, repoRegex, watchRegex) {
@@ -61,7 +61,7 @@ function getRunList(bosco, repos, repoRegex, watchRegex, repoTag, next) {
     var addDependencies = function(dependent, dependsOn) {
         dependsOn.forEach(function(dependency) {
             if(!_.contains(repoList, dependency)) {
-              repoList.push(dependency);
+                repoList.push(dependency);
             }
             revDepTree[dependency] = revDepTree[dependency] || [];
             revDepTree[dependency].push(dependent);
@@ -88,9 +88,9 @@ function getRunList(bosco, repos, repoRegex, watchRegex, repoTag, next) {
                 addDependencies(currentRepo, svcConfig.service.dependsOn);
             }
         } else {
-          // This is likely to be a remote infra dependency, so lets create a dummy one.
-          svcConfig = getRunConfig(bosco, currentRepo, null, '$^');
-          runList.push(svcConfig);
+            // This is likely to be a remote infra dependency, so lets create a dummy one.
+            svcConfig = getRunConfig(bosco, currentRepo, null, '$^');
+            runList.push(svcConfig);
         }
     }
 
@@ -116,19 +116,19 @@ function getServiceConfigFromGithub(bosco, repo, next) {
     var cachedConfig = bosco.config.get(configKey);
 
     if(cachedConfig) {
-      next(null, cachedConfig);
+        next(null, cachedConfig);
     } else {
-      var ghrepo = client.repo(githubRepo);
-      bosco.log('Retrieving ' + 'bosco-service.json'.green + ' config from github @ ' + githubRepo.cyan);
-      ghrepo.contents('bosco-service.json', function(err, contents) {
-          if(err) { return next(err); }
-          var content = new Buffer(contents.content, 'base64');
-          var config = JSON.parse(content.toString());
-          bosco.config.set(configKey, config);
-          bosco.config.save(function() {
-              next(null, config);
-          });
-      });
+        var ghrepo = client.repo(githubRepo);
+        bosco.log('Retrieving ' + 'bosco-service.json'.green + ' config from github @ ' + githubRepo.cyan);
+        ghrepo.contents('bosco-service.json', function(err, contents) {
+            if(err) { return next(err); }
+            var content = new Buffer(contents.content, 'base64');
+            var config = JSON.parse(content.toString());
+            bosco.config.set(configKey, config);
+            bosco.config.save(function() {
+                next(null, config);
+            });
+        });
     }
 
 }

@@ -34,10 +34,10 @@ function cmd(bosco, args, next) {
 
         async.mapLimit(repos, bosco.concurrency.cpu, function repoStash(repo, repoCb) {
 
-          if(!repo.match(repoRegex)) return repoCb();
+            if(!repo.match(repoRegex)) return repoCb();
 
-          var repoPath = bosco.getRepoPath(repo);
-          install(bosco, progressbar, bar, repoPath, repoCb);
+            var repoPath = bosco.getRepoPath(repo);
+            install(bosco, progressbar, bar, repoPath, repoCb);
 
         }, function() {
             cb();
@@ -67,7 +67,7 @@ function install(bosco, progressbar, bar, repoPath, next) {
     npmCommand += ' install';
 
     exec(npmCommand, {
-      cwd: repoPath
+        cwd: repoPath
     }, function(err, stdout, stderr) {
         if(progressbar) bar.tick();
         if(err) {

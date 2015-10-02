@@ -18,9 +18,9 @@ function cmd(bosco) {
 
     var changedRepos = function(cb) {
         async.mapLimit(repos, bosco.concurrency.network, function repoStash(repo, repoCb) {
-          var repoPath = bosco.getRepoPath(repo);
-          if(!repo.match(repoRegex)) return repoCb();
-          upstream(bosco, repoPath, repoCb);
+            var repoPath = bosco.getRepoPath(repo);
+            if(!repo.match(repoRegex)) return repoCb();
+            upstream(bosco, repoPath, repoCb);
         }, function() {
             cb();
         });
@@ -37,7 +37,7 @@ function cmd(bosco) {
 function upstream(bosco, orgPath, next) {
 
     exec('git fetch; git log HEAD..origin/master --oneline', {
-      cwd: orgPath
+        cwd: orgPath
     }, function(err, stdout, stderr) {
         if(err) {
             bosco.error(stderr);

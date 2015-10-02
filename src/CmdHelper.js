@@ -42,14 +42,14 @@ function iterate(bosco, options, next) {
     if(!repos) return bosco.error('You are repo-less :( You need to initialise bosco first, try \'bosco clone\'.');
 
     async.mapLimit(repos, bosco.options.cpus, function(repo, repoCb) {
-      if(!repo.match(repoRegex)) return repoCb();
+        if(!repo.match(repoRegex)) return repoCb();
 
-      var repoPath = bosco.getRepoPath(repo);
+        var repoPath = bosco.getRepoPath(repo);
 
-      options.guardFn(bosco, repoPath, options, function(err) {
-        if(err) return repoCb(err);
-        execute(bosco, options.cmd, options.args, repoPath, options, repoCb);
-      });
+        options.guardFn(bosco, repoPath, options, function(err) {
+            if(err) return repoCb(err);
+            execute(bosco, options.cmd, options.args, repoPath, options, repoCb);
+        });
 
     }, function(err) {
         if(options.dieOnError) return next(err);

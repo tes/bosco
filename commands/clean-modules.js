@@ -34,10 +34,10 @@ function cmd(bosco, args, next) {
 
         async.mapLimit(repos, bosco.concurrency.network, function repoStash(repo, repoCb) {
 
-          if(!repo.match(repoRegex)) return repoCb();
+            if(!repo.match(repoRegex)) return repoCb();
 
-          var repoPath = bosco.getRepoPath(repo);
-          clean(bosco, progressbar, bar, repoPath, repoCb);
+            var repoPath = bosco.getRepoPath(repo);
+            clean(bosco, progressbar, bar, repoPath, repoCb);
 
         }, function() {
             cb();
@@ -61,7 +61,7 @@ function clean(bosco, progressbar, bar, repoPath, next) {
     }
 
     exec('rm -rf ./node_modules', {
-      cwd: repoPath
+        cwd: repoPath
     }, function(err, stdout, stderr) {
         if(progressbar) bar.tick();
         if(err) {

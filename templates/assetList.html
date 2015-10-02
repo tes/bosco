@@ -2,71 +2,71 @@
 <link href='//fonts.googleapis.com/css?family=Open+Sans' rel='stylesheet' type='text/css'>
 <style>
 html {
-    margin: 10px;
-    font-family: 'Open Sans', cursive;
-    color: #006633;
+  margin: 10px;
+  font-family: 'Open Sans', cursive;
+  color: #006633;
 }
 h1
 {
-    font-size: 28px;
+  font-size: 28px;
 }
 h2
 {
-    font-size: 22px;
-    color: #660033;
+  font-size: 22px;
+  color: #660033;
 }
 ul
 {
-    list-style-type: none;
-    padding-left: 5px;
+  list-style-type: none;
+  padding-left: 5px;
 }
 .assets
 {
-    width: 90%;
-    margin: 10px;
-    font-family: arial;
-    font-size: 14px;
+  width: 90%;
+  margin: 10px;
+  font-family: arial;
+  font-size: 14px;
 }
 .asset {
-    width: 50%;
+  width: 50%;
 }
 .tag {
-    width: 20%;
-    color: #232323;
+  width: 20%;
+  color: #232323;
 }
 .path {
-    width: 30%;
-    color: #232323;
+  width: 30%;
+  color: #232323;
 }
 </style>
 <h1>Bosco couldn't find that, how about you try one of these assets or take a look at the list of <a class="" href="/repos">repos</a>?</h1>
 <div class='col'>
-    {{#each services}}
-      <a href='#{{serviceName}}'>{{serviceName}}</a>&nbsp;|&nbsp;
-    {{/each}}
+  {{#each services}}
+    <a href='#{{serviceName}}'>{{serviceName}}</a>&nbsp;|&nbsp;
+  {{/each}}
 </div>
 <div class='col'>
-    {{#each services}}
-      <h1 id='{{serviceName}}'>{{serviceName}}</h1>
-      {{#each bundles}}
-        <h2>{{bundle}}</h2>
-        <table class='assets'>
+  {{#each services}}
+    <h1 id='{{serviceName}}'>{{serviceName}}</h1>
+    {{#each bundles}}
+      <h2>{{bundle}}</h2>
+      <table class='assets'>
+        <tr>
+          <td>Asset</td>
+          <td>Tag</td>
+          <td>Path</td>
+        </tr>
+        {{#each assets}}
           <tr>
-            <td>Asset</td>
-            <td>Tag</td>
-            <td>Path</td>
+            <td class='asset'><a href="{{url}}">{{url}}</a></td>
+            <td class='tag'>{{tag}}</td>
+            <td class='path'>{{relativePath}}</td>
           </tr>
-          {{#each assets}}
-            <tr>
-              <td class='asset'><a href="{{url}}">{{url}}</a></td>
-              <td class='tag'>{{tag}}</td>
-              <td class='path'>{{relativePath}}</td>
-            </tr>
-          {{/each}}
-          </table>
-      {{/each}}
+        {{/each}}
+        </table>
     {{/each}}
+  {{/each}}
 </div>
 <div style='clear: both;'>
-    Created by: {{user}} on {{date}}
+  Created by: {{user}} on {{date}}
 </div>

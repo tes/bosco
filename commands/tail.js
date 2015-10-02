@@ -19,36 +19,36 @@ function cmd(bosco, args) {
     pm2.connect(function(err) {
 
         if (err) {
-          bosco.error(err);
-          return;
+            bosco.error(err);
+            return;
         }
 
         var describeRunningServices = function(running) {
             async.map(running, function(repo, next) {
                 if(repo.match(repoRegex)) {
-          pm2.describe(repo, function(err, list) {
-            if (err) {
-              bosco.error(err);
-              return;
-            }
-            var file = list[0].pm2_env.pm_out_log_path;
-            if (args[0] == 'err') {
-              file = list[0].pm2_env.pm_err_log_path;
-            }
-            bosco.log('Tailing ' + file);
-            var tail = new Tail(file);
+                    pm2.describe(repo, function(err, list) {
+                        if (err) {
+                            bosco.error(err);
+                            return;
+                        }
+                        var file = list[0].pm2_env.pm_out_log_path;
+                        if (args[0] == 'err') {
+                            file = list[0].pm2_env.pm_err_log_path;
+                        }
+                        bosco.log('Tailing ' + file);
+                        var tail = new Tail(file);
 
-            tail.on('line', function(data) {
-              console.log(repo + ' ' + data);
-            });
+                        tail.on('line', function(data) {
+                            console.log(repo + ' ' + data);
+                        });
 
-            tail.on('error', function(error) {
-              bosco.error(error);
-            });
-          });
-        } else {
-          next();
-        }
+                        tail.on('error', function(error) {
+                            bosco.error(error);
+                        });
+                    });
+                } else {
+                    next();
+                }
             }, function(err) {
                 if (err) {
                     bosco.error(err);

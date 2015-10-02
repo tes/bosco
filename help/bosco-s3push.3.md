@@ -34,13 +34,13 @@ For this command to work you must have configured the AWS configuration within t
 
 The configuration needs to contain the following:
 
-      "aws": {
+    "aws": {
         "key": "XXX-AWS-KEY-XXX",
         "secret": "XXX-AWS-SECRET-XXX",
         "bucket": "bucket-name",
         "region": "region-name",
         "cdn": "https://your-cloudfront.cloudfront.net"
-      }
+    }
 
 ## SEE ALSO
 

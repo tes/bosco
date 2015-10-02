@@ -143,11 +143,11 @@ e.g.
     "service": {
         "name": "app-resource",
         "dependsOn": [
-          "infra-nginx-gateway",
-          "service-page-composer",
-          "service-site-assets",
-          "service-resource-reviews",
-          "service-refdata-api"
+            "infra-nginx-gateway",
+            "service-page-composer",
+            "service-site-assets",
+            "service-resource-reviews",
+            "service-refdata-api"
         ]
     },
     "tags": ["upload", "resource"],
@@ -190,7 +190,7 @@ If you add a bosco-service.json at the base of your docker projects, you can tak
                     "6379/tcp": [{
                         "HostIp": "0.0.0.0",
                         "HostPort": "6379"
-                     }]
+                    }]
                 }
             }
         }
@@ -209,9 +209,9 @@ You can define a dependency:
     "service": {
         "name": "app-resource",
         "dependsOn": [
-          "infra-nginx-gateway",
-          "service-page-composer",
-          "infra-redis"
+            "infra-nginx-gateway",
+            "service-page-composer",
+            "infra-redis"
         ]
     }
 }
@@ -258,7 +258,7 @@ For example, a project that uses Gulp to create assets as well as watch for chan
             ]
         },
         "css": {
-             "upload": [
+            "upload": [
                 "css/tsl-uploader.css"
             ]
         },
@@ -326,11 +326,11 @@ This command requires that you have configured your AWS details for S3.  Best to
 ```json
 {
     "aws":{
-      "key": "XXXXXX",
-          "secret": "XXXXXX",
-          "bucket": "bucket-name",
-          "region": "eu-west-1",
-          "cdn":"https://dudu89lpwit3y.cloudfront.net"
+        "key": "XXXXXX",
+        "secret": "XXXXXX",
+        "bucket": "bucket-name",
+        "region": "eu-west-1",
+        "cdn":"https://dudu89lpwit3y.cloudfront.net"
     }
 }
 

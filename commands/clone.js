@@ -134,27 +134,27 @@ function fetch(bosco, team, repos, repoRegex, args, next) {
             total = repos.length,
             pullFlag = false;
 
-          var bar = progressbar ? new bosco.progress('Getting repositories [:bar] :percent :etas', {
+        var bar = progressbar ? new bosco.progress('Getting repositories [:bar] :percent :etas', {
             complete: green,
-              incomplete: red,
+            incomplete: red,
             width: 50,
             total: total
         }) : null;
 
         async.mapLimit(repos, bosco.concurrency.network, function repoGet(repo, repoCb) {
 
-          if(!repo.match(repoRegex)) return repoCb();
+            if(!repo.match(repoRegex)) return repoCb();
 
-          var repoPath = bosco.getRepoPath(repo);
-          var repoUrl = bosco.getRepoUrl(repo);
+            var repoPath = bosco.getRepoPath(repo);
+            var repoUrl = bosco.getRepoUrl(repo);
 
-          if(bosco.exists(repoPath)) {
-              pullFlag = true;
-              if(progressbar) bar.tick();
-              repoCb();
-          } else {
-              clone(bosco,  progressbar, bar, repoUrl, orgPath, repoCb);
-          }
+            if(bosco.exists(repoPath)) {
+                pullFlag = true;
+                if(progressbar) bar.tick();
+                repoCb();
+            } else {
+                clone(bosco,  progressbar, bar, repoUrl, orgPath, repoCb);
+            }
         }, function() {
             if(pullFlag) {
                 bosco.warn('Some repositories already existed, to pull changes use \'bosco pull\'');
@@ -208,7 +208,7 @@ function checkCanDelete(bosco, repoPath, next) {
 function clone(bosco, progressbar, bar, repoUrl, orgPath, next) {
     if(!progressbar) bosco.log('Cloning ' + repoUrl.blue + ' into ' + orgPath.blue);
     exec('git clone ' + repoUrl, {
-      cwd: orgPath
+        cwd: orgPath
     }, function(err, stdout, stderr) {
         if(progressbar) bar.tick();
         if(err) {

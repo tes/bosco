@@ -18,8 +18,8 @@ Runner.prototype.init = function(bosco, next) {
             port: dockerUrl.port
         };
 
-       var dockerCertPath = process.env.DOCKER_CERT_PATH;
-       if(dockerCertPath){
+        var dockerCertPath = process.env.DOCKER_CERT_PATH;
+        if(dockerCertPath){
             dockerOpts = _.extend(dockerOpts, {
                 protocol: 'https',
                 ca: readCert(dockerCertPath, 'ca.pem'),
@@ -126,9 +126,9 @@ Runner.prototype.matchWithoutVersion = function(a, b) {
 }
 
 Runner.prototype.containerNameMatches = function(container, name) {
-  return _.any(container.Names, function(val) {
-    return val == '/' + name;
-  });
+    return _.any(container.Names, function(val) {
+        return val == '/' + name;
+    });
 }
 
 module.exports = new Runner();

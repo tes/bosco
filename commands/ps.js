@@ -59,10 +59,10 @@ function cmd(bosco) {
 
         list.forEach(function(item) {
             table.push([
-                       _.map(item.Names, function(item) { return item.replace('/',''); }).join(', '),
-                       item.Status,
-                       item.Image
-                    ]);
+                _.map(item.Names, function(item) { return item.replace('/',''); }).join(', '),
+                item.Status,
+                item.Image
+            ]);
         });
 
         console.log(table.toString());

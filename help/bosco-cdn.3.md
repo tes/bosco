@@ -49,13 +49,13 @@ For a project that has it's own build step, you can have Bosco wrap around it:
         },
         "assets": {
             "basePath":"/dist",
-             "js": {
+            "js": {
                 "upload": [
                     "js/tsl-uploader.js"
                 ]
             },
             "css": {
-                 "upload": [
+                "upload": [
                     "css/tsl-uploader.css"
                 ]
             },

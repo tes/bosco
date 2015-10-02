@@ -34,10 +34,10 @@ function cmd(bosco, args) {
 
         async.mapSeries(repos, function repoStash(repo, repoCb) {
 
-          if(!repo.match(repoRegex)) return repoCb();
+            if(!repo.match(repoRegex)) return repoCb();
 
-          var repoPath = bosco.getRepoPath(repo);
-          stash(bosco, args, progressbar, bar, repoPath, repoCb);
+            var repoPath = bosco.getRepoPath(repo);
+            stash(bosco, args, progressbar, bar, repoPath, repoCb);
 
         }, function() {
             cb();
@@ -59,18 +59,18 @@ function stash(bosco, args, progressbar, bar, orgPath, next) {
         return next();
     }
 
-  var cmd = 'git stash ' + args.join(' ');
+    var cmd = 'git stash ' + args.join(' ');
 
-  var ignoreMissingStashCommands = ['pop', 'apply'];
-  var ignoreMissingStash = (ignoreMissingStashCommands.indexOf(args[0]) !== -1);
+    var ignoreMissingStashCommands = ['pop', 'apply'];
+    var ignoreMissingStash = (ignoreMissingStashCommands.indexOf(args[0]) !== -1);
     exec(cmd, {
-      cwd: orgPath
+        cwd: orgPath
     }, function(err, stdout, stderr) {
         if(progressbar) bar.tick();
 
-    if (err && ignoreMissingStash && err.code == 1) {
-      err = null;
-    }
+        if (err && ignoreMissingStash && err.code == 1) {
+            err = null;
+        }
         if(err) {
             if(progressbar) console.log('');
             bosco.error(orgPath.blue + ' >> ' + stderr);

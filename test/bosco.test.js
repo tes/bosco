@@ -29,29 +29,29 @@ describe('bosco', function() {
         });
 
         function getConfigDir(bosco, platform, env) {
-          var oldPlatform = process.platform;
-          var oldEnv = process.env;
-          try {
-            Object.defineProperty(process, 'platform', {
-              value: platform
-            });
-            process.env = env;
-            return bosco.findConfigFolder();
-          } finally {
-            Object.defineProperty(process, 'platform', {
-              value: oldPlatform
-            });
-            process.env = oldEnv;
-          }
+            var oldPlatform = process.platform;
+            var oldEnv = process.env;
+            try {
+                Object.defineProperty(process, 'platform', {
+                    value: platform
+                });
+                process.env = env;
+                return bosco.findConfigFolder();
+            } finally {
+                Object.defineProperty(process, 'platform', {
+                    value: oldPlatform
+                });
+                process.env = oldEnv;
+            }
         };
 
         function getXdgConfigEnv(name) {
-          return {
-            HOME: '/my/home',
-            XDG_CONFIG_HOME: '/my/' + name + '/config/home',
-            XDG_DATA_HOME: '/my/' + name + '/data/home',
-            XDG_CACHE_HOME: '/my/' + name + '/cache/home'
-          };
+            return {
+                HOME: '/my/home',
+                XDG_CONFIG_HOME: '/my/' + name + '/config/home',
+                XDG_DATA_HOME: '/my/' + name + '/data/home',
+                XDG_CACHE_HOME: '/my/' + name + '/cache/home'
+            };
         }
 
         it('should use XDG for config if available on any platform', function() {

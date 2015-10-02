@@ -57,7 +57,7 @@ function cmd(bosco, args, cb) {
         }, next);
     }
 
-     var disconnectRunners = function(next) {
+    var disconnectRunners = function(next) {
         var runners = [NodeRunner, DockerRunner];
         async.map(runners, function loadRunner(runner, cb) {
             runner.disconnect(cb);

@@ -31,13 +31,13 @@ function cmd(bosco, args) {
 
         async.mapSeries(repos, function repoPush(repo, repoCb) {
 
-          var repoPath = bosco.getRepoPath(repo);
-          if(repo.match(repoRegex)) {
-               bosco.log('Running \'git commit -am\' on ' + repo.blue);
-             commit(bosco, message, repoPath, repoCb);
-          } else {
-              repoCb();
-          }
+            var repoPath = bosco.getRepoPath(repo);
+            if(repo.match(repoRegex)) {
+                bosco.log('Running \'git commit -am\' on ' + repo.blue);
+                commit(bosco, message, repoPath, repoCb);
+            } else {
+                repoCb();
+            }
 
         }, function() {
             cb();
@@ -54,22 +54,22 @@ function cmd(bosco, args) {
 
 
 function confirm(bosco, message, next) {
-     bosco.prompt.start();
-       bosco.prompt.get({
+    bosco.prompt.start();
+    bosco.prompt.get({
         properties: {
-          confirm: {
-            description: message
-          }
+            confirm: {
+                description: message
+            }
         }
-      }, function (err, result) {
-          if(!result) return next({message:'Did not confirm'});
+    }, function (err, result) {
+        if(!result) return next({message:'Did not confirm'});
 
-          if(result.confirm == 'Y' || result.confirm == 'y') {
-               next(null, true);
-           } else {
-               next(null, false);
-           }
-       });
+        if(result.confirm == 'Y' || result.confirm == 'y') {
+            next(null, true);
+        } else {
+            next(null, false);
+        }
+    });
 }
 
 
@@ -91,7 +91,7 @@ function commit(bosco, commitMsg, orgPath, next) {
         var gitCmd = 'git commit -am \'' + commitMsg +'\'';
 
             exec(gitCmd, {
-              cwd: orgPath
+                cwd: orgPath
             }, function(err, stdout) {
                 if(err) {
                     bosco.warn(orgPath.blue + ' >> No changes to commit.');

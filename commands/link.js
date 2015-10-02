@@ -43,7 +43,7 @@ function cmd(bosco, args, next) {
 function execCmd(bosco, cmd, repoPath, next) {
     bosco.log(repoPath.blue + ': Running ' + cmd.green + ' ...');
     exec(cmd, {
-      cwd: repoPath
+        cwd: repoPath
     }, function(err, stdout) {
         next(err, stdout);
     });

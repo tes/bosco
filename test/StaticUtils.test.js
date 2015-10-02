@@ -9,9 +9,9 @@ var boscoMock = require('./boscoMock');
 var StaticUtils = require('../src/StaticUtils');
 
 var arrayContains = function(arr, contains) {
-  contains.forEach(function(contain) {
-    expect(arr).to.contain(contain);
-  });
+    contains.forEach(function(contain) {
+        expect(arr).to.contain(contain);
+    });
 }
 
 describe('Bosco Static Asset Handling', function() {
@@ -39,11 +39,11 @@ describe('Bosco Static Asset Handling', function() {
 
             var assetKeys = _.pluck(assets,'assetKey');
             arrayContains(assetKeys, [
-              'project1/local/html/bottom.js.html',
-              'project1/local/html/top.js.html',
-              'project1/local/js/bottom1.js',
-              'project1/local/js/jquery-1.11.0-min.js',
-              'project1/local/js/top1.js'
+                'project1/local/html/bottom.js.html',
+                'project1/local/html/top.js.html',
+                'project1/local/js/bottom1.js',
+                'project1/local/js/jquery-1.11.0-min.js',
+                'project1/local/js/top1.js'
             ]);
 
             done();
@@ -108,25 +108,25 @@ describe('Bosco Static Asset Handling', function() {
 
             var assetKeys = _.pluck(assets,'assetKey');
             arrayContains(assetKeys, [
-              'project1/local/html/bottom.js.html',
-              'project1/local/html/top.js.html',
-              'project1/local/js/bottom.js.map',
-              'project1/local/js/bottom.js',
-              'project1/local/js/top.js.map',
-              'project1/local/js/top.js'
+                'project1/local/html/bottom.js.html',
+                'project1/local/html/top.js.html',
+                'project1/local/js/bottom.js.map',
+                'project1/local/js/bottom.js',
+                'project1/local/js/top.js.map',
+                'project1/local/js/top.js'
             ]);
 
             arrayContains(assetKeys, [
-              'project2/local/html/bottom.js.html',
-              'project2/local/html/top.js.html',
-              'project2/local/js/bottom.js.map',
-              'project2/local/js/bottom.js',
-              'project2/local/js/top.js.map',
-              'project2/local/js/top.js',
-              'project2/local/img/bab.jpg',
-              'project2/local/swf/flash.swf',
-              'project2/local/html/html1.html',
-              'project2/local/html/html2.html'
+                'project2/local/html/bottom.js.html',
+                'project2/local/html/top.js.html',
+                'project2/local/js/bottom.js.map',
+                'project2/local/js/bottom.js',
+                'project2/local/js/top.js.map',
+                'project2/local/js/top.js',
+                'project2/local/img/bab.jpg',
+                'project2/local/swf/flash.swf',
+                'project2/local/html/html1.html',
+                'project2/local/html/html2.html'
             ]);
 
             done();
@@ -218,8 +218,8 @@ describe('Bosco Static Asset Handling', function() {
 
             var assetKeys = _.pluck(assets,'assetKey');
             arrayContains(assetKeys, [
-              'project1/local/js/top.js.map',
-              'project2/local/js/top.js.map'
+                'project1/local/js/top.js.map',
+                'project2/local/js/top.js.map'
             ]);
             done();
 
@@ -275,11 +275,11 @@ describe('Bosco Static Asset Handling - Custom Building', function() {
 
             var assetKeys = _.pluck(assets,'assetKey');
             arrayContains(assetKeys, [
-              'project3/local/html/compiled.js.html',
-              'project3/local/html/compiled.css.html',
-              'project3/local/js/compiled.js.map',
-              'project3/local/js/compiled.js',
-              'project3/local/css/compiled.css'
+                'project3/local/html/compiled.js.html',
+                'project3/local/html/compiled.css.html',
+                'project3/local/js/compiled.js.map',
+                'project3/local/js/compiled.js',
+                'project3/local/css/compiled.css'
             ]);
 
             done();
@@ -325,11 +325,11 @@ describe('Bosco Static Asset Handling - Custom Building', function() {
 
             var assetKeys = _.pluck(assets,'assetKey');
             arrayContains(assetKeys, [
-              'project3/local/html/compiled.js.html',
-              'project3/local/html/compiled.css.html',
-              'project3/local/js/compiled.js.map',
-              'project3/local/js/compiled.js',
-              'project3/local/css/compiled.css'
+                'project3/local/html/compiled.js.html',
+                'project3/local/html/compiled.css.html',
+                'project3/local/js/compiled.js.map',
+                'project3/local/js/compiled.js',
+                'project3/local/css/compiled.css'
             ]);
             done();
 
@@ -376,10 +376,10 @@ describe('Bosco Static Asset Handling - Custom Building', function() {
 
             var assetKeys = _.pluck(assets,'assetKey');
             arrayContains(assetKeys, [
-              'project3/local/html/compiled.js.html',
-              'project3/local/html/compiled.css.html',
-              'project3/local/js/compiled.js',
-              'project3/local/css/compiled.css'
+                'project3/local/html/compiled.js.html',
+                'project3/local/html/compiled.css.html',
+                'project3/local/js/compiled.js',
+                'project3/local/css/compiled.css'
             ]);
             done();
 

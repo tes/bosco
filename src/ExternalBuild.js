@@ -22,23 +22,23 @@ module.exports = function(bosco) {
             if (realError) {
                 log = 'Failed'.red + ' build command for ' + service.name.blue;
                 if (err.code != null) {
-                  log += ' exited with code ' + err.code;
-                  if (err.signal != null) log += ' and signal ' + err.signal;
+                    log += ' exited with code ' + err.code;
+                    if (err.signal != null) log += ' and signal ' + err.signal;
                 }
 
                 if (stderr || stdout) log += ':';
 
                 bosco.error(log);
             } else {
-              log = 'Finished build command for ' + service.name.blue;
-              if (stderr || stdout) log += ':';
+                log = 'Finished build command for ' + service.name.blue;
+                if (stderr || stdout) log += ':';
 
-              bosco.log(log);
+                bosco.log(log);
             }
 
             if (err || stderr) {
-              if (stdout) bosco.console.log(stdout);
-              if (stderr) bosco.error(stderr);
+                if (stdout) bosco.console.log(stdout);
+                if (stderr) bosco.error(stderr);
             }
 
             next(realError);
@@ -111,7 +111,7 @@ module.exports = function(bosco) {
             }
 
             if (calledReady) {
-              bosco.error('Watch'.red + ' command for ' + service.name.blue + ' died with code ' + code);
+                bosco.error('Watch'.red + ' command for ' + service.name.blue + ' died with code ' + code);
             }
         });
 

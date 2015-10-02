@@ -42,43 +42,43 @@ function cmd(bosco, args) {
     var startServer = function(staticAssets, staticRepos, serverPort) {
 
         var getAsset = function(url) {
-          url = url.replace('/', '');
-          return _.find(staticAssets, 'assetKey', url);
+            url = url.replace('/', '');
+            return _.find(staticAssets, 'assetKey', url);
         }
 
         var server = http.createServer(function(request, response) {
-          if (request.method === 'OPTIONS') {
-            response.writeHead(200, {
-              'Access-Control-Allow-Origin': '*',
-              'Access-Control-Allow-Methods': 'POST, GET, PUT, DELETE, OPTIONS',
-              'Access-Control-Allow-Credentials': true,
-              'Access-Control-Max-Age': '86400', // 24 hours
-              'Access-Control-Allow-Headers': 'X-Requested-With, Access-Control-Allow-Origin, X-HTTP-Method-Override, Content-Type, Authorization, Accept'
-            });
-            return response.end();
-          } else {
-            var pathname = url.parse(request.url).pathname;
-            if (pathname === '/repos') {
-              response.writeHead(200, {'Content-Type': 'text/html'});
-              return response.end(staticRepos.formattedRepos);
+            if (request.method === 'OPTIONS') {
+                response.writeHead(200, {
+                    'Access-Control-Allow-Origin': '*',
+                    'Access-Control-Allow-Methods': 'POST, GET, PUT, DELETE, OPTIONS',
+                    'Access-Control-Allow-Credentials': true,
+                    'Access-Control-Max-Age': '86400', // 24 hours
+                    'Access-Control-Allow-Headers': 'X-Requested-With, Access-Control-Allow-Origin, X-HTTP-Method-Override, Content-Type, Authorization, Accept'
+                });
+                return response.end();
+            } else {
+                var pathname = url.parse(request.url).pathname;
+                if (pathname === '/repos') {
+                    response.writeHead(200, {'Content-Type': 'text/html'});
+                    return response.end(staticRepos.formattedRepos);
+                }
+
+                var asset = getAsset(pathname);
+                if (!asset) {
+                    response.writeHead(404, {'Content-Type': 'text/html'});
+                    return response.end(staticAssets.formattedAssets);
+                }
+
+                response.writeHead(200, {
+                    'Content-Type': asset.mimeType,
+                    'Cache-Control': 'no-cache, must-revalidate',
+                    'Pragma': 'no-cache',
+                    'Expires': 'Sat, 21 May 1952 00:00:00 GMT',
+                    'Access-Control-Allow-Origin' : '*'
+                });
+
+                response.end(asset.data || asset.content);
             }
-
-            var asset = getAsset(pathname);
-            if (!asset) {
-              response.writeHead(404, {'Content-Type': 'text/html'});
-              return response.end(staticAssets.formattedAssets);
-            }
-
-            response.writeHead(200, {
-              'Content-Type': asset.mimeType,
-              'Cache-Control': 'no-cache, must-revalidate',
-              'Pragma': 'no-cache',
-              'Expires': 'Sat, 21 May 1952 00:00:00 GMT',
-              'Access-Control-Allow-Origin' : '*'
-            });
-
-            response.end(asset.data || asset.content);
-          }
         });
 
         server.listen(serverPort);
@@ -88,88 +88,88 @@ function cmd(bosco, args) {
 
     var startMonitor = function(staticAssets) {
 
-      var watchSet = {}, reloading = {};
+        var watchSet = {}, reloading = {};
 
-      _.forEach(staticAssets, function(asset) {
-          if (asset.repo && !asset.repo.match(watchRegex)) return;
+        _.forEach(staticAssets, function(asset) {
+            if (asset.repo && !asset.repo.match(watchRegex)) return;
 
-          if (minify && asset.extname == '.manifest') {
-              asset.files.forEach(function(file) {
-                  if (file) watchSet[file.path] = asset.tag;
-              });
-              return;
-          }
-
-          if (asset.path) watchSet[asset.path] = asset.assetKey;
-      });
-
-      var filterFn = function(f, stat) {
-        return f.match(watchRegex) && stat.isDirectory() || watchSet[f];
-      }
-
-      var getIndexForKey = function(assetList, fileKey) {
-        var find = (_.isObject(assetList)) ? _.findKey : _.findIndex;
-
-        return find(assetList, 'assetKey', fileKey);
-      }
-
-      var reloadFile = function(fileKey) {
-          if (!fileKey) return;
-
-          if (!minify) {
-              var assetIndex = getIndexForKey(staticAssets, fileKey);
-              if(!assetIndex) {
-                bosco.error('Unable to locate asset with key: ' + fileKey);
+            if (minify && asset.extname == '.manifest') {
+                asset.files.forEach(function(file) {
+                    if (file) watchSet[file.path] = asset.tag;
+                });
                 return;
-              }
-              fs.readFile(staticAssets[assetIndex].path, function (err, data) {
-                  if (err) {
-                      bosco.log('Error reloading '+fileKey);
-                      bosco.log(err.toString());
-                      return;
-                  }
-                  staticAssets[assetIndex].data = data;
-                  staticAssets[assetIndex].content = data.toString();
-                  bosco.log('Reloaded ' + fileKey);
-                  reloading[fileKey] = false;
-              });
-              return;
-          }
+            }
 
-          bosco.log('Recompiling tag ' + fileKey.blue);
-          var options = {
-            repos: repos,
-            minify: minify,
-            buildNumber: 'local',
-            tagFilter: fileKey,
-            watchBuilds: false,
-            reloadOnly: true
-          }
-          bosco.staticUtils.getStaticAssets(options, function(err, updatedAssets) {
-              _.forEach(updatedAssets, function(value) {
-                  var index = getIndexForKey(staticAssets, value.assetKey);
-                  staticAssets[index] = value;
-              });
-              bosco.log('Reloaded minified assets for tag ' + fileKey.blue);
-              reloading[fileKey] = false;
-          });
-      }
-
-      watch.createMonitor(bosco.getOrgPath(), {filter: filterFn, ignoreDotFiles: true, ignoreUnreadableDir: true, ignoreDirectoryPattern: /node_modules|\.git|coverage/, interval: 1000}, function (monitor) {
-
-        bosco.log('Watching '+ _.keys(monitor.files).length + ' files ...');
-
-        monitor.on('changed', function (f) {
-
-          var fileKey = watchSet[f];
-
-          if(reloading[fileKey]) return;
-          reloading[fileKey] = true;
-          reloadFile(fileKey);
-
+            if (asset.path) watchSet[asset.path] = asset.assetKey;
         });
 
-      });
+        var filterFn = function(f, stat) {
+            return f.match(watchRegex) && stat.isDirectory() || watchSet[f];
+        }
+
+        var getIndexForKey = function(assetList, fileKey) {
+            var find = (_.isObject(assetList)) ? _.findKey : _.findIndex;
+
+            return find(assetList, 'assetKey', fileKey);
+        }
+
+        var reloadFile = function(fileKey) {
+            if (!fileKey) return;
+
+            if (!minify) {
+                var assetIndex = getIndexForKey(staticAssets, fileKey);
+                if(!assetIndex) {
+                    bosco.error('Unable to locate asset with key: ' + fileKey);
+                    return;
+                }
+                fs.readFile(staticAssets[assetIndex].path, function (err, data) {
+                    if (err) {
+                        bosco.log('Error reloading '+fileKey);
+                        bosco.log(err.toString());
+                        return;
+                    }
+                    staticAssets[assetIndex].data = data;
+                    staticAssets[assetIndex].content = data.toString();
+                    bosco.log('Reloaded ' + fileKey);
+                    reloading[fileKey] = false;
+                });
+                return;
+            }
+
+            bosco.log('Recompiling tag ' + fileKey.blue);
+            var options = {
+                repos: repos,
+                minify: minify,
+                buildNumber: 'local',
+                tagFilter: fileKey,
+                watchBuilds: false,
+                reloadOnly: true
+            }
+            bosco.staticUtils.getStaticAssets(options, function(err, updatedAssets) {
+                _.forEach(updatedAssets, function(value) {
+                    var index = getIndexForKey(staticAssets, value.assetKey);
+                    staticAssets[index] = value;
+                });
+                bosco.log('Reloaded minified assets for tag ' + fileKey.blue);
+                reloading[fileKey] = false;
+            });
+        }
+
+        watch.createMonitor(bosco.getOrgPath(), {filter: filterFn, ignoreDotFiles: true, ignoreUnreadableDir: true, ignoreDirectoryPattern: /node_modules|\.git|coverage/, interval: 1000}, function (monitor) {
+
+            bosco.log('Watching '+ _.keys(monitor.files).length + ' files ...');
+
+            monitor.on('changed', function (f) {
+
+                var fileKey = watchSet[f];
+
+                if(reloading[fileKey]) return;
+                reloading[fileKey] = true;
+                reloadFile(fileKey);
+
+            });
+
+        });
 
     }
 

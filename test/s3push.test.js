@@ -32,7 +32,7 @@ describe('s3push', function() {
     it('should fail when pushing to s3 errors', function(done) {
         var message = 'This is a test error message';
         function putBuffer(buffer, path, headers, next) {
-          next(new Error(message));
+            next(new Error(message));
         }
         var options = {
             repos: ['project3'],
@@ -88,12 +88,12 @@ describe('s3push', function() {
         var message = 'This is a test error message';
         var s3Data = [];
         function putBuffer(buffer, path, headers, next) {
-          zlib.gunzip(buffer, function(err, buf) {
-              if (err) return next(err);
+            zlib.gunzip(buffer, function(err, buf) {
+                if (err) return next(err);
 
-              s3Data.push({path: path, content: buf.toString()});
-              next(null, {statusCode: 200});
-          });
+                s3Data.push({path: path, content: buf.toString()});
+                next(null, {statusCode: 200});
+            });
         }
         var options = {
             repos: ['project3'],

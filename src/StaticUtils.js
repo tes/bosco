@@ -40,7 +40,7 @@ module.exports = function(bosco) {
                 var staticAssets = _.flatten(assetList);
 
                 if (!options.minify) {
-                  return createAssetHtmlFiles(staticAssets, next);
+                    return createAssetHtmlFiles(staticAssets, next);
                 }
 
                 // Now go and minify

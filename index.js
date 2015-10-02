@@ -243,8 +243,8 @@ Bosco.prototype._cmd = function() {
         return module.cmd(self, args, function(err) {
             var code = 0;
             if (err) {
-              code = 1;
-              if (err.code > 0) code = err.code;
+                code = 1;
+                if (err.code > 0) code = err.code;
             }
             process.exit(code);
         });

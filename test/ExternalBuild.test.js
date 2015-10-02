@@ -21,15 +21,15 @@ describe('ExternalBuild', function() {
         };
 
         doBuild(service, {}, function(err) {
-          if (err) return done(err);
+            if (err) return done(err);
 
-          expect(localBosco).to.not.have.property('_log');
-          expect(localBosco).to.not.have.property('_error');
-          expect(localBosco).to.not.have.property('_warn');
-          expect(localBosco.console).to.not.have.property('_log');
-          expect(localBosco.console).to.not.have.property('_error');
-          expect(localBosco.console).to.not.have.property('_warn');
-          done();
+            expect(localBosco).to.not.have.property('_log');
+            expect(localBosco).to.not.have.property('_error');
+            expect(localBosco).to.not.have.property('_warn');
+            expect(localBosco.console).to.not.have.property('_log');
+            expect(localBosco.console).to.not.have.property('_error');
+            expect(localBosco.console).to.not.have.property('_warn');
+            done();
         });
     });
 
@@ -45,10 +45,10 @@ describe('ExternalBuild', function() {
         };
 
         doBuild(service, {}, function(err) {
-          if (err) return done(err);
+            if (err) return done(err);
 
-          expect(localBosco.console).to.not.have.property('_log');
-          done();
+            expect(localBosco.console).to.not.have.property('_log');
+            done();
         });
     });
 
@@ -126,8 +126,8 @@ describe('ExternalBuild', function() {
             build: {
                 command: ['bash', '-c', 'echo hi; sleep 1'],
                 watch: {
-                  ready: 'hi',
-                  checkDelay: 10
+                    ready: 'hi',
+                    checkDelay: 10
                 }
             }
         };
@@ -137,10 +137,10 @@ describe('ExternalBuild', function() {
         };
 
         doBuild(service, options, function(err) {
-          if (err) return done(err);
+            if (err) return done(err);
 
-          expect(localBosco.console).to.not.have.property('_log');
-          done();
+            expect(localBosco.console).to.not.have.property('_log');
+            done();
         });
     });
 
@@ -153,8 +153,8 @@ describe('ExternalBuild', function() {
             build: {
                 command: 'bash -c echo',
                 watch: {
-                  ready: 'hi',
-                  checkDelay: 10
+                    ready: 'hi',
+                    checkDelay: 10
                 }
             }
         };
@@ -183,7 +183,7 @@ describe('ExternalBuild', function() {
             build: {
                 command: 'sleep 1',
                 watch: {
-                  checkDelay: 1
+                    checkDelay: 1
                 }
             }
         };

@@ -19,13 +19,13 @@ For this command to work you need to have actually created a template project.  
 For example:
 
     [
-      {"source":"templates/default.json.hbs", "destination":"config/default.json"},
-      {"source":"templates/README.md.hbs", "destination":"README.md"},
-      {"source":"templates/package.json.hbs", "destination":"package.json"},
-      {"source":"templates/bosco-service.json.hbs", "destination":"bosco-service.json"},
-      {"source":"templates/Makefile.hbs", "destination":"Makefile"},
-      {"source":"templates/Dockerfile.hbs", "destination":"Dockerfile"},
-      {"source":"templates/example-service.conf.hbs", "destination":"docker/supervisor/{{serviceName}}.conf"}
+        {"source":"templates/default.json.hbs", "destination":"config/default.json"},
+        {"source":"templates/README.md.hbs", "destination":"README.md"},
+        {"source":"templates/package.json.hbs", "destination":"package.json"},
+        {"source":"templates/bosco-service.json.hbs", "destination":"bosco-service.json"},
+        {"source":"templates/Makefile.hbs", "destination":"Makefile"},
+        {"source":"templates/Dockerfile.hbs", "destination":"Dockerfile"},
+        {"source":"templates/example-service.conf.hbs", "destination":"docker/supervisor/{{serviceName}}.conf"}
     ]
 
 This file is just an array of files (stored in the template folder), that are processed when creating the service and any of the variables within replaced with the service name or port.

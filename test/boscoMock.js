@@ -11,35 +11,35 @@ function getLogger() {
 }
 
 module.exports = function boscoMock(extra) {
-  return _.assign({}, getLogger(), {
-      console: getLogger(),
-      repos: [],
-      options: {
-          environment:'test'
-      },
-      getRepos: function() {
-          return this.repos;
-      },
-      getRepoPath: function(repo) {
-          return __dirname + "/TestOrganisation/" + repo
-      },
-      getAssetCdnUrl: function (asset) {
-          return 'http://my-awesome-cdn.example.com/' + asset;
-      },
-      exists: function(file) {
-          return fs.existsSync(file);
-      },
-      concurrency: {
-        cpu: 4,
-        network: 10
-      },
-      config: {
-          get: function(key) {
-              if(key == 'css:clean') {
-                return {enabled: true};
-              }
-              return key;
-          }
-      }
-  }, extra);
+    return _.assign({}, getLogger(), {
+        console: getLogger(),
+        repos: [],
+        options: {
+            environment:'test'
+        },
+        getRepos: function() {
+            return this.repos;
+        },
+        getRepoPath: function(repo) {
+            return __dirname + "/TestOrganisation/" + repo
+        },
+        getAssetCdnUrl: function (asset) {
+            return 'http://my-awesome-cdn.example.com/' + asset;
+        },
+        exists: function(file) {
+            return fs.existsSync(file);
+        },
+        concurrency: {
+            cpu: 4,
+            network: 10
+        },
+        config: {
+            get: function(key) {
+                if(key == 'css:clean') {
+                    return {enabled: true};
+                }
+                return key;
+            }
+        }
+    }, extra);
 }
