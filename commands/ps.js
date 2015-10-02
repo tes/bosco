@@ -8,9 +8,9 @@ var nodeList = [];
 var dockerList = [];
 
 module.exports = {
-  name:'ps',
-  description:'Lists all running services',
-  cmd:cmd
+  name: 'ps',
+  description: 'Lists all running services',
+  cmd: cmd
 }
 
 function cmd(bosco) {

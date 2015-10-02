@@ -1,10 +1,10 @@
 var _ = require('lodash');
 
 module.exports = {
-  name:'s3delete',
-  description:'Deletes a published asset set from S3',
-  usage:'[-e <environmment>] <build>',
-  cmd:cmd
+  name: 's3delete',
+  description: 'Deletes a published asset set from S3',
+  usage: '[-e <environmment>] <build>',
+  cmd: cmd
 }
 
 function cmd(bosco, args) {
@@ -35,7 +35,7 @@ function cmd(bosco, args) {
         }
       }
     }, function(err, result) {
-      if (!result) return next({message:'Did not confirm'});
+      if (!result) return next({message: 'Did not confirm'});
       if (result.confirm == 'Y' || result.confirm == 'y') {
         next(null, true);
       } else {

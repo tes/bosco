@@ -4,10 +4,10 @@ var green = '\u001b[42m \u001b[0m';
 var red = '\u001b[41m \u001b[0m';
 
 module.exports = {
-  name:'stash',
-  description:'Stashes any local changes across all repos',
-  usage:'[-r <repoPattern>]',
-  cmd:cmd
+  name: 'stash',
+  description: 'Stashes any local changes across all repos',
+  usage: '[-r <repoPattern>]',
+  cmd: cmd
 }
 
 function cmd(bosco, args) {

@@ -7,8 +7,8 @@ module.exports = function(bosco) {
   var createKey = require('./AssetHelper')(bosco).createKey;
 
   function minify(staticAssets, next) {
-    var jsAssets = _.where(staticAssets, {type:'js'});
-    var cssAssets = _.where(staticAssets, {type:'css'});
+    var jsAssets = _.where(staticAssets, {type: 'js'});
+    var cssAssets = _.where(staticAssets, {type: 'css'});
     var remainingAssets = _.filter(staticAssets, function(item) {
       return item.type !== 'js' && item.type !== 'css';
     });

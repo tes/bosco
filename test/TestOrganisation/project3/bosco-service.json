@@ -1,18 +1,18 @@
 {
   "tags": [ "testy" , "besty" ],
   "service": {
-    "name":"project3"
+    "name": "project3"
   },
   "build": {
-    "command":"echo 'This is the pseudo output of a build command.'",
+    "command": "echo 'This is the pseudo output of a build command.'",
     "watch": {
-      "command":["bash", "-c", "echo \"COMPLETA\"; sleep 1"],
-      "ready":"COMPLETA",
-      "checkDelay":10
+      "command": ["bash", "-c", "echo \"COMPLETA\"; sleep 1"],
+      "ready": "COMPLETA",
+      "checkDelay": 10
     }
   },
   "assets": {
-    "basePath":"/dist",
+    "basePath": "/dist",
     "js": {
       "compiled": [
         "js/compiled.js"

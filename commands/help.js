@@ -2,10 +2,10 @@ var path = require('path');
 var spawn = require('child_process').spawn;
 
 module.exports = {
-  name:'help',
-  description:'Shows help about a Bosco command',
-  usage:'<command>',
-  cmd:cmd
+  name: 'help',
+  description: 'Shows help about a Bosco command',
+  usage: '<command>',
+  cmd: cmd
 }
 
 function cmd(bosco, args) {

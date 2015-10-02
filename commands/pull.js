@@ -5,10 +5,10 @@ var green = '\u001b[42m \u001b[0m';
 var red = '\u001b[41m \u001b[0m';
 
 module.exports = {
-  name:'pull',
-  description:'Pulls any changes across all repos',
-  usage:'[-r <repoPattern>]',
-  cmd:cmd
+  name: 'pull',
+  description: 'Pulls any changes across all repos',
+  usage: '[-r <repoPattern>]',
+  cmd: cmd
 }
 
 function cmd(bosco, args, next) {

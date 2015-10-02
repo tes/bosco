@@ -15,7 +15,7 @@ module.exports = function boscoMock(extra) {
     console: getLogger(),
     repos: [],
     options: {
-      environment:'test'
+      environment: 'test'
     },
     getRepos: function() {
       return this.repos;

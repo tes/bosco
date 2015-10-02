@@ -2,10 +2,10 @@ var async = require('async');
 var exec = require('child_process').exec;
 
 module.exports = {
-  name:'upstream',
-  description:'Runs a git fetch and tells you what has changed upstream for all your repos',
+  name: 'upstream',
+  description: 'Runs a git fetch and tells you what has changed upstream for all your repos',
   usage: '[-r <repoPattern>]',
-  cmd:cmd
+  cmd: cmd
 }
 
 function cmd(bosco) {

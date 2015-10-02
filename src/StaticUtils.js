@@ -123,7 +123,7 @@ module.exports = function(bosco) {
 
   function globAsset(assetGlob, basePath) {
     var resolvedBasePath = path.resolve(basePath);
-    var assets = glob.sync(assetGlob, {cwd:resolvedBasePath, nodir: true});
+    var assets = glob.sync(assetGlob, {cwd: resolvedBasePath, nodir: true});
     return assets;
   }
 

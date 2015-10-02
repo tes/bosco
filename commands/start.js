@@ -1,7 +1,7 @@
 module.exports = {
-  name:'start',
-  description:'This is an alias for run',
-  cmd:cmd
+  name: 'start',
+  description: 'This is an alias for run',
+  cmd: cmd
 }
 
 function cmd(bosco, args) {

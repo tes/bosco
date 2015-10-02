@@ -2,10 +2,10 @@ var ch = require('../src/CmdHelper');
 var _ = require('lodash');
 
 module.exports = {
-  name:'status',
-  description:'Checks git status across all services',
-  usage:'[-r <repoPattern>]',
-  cmd:cmd
+  name: 'status',
+  description: 'Checks git status across all services',
+  usage: '[-r <repoPattern>]',
+  cmd: cmd
 }
 var CHANGE_STRINGS = ['Changes not staged', 'Your branch is ahead', 'Untracked files', 'Changes to be committed'];
 function cmd(bosco) {

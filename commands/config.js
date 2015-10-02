@@ -2,10 +2,10 @@ var _ = require('lodash');
 var prettyjson = require('prettyjson');
 
 module.exports = {
-  name:'config',
-  description:'Lets you manage config from the command line instead of editing json files',
-  usage:'set <key> <value> | get <key>',
-  cmd:cmd
+  name: 'config',
+  description: 'Lets you manage config from the command line instead of editing json files',
+  usage: 'set <key> <value> | get <key>',
+  cmd: cmd
 }
 
 function cmd(bosco, args) {

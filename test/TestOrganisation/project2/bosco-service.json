@@ -1,6 +1,6 @@
 {
   "service": {
-    "name":"project2"
+    "name": "project2"
   },
   "assets": {
     "basePath": "/public",
@@ -15,12 +15,12 @@
       ]
     },
     "img": {
-      "top":[
+      "top": [
         "img/bab.jpg"
       ]
     },
     "swf": {
-      "top":[
+      "top": [
         "swf/flash.swf"
       ]
     },

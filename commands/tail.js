@@ -4,10 +4,10 @@ var pm2 = require('pm2');
 var Tail = require('tail').Tail;
 
 module.exports = {
-  name:'tail',
-  description:'Tails the logs from pm2',
-  usage:'[out|err] [-r <repoPattern>]',
-  cmd:cmd
+  name: 'tail',
+  description: 'Tails the logs from pm2',
+  usage: '[out|err] [-r <repoPattern>]',
+  cmd: cmd
 }
 
 function cmd(bosco, args) {

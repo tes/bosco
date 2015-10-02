@@ -2,10 +2,10 @@ var async = require('async');
 var exec = require('child_process').exec;
 
 module.exports = {
-  name:'commit',
-  description:'Run git commit across all repos - useful for batch updates',
-  usage:'[-r <repoPattern>] \'<commit message>\'',
-  cmd:cmd
+  name: 'commit',
+  description: 'Run git commit across all repos - useful for batch updates',
+  usage: '[-r <repoPattern>] \'<commit message>\'',
+  cmd: cmd
 }
 
 function cmd(bosco, args) {
@@ -56,7 +56,7 @@ function confirm(bosco, message, next) {
       }
     }
   }, function(err, result) {
-    if (!result) return next({message:'Did not confirm'});
+    if (!result) return next({message: 'Did not confirm'});
 
     if (result.confirm == 'Y' || result.confirm == 'y') {
       next(null, true);

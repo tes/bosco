@@ -6,10 +6,10 @@ var _ = require('lodash'),
   mime = require('mime');
 
 module.exports = {
-  name:'s3push',
-  description:'Builds all of the front end assets for each microservice and pushes them to S3 for the current environment',
-  usage:'[-e <environment>] [-b <build>] [<tag>]',
-  cmd:cmd
+  name: 's3push',
+  description: 'Builds all of the front end assets for each microservice and pushes them to S3 for the current environment',
+  usage: '[-e <environment>] [-b <build>] [<tag>]',
+  cmd: cmd
 }
 
 var tag = '', noprompt = false;
@@ -60,10 +60,10 @@ function cmd(bosco, args, callback) {
     // Add index if doing full s3 push
     if (!bosco.options.service) {
       toPush.push({
-        content:staticAssets.formattedAssets,
+        content: staticAssets.formattedAssets,
         path: getS3Filename('index.html'),
-        type:'html',
-        mimeType:'text/html'
+        type: 'html',
+        mimeType: 'text/html'
       });
     }
 
@@ -84,8 +84,8 @@ function cmd(bosco, args, callback) {
       if (err) return next(err);
 
       var headers = {
-        'Content-Type':file.mimeType,
-        'Content-Encoding':'gzip',
+        'Content-Type': file.mimeType,
+        'Content-Encoding': 'gzip',
         'Cache-Control': ('max-age=' + (maxAge === 0 ? '0, must-revalidate' : maxAge))
       };
       bosco.knox.putBuffer(buffer, file.path, headers, function(err, res) {
@@ -171,7 +171,7 @@ function cmd(bosco, args, callback) {
         }
       }
     }, function(err, result) {
-      if (!result) return next({message:'Did not confirm'});
+      if (!result) return next({message: 'Did not confirm'});
       if (result.confirm == 'Y' || result.confirm == 'y') {
         next(null, true);
       } else {

@@ -4,10 +4,10 @@ var green = '\u001b[42m \u001b[0m';
 var red = '\u001b[41m \u001b[0m';
 
 module.exports = {
-  name:'clean-modules',
-  description:'Cleans out node_modules and re-runs npm install against all repos',
+  name: 'clean-modules',
+  description: 'Cleans out node_modules and re-runs npm install against all repos',
   usage: '[-r <repoPattern>]',
-  cmd:cmd
+  cmd: cmd
 }
 
 function cmd(bosco, args, next) {

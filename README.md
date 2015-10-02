@@ -178,9 +178,9 @@ If you add a bosco-service.json at the base of your docker projects, you can tak
 ```
 {
     "service": {
-        "type":"docker",
-        "name":"infra-redis",
-        "registry":"docker-registry.tescloud.com",
+        "type": "docker",
+        "name": "infra-redis",
+        "registry": "docker-registry.tescloud.com",
         "username": "tescloud",
         "version": "latest",
         "alwaysPull": true,
@@ -244,14 +244,14 @@ For example, a project that uses Gulp to create assets as well as watch for chan
 ```json
 {
     "build": {
-        "command":"gulp build",
+        "command": "gulp build",
         "watch": {
-            "command":"gulp build --watch",
-            "ready":"Finished 'build'"
+            "command": "gulp build --watch",
+            "ready": "Finished 'build'"
         }
     },
     "assets": {
-        "basePath":"/dist",
+        "basePath": "/dist",
         "js": {
             "upload": [
                 "js/tsl-uploader.js"
@@ -263,7 +263,7 @@ For example, a project that uses Gulp to create assets as well as watch for chan
             ]
         },
         "images": {
-            "upload" :[
+            "upload": [
                 "img"
             ]
         }
@@ -330,7 +330,7 @@ This command requires that you have configured your AWS details for S3.  Best to
         "secret": "XXXXXX",
         "bucket": "bucket-name",
         "region": "eu-west-1",
-        "cdn":"https://dudu89lpwit3y.cloudfront.net"
+        "cdn": "https://dudu89lpwit3y.cloudfront.net"
     }
 }
 

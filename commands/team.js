@@ -7,10 +7,10 @@ var parseLinkHeader = require('parse-link-header');
 var async = require('async');
 
 module.exports = {
-  name:'team',
-  description:'A command to keep your Github organisation and team setup in sync with Bosco',
-  usage:'sync|ls|ln <team> <directory>',
-  cmd:cmd
+  name: 'team',
+  description: 'A command to keep your Github organisation and team setup in sync with Bosco',
+  usage: 'sync|ls|ln <team> <directory>',
+  cmd: cmd
 }
 
 function cmd(bosco, args, next) {
@@ -111,7 +111,7 @@ function setupInitialLink(bosco, next) {
         type: 'input',
         message: 'Enter the path to map team to (defaults to current folder):',
         name: 'folder',
-        default:'.'
+        default: '.'
       }
     ], function( answer2 ) {
       linkTeam(bosco, answer1.repo, answer2.folder, next);

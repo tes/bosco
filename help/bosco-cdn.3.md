@@ -19,7 +19,7 @@ For this command to work you must have configured the `bosco-service.json` file 
 An example `bosco-service.json` file is shown below for a simple service that doesn't have its own build script:
 
     {
-        "tags":["review"],
+        "tags": ["review"],
         "assets": {
             "basePath": "/src/public",
             "js": {
@@ -41,14 +41,14 @@ For a project that has it's own build step, you can have Bosco wrap around it:
 
     {
         "build": {
-            "command":"gulp build",
+            "command": "gulp build",
             "watch": {
-                "command":"gulp build --watch",
-                "ready":"Finished 'build'"
+                "command": "gulp build --watch",
+                "ready": "Finished 'build'"
             }
         },
         "assets": {
-            "basePath":"/dist",
+            "basePath": "/dist",
             "js": {
                 "upload": [
                     "js/tsl-uploader.js"
@@ -60,7 +60,7 @@ For a project that has it's own build step, you can have Bosco wrap around it:
                 ]
             },
             "images": {
-                "upload" :[
+                "upload": [
                     "img"
                 ]
             }

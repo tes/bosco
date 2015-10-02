@@ -23,7 +23,7 @@ An example \fBbosco\-service\.json\fR file is shown below for a simple service t
 .RS 2
 .nf
 {
-    "tags":["review"],
+    "tags": ["review"],
     "assets": {
         "basePath": "/src/public",
         "js": {
@@ -49,14 +49,14 @@ For a project that has it's own build step, you can have Bosco wrap around it:
 .nf
 {
     "build": {
-        "command":"gulp build",
+        "command": "gulp build",
         "watch": {
-            "command":"gulp build \-\-watch",
-            "ready":"Finished 'build'"
+            "command": "gulp build \-\-watch",
+            "ready": "Finished 'build'"
         }
     },
     "assets": {
-        "basePath":"/dist",
+        "basePath": "/dist",
         "js": {
             "upload": [
                 "js/tsl\-uploader\.js"
@@ -68,7 +68,7 @@ For a project that has it's own build step, you can have Bosco wrap around it:
             ]
         },
         "images": {
-            "upload" :[
+            "upload": [
                 "img"
             ]
         }

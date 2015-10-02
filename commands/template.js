@@ -6,10 +6,10 @@ var execFile = require('child_process').execFile;
 var hb = require('handlebars');
 
 module.exports = {
-  name:'template',
-  description:'A command to allow generic, template driven creation of new services and apps',
+  name: 'template',
+  description: 'A command to allow generic, template driven creation of new services and apps',
   usage: '[add <githubRepo>|remove <githubRepo>|new <templateName> <serviceName>]',
-  cmd:cmd
+  cmd: cmd
 }
 
 function cmd(bosco, args, next) {

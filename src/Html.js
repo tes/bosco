@@ -67,7 +67,7 @@ module.exports = function(bosco) {
 
 
   function formattedAssets(staticAssets) {
-    var assets = {services:[]};
+    var assets = {services: []};
     var templateContent = fs.readFileSync(__dirname + '/../templates/assetList.html');
     var template = hb.compile(templateContent.toString());
 
@@ -81,7 +81,7 @@ module.exports = function(bosco) {
           asset.url = bosco.getAssetCdnUrl(asset.assetKey);
           return asset;
         })
-        var bundle = {bundle:bundleTag, assets:bundleAssets};
+        var bundle = {bundle: bundleTag, assets: bundleAssets};
         service.bundles.push(bundle);
       });
       assets.services.push(service);
@@ -105,7 +105,7 @@ module.exports = function(bosco) {
   }
 
   return {
-    createAssetHtmlFiles:createAssetHtmlFiles,
+    createAssetHtmlFiles: createAssetHtmlFiles,
     attachFormattedRepos: attachFormattedRepos
   }
 }
