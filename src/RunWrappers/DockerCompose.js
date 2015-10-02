@@ -15,7 +15,7 @@ Runner.prototype.list = function(options, next) {
     installed = false;
     return next(null, []);
   }).on('exit', function() {
-    if(installed) { return next(null, ['docker-compose']); }
+    if (installed) { return next(null, ['docker-compose']); }
   })
 }
 

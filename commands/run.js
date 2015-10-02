@@ -43,7 +43,7 @@ function cmd(bosco, args, cb) {
   var repoTag = bosco.options.tag;
 
   var repos;
-  if(bosco.options.list) {
+  if (bosco.options.list) {
     repos = bosco.options.list.split(',');
   } else {
     repos = bosco.getRepos();
@@ -97,15 +97,15 @@ function cmd(bosco, args, cb) {
       if (err) return next(err);
 
       async.mapSeries(runList, function(runConfig, cb) {
-        if(!runConfig.service.type) {
+        if (!runConfig.service.type) {
           RunListHelper.getServiceConfigFromGithub(bosco, runConfig.name, function(err, svcConfig) {
-            if(err) { return cb(); }
-            if(svcConfig.type === 'docker') { return cb(); }
+            if (err) { return cb(); }
+            if (svcConfig.type === 'docker') { return cb(); }
             // Do not allow build in this mode, so default to run
-            if(svcConfig.service && svcConfig.service.build) {
+            if (svcConfig.service && svcConfig.service.build) {
               delete svcConfig.service.build;
             }
-            if(!svcConfig.name) {
+            if (!svcConfig.name) {
               svcConfig.name = runConfig.name;
             }
             runService(svcConfig, cb);
@@ -166,11 +166,11 @@ function cmd(bosco, args, cb) {
     }
 
     bosco.log('All services started.');
-    if(_.contains(args, 'cdn')) {
+    if (_.contains(args, 'cdn')) {
       var cdn = require('./cdn');
       cdn.cmd(bosco, [], function() {});
     } else {
-      if(cb) return cb();
+      if (cb) return cb();
     }
   })
 }

@@ -15,19 +15,19 @@ module.exports = {
 var tag = '', noprompt = false;
 
 function cmd(bosco, args, callback) {
-  if(args.length > 0) tag = args[0];
+  if (args.length > 0) tag = args[0];
 
   var cdnUrl = bosco.config.get('aws:cdn') + '/';
   var compoxureUrl = bosco.config.get('compoxure') ? bosco.config.get('compoxure')[bosco.options.environment] : '';
   noprompt = bosco.options.noprompt;
 
   var maxAge = bosco.config.get('aws:maxage');
-  if(typeof maxAge !== 'number') maxAge = 31536000; // Default to one year
+  if (typeof maxAge !== 'number') maxAge = 31536000; // Default to one year
 
   bosco.log('Compile front end assets across services ' + (tag ? 'for tag: ' + tag.blue : ''));
 
   var repos = bosco.getRepos();
-  if(!repos) {
+  if (!repos) {
     bosco.error('You are repo-less :( You need to initialise bosco first, try \'bosco clone\'.');
     return callback(new Error('no repos'));
   }
@@ -37,9 +37,9 @@ function cmd(bosco, args, callback) {
     _.forEach(staticAssets, function(asset) {
       var key = asset.assetKey;
 
-      if(key == 'formattedAssets') return;
-      if(tag && tag !== asset.tag) return;
-      if(isContentEmpty(asset)) {
+      if (key == 'formattedAssets') return;
+      if (tag && tag !== asset.tag) return;
+      if (isContentEmpty(asset)) {
         bosco.log('Skipping asset: ' + key.blue + ' (content empty)');
         return;
       }
@@ -58,7 +58,7 @@ function cmd(bosco, args, callback) {
     });
 
     // Add index if doing full s3 push
-    if(!bosco.options.service) {
+    if (!bosco.options.service) {
       toPush.push({
         content:staticAssets.formattedAssets,
         path: getS3Filename('index.html'),
@@ -75,7 +75,7 @@ function cmd(bosco, args, callback) {
   }
 
   var pushToS3 = function(file, next) {
-    if(!bosco.knox) {
+    if (!bosco.knox) {
       bosco.warn('Knox AWS not configured for environment ' + bosco.options.envrionment + ' - so not pushing ' + file.path + ' to S3.');
       return next(null, {file: file});
     }
@@ -141,7 +141,7 @@ function cmd(bosco, args, callback) {
       });
       res.on('end', function() {
         bosco.log(res.statusCode + ' ' + responseString);
-        if(!calledNext) {
+        if (!calledNext) {
           calledNext = true;
           return next();
         }
@@ -151,7 +151,7 @@ function cmd(bosco, args, callback) {
     req.on('error', function(err) {
       // TODO: handle error.
       bosco.error('There was an error posting fragment to Compoxure');
-      if(!calledNext) {
+      if (!calledNext) {
         calledNext = true;
         return next(err);
       }
@@ -171,8 +171,8 @@ function cmd(bosco, args, callback) {
         }
       }
     }, function(err, result) {
-      if(!result) return next({message:'Did not confirm'});
-      if(result.confirm == 'Y' || result.confirm == 'y') {
+      if (!result) return next({message:'Did not confirm'});
+      if (result.confirm == 'Y' || result.confirm == 'y') {
         next(null, true);
       } else {
         next(null, false);

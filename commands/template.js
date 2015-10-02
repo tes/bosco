@@ -14,9 +14,9 @@ module.exports = {
 
 function cmd(bosco, args, next) {
   var action = args.shift();
-  if(action == 'create') { return newServiceFromTemplate(bosco, args, next); }
-  if(action == 'add') { return addTemplate(bosco, args, next); }
-  if(action == 'remove') { return removeTemplate(bosco, args, next); }
+  if (action == 'create') { return newServiceFromTemplate(bosco, args, next); }
+  if (action == 'add') { return addTemplate(bosco, args, next); }
+  if (action == 'remove') { return removeTemplate(bosco, args, next); }
   listTemplates(bosco, next);
 }
 
@@ -29,7 +29,7 @@ function listTemplates(bosco, next) {
   });
 
   bosco.log('Use the command: ' + 'bosco template add <githubRepo>'.green + ' to add to your template list.')
-  if(next) { next(); }
+  if (next) { next(); }
 }
 
 function newServiceFromTemplate(bosco, args, next) {
@@ -39,13 +39,13 @@ function newServiceFromTemplate(bosco, args, next) {
   var targetServiceName = args.shift();
   var targetServicePort = args.shift();
 
-  if(!templateRepoName || !targetServiceName || !targetServicePort) {
+  if (!templateRepoName || !targetServiceName || !targetServicePort) {
     return bosco.log('You need to specify a template, a target service name and a port: ' + 'bosco template create <githubRepo> <serviceName> <port>'.green);
   }
 
   var template = _.filter(templates, function(item) { return item.match(new RegExp(templateRepoName)); })[0];
 
-  if(!template) {
+  if (!template) {
     bosco.log('Couldnt find a service that matched: ' + templateRepoName.red);
     return listTemplates(bosco, next);
   }
@@ -71,7 +71,7 @@ function newServiceFromTemplate(bosco, args, next) {
     async.apply(execCmd, bosco, 'git',['add','--all','.'], serviceDirectory),
     async.apply(execCmd, bosco, 'git',['commit','-m','First commit'], serviceDirectory)
   ], function(err) {
-    if(err) {
+    if (err) {
       return bosco.error(err.message);
     }
     bosco.log('Complete!');
@@ -87,7 +87,7 @@ function copyTemplateFiles(bosco, serviceName, port, serviceDirectory, next) {
     port: port
   }
   async.map(templateFiles, function(template, cb) {
-    if(!template.source || !template.destination) {
+    if (!template.source || !template.destination) {
       return cb(new Error('You must specify both a source and destination'));
     }
 
@@ -123,7 +123,7 @@ function addTemplate(bosco, args, next) {
 
   bosco.config.save(function() {
     bosco.log('Added new template.');
-    if(next) { next(); }
+    if (next) { next(); }
   });
 }
 
@@ -137,7 +137,7 @@ function removeTemplate(bosco, args, next) {
 
   bosco.config.save(function() {
     bosco.log('Removed any matching templates.');
-    if(next) { next(); }
+    if (next) { next(); }
   });
 }
 

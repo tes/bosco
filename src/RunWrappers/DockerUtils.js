@@ -48,14 +48,14 @@ function processCmdVars(optsCreate, name, cwd) {
       PATH: cwd
     };
 
-  if(optsCreate.Cmd) {
+  if (optsCreate.Cmd) {
     optsCreate.Cmd.forEach(function(cmd) {
       processedCommands.push(sf(cmd, data));
     });
     optsCreate.Cmd = processedCommands;
   }
 
-  if(optsCreate.Binds) {
+  if (optsCreate.Binds) {
     optsCreate.Binds.forEach(function(bind) {
       processedBinds.push(sf(bind, data));
     });
@@ -88,7 +88,7 @@ function startContainer(bosco, docker, fqn, options, container, next) {
 
     var checkPort;
     _.forOwn(optsStart.PortBindings, function(value) {
-      if(!checkPort && value[0].HostPort) checkPort = value[0].HostPort; // Check first port
+      if (!checkPort && value[0].HostPort) checkPort = value[0].HostPort; // Check first port
     });
 
     if (!checkPort) {
@@ -269,7 +269,7 @@ function pullImage(bosco, docker, repoTag, next) {
 
 function ensureManifest(bosco, name, cwd) {
   var manifest = path.join(cwd,'manifest.json');
-  if(fs.existsSync(manifest)) { return; }
+  if (fs.existsSync(manifest)) { return; }
   bosco.log('Adding default manifest file for docker build ...')
   var manifestContent = { 'service': name, 'build': 'local' };
   fs.writeFileSync(manifest,JSON.stringify(manifestContent));

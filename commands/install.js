@@ -15,7 +15,7 @@ function cmd(bosco, args, next) {
   var repoRegex = new RegExp(repoPattern);
 
   var repos = bosco.getRepos();
-  if(!repos) return bosco.error('You are repo-less :( You need to initialise bosco first, try \'bosco clone\'.');
+  if (!repos) return bosco.error('You are repo-less :( You need to initialise bosco first, try \'bosco clone\'.');
 
   bosco.log('Running npm install across all repos ...');
 
@@ -31,7 +31,7 @@ function cmd(bosco, args, next) {
     }) : null;
 
     async.mapLimit(repos, bosco.concurrency.cpu, function repoStash(repo, repoCb) {
-      if(!repo.match(repoRegex)) return repoCb();
+      if (!repo.match(repoRegex)) return repoCb();
 
       var repoPath = bosco.getRepoPath(repo);
       install(bosco, progressbar, bar, repoPath, repoCb);
@@ -42,19 +42,19 @@ function cmd(bosco, args, next) {
 
   installRepos(function() {
     bosco.log('npm install complete');
-    if(next) next();
+    if (next) next();
   });
 }
 
 function install(bosco, progressbar, bar, repoPath, next) {
   var packageJson = [repoPath,'package.json'].join('/');
-  if(!bosco.exists(packageJson)) {
-    if(progressbar) bar.tick();
+  if (!bosco.exists(packageJson)) {
+    if (progressbar) bar.tick();
     return next();
   }
 
   var npmCommand = 'npm';
-  if(bosco.config.get('npm:registry')) {
+  if (bosco.config.get('npm:registry')) {
     npmCommand += ' --registry ' + bosco.config.get('npm:registry');
   }
   npmCommand += ' install';
@@ -62,13 +62,13 @@ function install(bosco, progressbar, bar, repoPath, next) {
   exec(npmCommand, {
     cwd: repoPath
   }, function(err, stdout, stderr) {
-    if(progressbar) bar.tick();
-    if(err) {
-      if(progressbar) console.log('');
+    if (progressbar) bar.tick();
+    if (err) {
+      if (progressbar) console.log('');
       bosco.error(repoPath.blue + ' >> ' + stderr);
     } else {
-      if(!progressbar) {
-        if(!stdout) {
+      if (!progressbar) {
+        if (!stdout) {
           bosco.log('NPM install for ' + repoPath.blue + ': ' + 'No changes'.green);
         } else {
           bosco.log('NPM install for ' + repoPath.blue);

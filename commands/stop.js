@@ -57,9 +57,9 @@ function cmd(bosco, args, next) {
         var repo = boscoService.name;
 
         if (repo.match(repoRegex)) {
-          if(!boscoService.service.type) {
+          if (!boscoService.service.type) {
             RunListHelper.getServiceConfigFromGithub(bosco, boscoService.name, function(err, svcConfig) {
-              if(!svcConfig.name) {
+              if (!svcConfig.name) {
                 svcConfig.name = boscoService.name;
               }
               stopService(repo, svcConfig, runningServices, cb);
@@ -97,6 +97,6 @@ function cmd(bosco, args, next) {
   bosco.log('Stop each microservice ' + args);
 
   async.series([initialiseRunners, getRunningServices, stopRunningServices, disconnectRunners], function() {
-    if(next) return next(null, runningServices);
+    if (next) return next(null, runningServices);
   });
 }

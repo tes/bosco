@@ -28,7 +28,7 @@ module.exports = function(bosco) {
     _.forEach(bundleKeys, function(bundleKey) {
       var items = _.where(jsAssets, {bundleKey: bundleKey});
 
-      if(items.length === 0) { return; }
+      if (items.length === 0) { return; }
 
       var compiled, serviceName, buildNumber, tag, externalBuild;
 
@@ -36,7 +36,7 @@ module.exports = function(bosco) {
 
       var uglifyConfig = bosco.config.get('js:uglify');
 
-      if(!serviceName) {
+      if (!serviceName) {
         var firstItem = items[0];
         serviceName = firstItem.serviceName;
         buildNumber = firstItem.buildNumber;
@@ -104,9 +104,9 @@ module.exports = function(bosco) {
       var items = _.where(cssAssets, {bundleKey: bundleKey});
       var cssContent = '', serviceName, buildNumber, tag;
 
-      if(items.length === 0) { return; }
+      if (items.length === 0) { return; }
 
-      if(!serviceName) {
+      if (!serviceName) {
         var firstItem = items[0];
         serviceName = firstItem.serviceName;
         buildNumber = firstItem.buildNumber;
@@ -120,12 +120,10 @@ module.exports = function(bosco) {
       });
 
       var cleanCssConfig = bosco.config.get('css:clean');
-      if(cleanCssConfig && cleanCssConfig.enabled) {
+      if (cleanCssConfig && cleanCssConfig.enabled) {
         cssContent = new CleanCSS(cleanCssConfig.options).minify(cssContent).styles;
       }
-      if (cssContent.length === 0) return next({
-        message: 'No css for tag ' + tag
-      });
+      if (cssContent.length === 0) return next({message: 'No css for tag ' + tag});
 
       var assetKey = createKey(serviceName, buildNumber, tag, null, 'css', 'css');
 

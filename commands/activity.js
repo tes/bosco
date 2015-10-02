@@ -30,7 +30,7 @@ function cmd(bosco, args, next) {
     cmd: 'git',
     args: ['log', '--date=relative', '--pretty=format:' + FORMAT, '--no-merges', '--since=' + since],
     guardFn: function(bosco, repoPath, options, next) {
-      if(bosco.exists([repoPath,'.git'].join('/'))) return next();
+      if (bosco.exists([repoPath,'.git'].join('/'))) return next();
       next(new Error('Doesn\'t seem to be a git repo: '+ repoPath.blue));
     },
     stdoutFn: makeRepoActivityStdoutFn(bosco)

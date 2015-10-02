@@ -10,7 +10,7 @@ module.exports = {
 
 function cmd(bosco, args) {
   var cmdName = args.shift();
-  if(!cmdName) return bosco.error('You need to provide a command name. e.g: bosco help ' + module.exports.usage);
+  if (!cmdName) return bosco.error('You need to provide a command name. e.g: bosco help ' + module.exports.usage);
 
   var man = 'bosco-' + cmdName + '.3';
   viewMan(man, function() {});

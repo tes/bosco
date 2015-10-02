@@ -10,14 +10,14 @@ module.exports = {
 
 function cmd(bosco, args) {
   var repos = bosco.getRepos();
-  if(!repos) return bosco.error('You are repo-less :( You need to initialise bosco first, try \'bosco clone\'.');
+  if (!repos) return bosco.error('You are repo-less :( You need to initialise bosco first, try \'bosco clone\'.');
 
   var repoPattern = bosco.options.repo;
   var message = args.shift();
 
-  if(!message) return bosco.error('You need to supply at least a commit message.');
+  if (!message) return bosco.error('You need to supply at least a commit message.');
 
-  if(args.shift()) {
+  if (args.shift()) {
     return bosco.error('You need to put your commit message in quotes: \'this is my message\'');
   }
 
@@ -29,7 +29,7 @@ function cmd(bosco, args) {
   var commitRepos = function(cb) {
     async.mapSeries(repos, function repoPush(repo, repoCb) {
       var repoPath = bosco.getRepoPath(repo);
-      if(repo.match(repoRegex)) {
+      if (repo.match(repoRegex)) {
         bosco.log('Running \'git commit -am\' on ' + repo.blue);
         commit(bosco, message, repoPath, repoCb);
       } else {
@@ -56,9 +56,9 @@ function confirm(bosco, message, next) {
       }
     }
   }, function(err, result) {
-    if(!result) return next({message:'Did not confirm'});
+    if (!result) return next({message:'Did not confirm'});
 
-    if(result.confirm == 'Y' || result.confirm == 'y') {
+    if (result.confirm == 'Y' || result.confirm == 'y') {
       next(null, true);
     } else {
       next(null, false);
@@ -68,13 +68,13 @@ function confirm(bosco, message, next) {
 
 
 function commit(bosco, commitMsg, orgPath, next) {
-  if(!bosco.exists([orgPath,'.git'].join('/'))) {
+  if (!bosco.exists([orgPath,'.git'].join('/'))) {
     bosco.warn('Doesn\'t seem to be a git repo: '+ orgPath.blue);
     return next();
   }
 
   confirm(bosco, 'Confirm you want to commit any changes in: ' + orgPath.blue + ' [y/N]', function(err, confirmed) {
-    if(err) return next(err);
+    if (err) return next(err);
 
     if (!confirmed) {
       bosco.log('No commit done for ' + orgPath.blue);
@@ -86,10 +86,10 @@ function commit(bosco, commitMsg, orgPath, next) {
       exec(gitCmd, {
         cwd: orgPath
       }, function(err, stdout) {
-        if(err) {
+        if (err) {
           bosco.warn(orgPath.blue + ' >> No changes to commit.');
         } else {
-          if(stdout) bosco.log(orgPath.blue + ' >> ' + stdout);
+          if (stdout) bosco.log(orgPath.blue + ' >> ' + stdout);
         }
         next();
       });

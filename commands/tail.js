@@ -23,7 +23,7 @@ function cmd(bosco, args) {
 
     var describeRunningServices = function(running) {
       async.map(running, function(repo, next) {
-        if(repo.match(repoRegex)) {
+        if (repo.match(repoRegex)) {
           pm2.describe(repo, function(err, list) {
             if (err) {
               bosco.error(err);

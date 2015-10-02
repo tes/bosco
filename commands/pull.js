@@ -16,7 +16,7 @@ function cmd(bosco, args, next) {
   var repoRegex = new RegExp(repoPattern);
 
   var repos = bosco.getRepos();
-  if(!repos) return bosco.error('You are repo-less :( You need to initialise bosco first, try \'bosco clone\'.');
+  if (!repos) return bosco.error('You are repo-less :( You need to initialise bosco first, try \'bosco clone\'.');
 
   bosco.log('Running ' + 'git pull --rebase'.blue + ' across all repos ...');
 
@@ -32,7 +32,7 @@ function cmd(bosco, args, next) {
     }) : null;
 
     async.mapLimit(repos, bosco.concurrency.network, function repoStash(repo, repoCb) {
-      if(!repo.match(repoRegex)) return repoCb();
+      if (!repo.match(repoRegex)) return repoCb();
 
       var repoPath = bosco.getRepoPath(repo);
       pull(bosco, progressbar, bar, repoPath, repoCb);
@@ -55,7 +55,7 @@ function cmd(bosco, args, next) {
     }) : null;
 
     async.mapSeries(repos, function doDockerPull(repo, repoCb) {
-      if(!repo.match(repoRegex)) return repoCb();
+      if (!repo.match(repoRegex)) return repoCb();
       var repoPath = bosco.getRepoPath(repo);
       dockerPull(bosco, progressbar, bar, repoPath, repo, repoCb);
     }, function() {
@@ -85,12 +85,12 @@ function cmd(bosco, args, next) {
     disconnectRunners
   ], function() {
     bosco.log('Complete!');
-    if(next) next();
+    if (next) next();
   });
 }
 
 function pull(bosco, progressbar, bar, repoPath, next) {
-  if(!bosco.exists([repoPath,'.git'].join('/'))) {
+  if (!bosco.exists([repoPath,'.git'].join('/'))) {
     bosco.warn('Doesn\'t seem to be a git repo: '+ repoPath.blue);
     return next();
   }
@@ -98,13 +98,13 @@ function pull(bosco, progressbar, bar, repoPath, next) {
   exec('git pull --rebase', {
     cwd: repoPath
   }, function(err, stdout, stderr) {
-    if(progressbar) bar.tick();
-    if(err) {
-      if(progressbar) console.log('');
+    if (progressbar) bar.tick();
+    if (err) {
+      if (progressbar) console.log('');
       bosco.error(repoPath.blue + ' >> ' + stderr);
     } else {
-      if(!progressbar && stdout) {
-        if(stdout.indexOf('up to date') > 0) {
+      if (!progressbar && stdout) {
+        if (stdout.indexOf('up to date') > 0) {
           bosco.log(repoPath.blue + ': ' + 'No change'.green);
         } else {
           bosco.log(repoPath.blue + ': ' + 'Pulling changes ...'.red + '\n' + stdout);
@@ -119,9 +119,9 @@ function dockerPull(bosco, progressbar, bar, repoPath, repo, next) {
   var boscoService = [repoPath, 'bosco-service.json'].join('/');
   if (bosco.exists(boscoService)) {
     var definition = require(boscoService);
-    if(definition.service && definition.service.type === 'docker') {
+    if (definition.service && definition.service.type === 'docker') {
       DockerRunner.update(definition, function(err) {
-        if(err) {
+        if (err) {
           var errMessage = err.reason ? err.reason : err;
           bosco.error('Error pulling ' + repo.green + ', reason: ' + errMessage.red);
         }

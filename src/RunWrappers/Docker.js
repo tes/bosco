@@ -10,7 +10,7 @@ function Runner() {
 
 Runner.prototype.init = function(bosco, next) {
   this.bosco = bosco;
-  if(process.env.DOCKER_HOST) {
+  if (process.env.DOCKER_HOST) {
     // We are likely on OSX and Boot2docker
     var dockerUrl = url.parse(process.env.DOCKER_HOST || 'tcp://127.0.0.1:3000');
     var dockerOpts = {
@@ -19,7 +19,7 @@ Runner.prototype.init = function(bosco, next) {
     };
 
     var dockerCertPath = process.env.DOCKER_CERT_PATH;
-    if(dockerCertPath) {
+    if (dockerCertPath) {
       dockerOpts = _.extend(dockerOpts, {
         protocol: 'https',
         ca: readCert(dockerCertPath, 'ca.pem'),
@@ -49,7 +49,7 @@ Runner.prototype.list = function(detailed, next) {
   docker.listContainers({
     all: false
   }, function(err, containers) {
-    if(!detailed) return next(err, _.pluck(containers, 'Names'));
+    if (!detailed) return next(err, _.pluck(containers, 'Names'));
     next(err, containers);
   });
 }

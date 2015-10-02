@@ -16,7 +16,7 @@ function cmd(bosco, args) {
   };
 
   var executeRun = function(repos, next) {
-    if(repos.length === 0) return next();
+    if (repos.length === 0) return next();
     bosco.options.list = repos.join(',');
     run.cmd(bosco, args, next);
   };

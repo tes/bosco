@@ -26,7 +26,7 @@ Runner.prototype.listRunning = function(detailed, next) {
   pm2.list(function(err, list) {
     var filteredList = _.filter(list, function(pm2Process) { return pm2Process.pm2_env.status === 'online' || pm2Process.pm2_env.status === 'errored' })
 
-    if(!detailed) return next(err, _.pluck(filteredList,'name'));
+    if (!detailed) return next(err, _.pluck(filteredList,'name'));
     next(err, filteredList);
   });
 }
@@ -38,7 +38,7 @@ Runner.prototype.listNotRunning = function(detailed, next) {
   pm2.list(function(err, list) {
     var filteredList = _.filter(list, function(pm2Process) { return pm2Process.pm2_env.status !== 'online' })
 
-    if(!detailed) return next(err, _.pluck(filteredList,'name'));
+    if (!detailed) return next(err, _.pluck(filteredList,'name'));
     next(err, filteredList);
   });
 }
@@ -53,14 +53,14 @@ Runner.prototype.start = function(options, next) {
   // Remove node from the start script as not req'd for PM2
   var startCmd = options.service.start, startArr, start, ext;
 
-  if(startCmd.split(' ')[0] == 'node') {
+  if (startCmd.split(' ')[0] == 'node') {
     startArr = startCmd.split(' ');
     startArr.shift();
     start = startArr.join(' ');
 
     ext = path.extname(startCmd);
 
-    if(!path.extname(start)) {
+    if (!path.extname(start)) {
       ext = '.js';
       start = start + '.js';
     }
@@ -81,7 +81,7 @@ Runner.prototype.start = function(options, next) {
     location = start.substring(0, argumentPos);
   }
 
-  if(!self.bosco.exists(options.cwd + '/' + location)) {
+  if (!self.bosco.exists(options.cwd + '/' + location)) {
     self.bosco.warn('Can\'t start ' + options.name.red + ', as I can\'t find script: ' + location.red);
     return next();
   }
@@ -89,8 +89,8 @@ Runner.prototype.start = function(options, next) {
   var startOptions = { name: options.name, cwd: options.cwd, watch: options.watch, executeCommand: executeCommand, force: true, scriptArgs: scriptArgs };
 
   var interpreter = getInterpreter(this.bosco, options.service);
-  if(interpreter) {
-    if(!self.bosco.exists(interpreter)) {
+  if (interpreter) {
+    if (!self.bosco.exists(interpreter)) {
       self.bosco.warn('Unable to locate node version requested: ' + interpreter.cyan + '.  Reverting to default.');
     } else {
       startOptions.interpreter = interpreter;
@@ -110,7 +110,7 @@ Runner.prototype.stop = function(options, next) {
   var self = this;
   self.bosco.log('Stopping ' + options.name.cyan);
   pm2.stop(options.name, function(err) {
-    if(err) return next(err);
+    if (err) return next(err);
     pm2.delete(options.name, function(err) {
       next(err);
     });

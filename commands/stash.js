@@ -15,7 +15,7 @@ function cmd(bosco, args) {
   var repoRegex = new RegExp(repoPattern);
 
   var repos = bosco.getRepos();
-  if(!repos) return bosco.error('You are repo-less :( You need to initialise bosco first, try \'bosco clone\'.');
+  if (!repos) return bosco.error('You are repo-less :( You need to initialise bosco first, try \'bosco clone\'.');
 
   bosco.log('Running git stash across all repos ...');
 
@@ -31,7 +31,7 @@ function cmd(bosco, args) {
     }) : null;
 
     async.mapSeries(repos, function repoStash(repo, repoCb) {
-      if(!repo.match(repoRegex)) return repoCb();
+      if (!repo.match(repoRegex)) return repoCb();
 
       var repoPath = bosco.getRepoPath(repo);
       stash(bosco, args, progressbar, bar, repoPath, repoCb);
@@ -46,8 +46,8 @@ function cmd(bosco, args) {
 }
 
 function stash(bosco, args, progressbar, bar, orgPath, next) {
-  if(!progressbar) bosco.log('Stashing '+ orgPath.blue);
-  if(!bosco.exists([orgPath,'.git'].join('/'))) {
+  if (!progressbar) bosco.log('Stashing '+ orgPath.blue);
+  if (!bosco.exists([orgPath,'.git'].join('/'))) {
     bosco.warn('Doesn\'t seem to be a git repo: '+ orgPath.blue);
     return next();
   }
@@ -59,16 +59,16 @@ function stash(bosco, args, progressbar, bar, orgPath, next) {
   exec(cmd, {
     cwd: orgPath
   }, function(err, stdout, stderr) {
-    if(progressbar) bar.tick();
+    if (progressbar) bar.tick();
 
     if (err && ignoreMissingStash && err.code == 1) {
       err = null;
     }
-    if(err) {
-      if(progressbar) console.log('');
+    if (err) {
+      if (progressbar) console.log('');
       bosco.error(orgPath.blue + ' >> ' + stderr);
     } else {
-      if(!progressbar && stdout) bosco.log(orgPath.blue + ' >> ' + stdout);
+      if (!progressbar && stdout) bosco.log(orgPath.blue + ' >> ' + stdout);
     }
     next(err);
   });

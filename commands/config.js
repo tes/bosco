@@ -13,13 +13,13 @@ function cmd(bosco, args) {
   var key = args.shift();
   var value = args.shift();
 
-  if(type !== 'set' && type !== 'get') {
+  if (type !== 'set' && type !== 'get') {
     bosco.error('The command needs to be of the format: ' + ('bosco config ' + module.exports.usage).blue);
   }
 
-  if(type == 'get') {
+  if (type == 'get') {
     // Get the key
-    if(!key) {
+    if (!key) {
       console.log('')
 
       console.log('Config for ' + 'github'.green + ':');
@@ -43,12 +43,12 @@ function cmd(bosco, args) {
     }
   }
 
-  if(type == 'set') {
-    if(!key && !value) return bosco.error('You need to specify a key and value: ' + 'bosco config set <key> <value>'.blue);
+  if (type == 'set') {
+    if (!key && !value) return bosco.error('You need to specify a key and value: ' + 'bosco config set <key> <value>'.blue);
 
     var prevValue = bosco.config.get(key);
 
-    if(typeof prevValue == 'object') {
+    if (typeof prevValue == 'object') {
       return bosco.error('You can only set values, not objects, try one of its children using \':\' as the separator - e.g. github:team');
     }
 

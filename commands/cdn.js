@@ -36,7 +36,7 @@ function cmd(bosco, args) {
   bosco.log('Starting pseudo CDN on port: ' + (port+'').blue);
 
   var repos = bosco.getRepos();
-  if(!repos) return bosco.error('You are repo-less :( You need to initialise bosco first, try \'bosco clone\'.');
+  if (!repos) return bosco.error('You are repo-less :( You need to initialise bosco first, try \'bosco clone\'.');
 
   var startServer = function(staticAssets, staticRepos, serverPort) {
     var getAsset = function(url) {
@@ -114,7 +114,7 @@ function cmd(bosco, args) {
 
       if (!minify) {
         var assetIndex = getIndexForKey(staticAssets, fileKey);
-        if(!assetIndex) {
+        if (!assetIndex) {
           bosco.error('Unable to locate asset with key: ' + fileKey);
           return;
         }
@@ -157,14 +157,14 @@ function cmd(bosco, args) {
       monitor.on('changed', function(f) {
         var fileKey = watchSet[f];
 
-        if(reloading[fileKey]) return;
+        if (reloading[fileKey]) return;
         reloading[fileKey] = true;
         reloadFile(fileKey);
       });
     });
   }
 
-  if(minify) bosco.log('Minifying front end assets, this can take some time ...');
+  if (minify) bosco.log('Minifying front end assets, this can take some time ...');
 
   var options = {
     repos: repos,

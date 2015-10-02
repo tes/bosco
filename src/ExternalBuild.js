@@ -6,7 +6,7 @@ var spawn = require('child_process').spawn;
 
 module.exports = function(bosco) {
   function doBuild(service, options, next) {
-    if(!service.build) return next();
+    if (!service.build) return next();
 
     var watchBuilds = options.watchBuilds,
       command = service.build.command,

@@ -15,7 +15,7 @@ function cmd(bosco) {
     cmd: 'git',
     args: ['-c', 'color.status=always', 'status'],
     guardFn: function(bosco, repoPath, options, next) {
-      if(bosco.exists([repoPath,'.git'].join('/'))) return next();
+      if (bosco.exists([repoPath,'.git'].join('/'))) return next();
       next(new Error('Doesn\'t seem to be a git repo: '+ repoPath.blue));
     },
     stdoutFn: function(stdout, path) {

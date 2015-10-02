@@ -28,7 +28,7 @@ function getRunConfig(bosco, repo, repoRegex, watchRegex) {
       packageConfig.type = 'node';
       packageConfig.start = pkg.scripts.start;
     }
-    if(pkg.engines && pkg.engines.node) {
+    if (pkg.engines && pkg.engines.node) {
       packageConfig.nodeVersion = pkg.engines.node;
     }
     svcConfig.service = packageConfig;
@@ -57,7 +57,7 @@ function getRunList(bosco, repos, repoRegex, watchRegex, repoTag, next) {
 
   var addDependencies = function(dependent, dependsOn) {
     dependsOn.forEach(function(dependency) {
-      if(!_.contains(repoList, dependency)) {
+      if (!_.contains(repoList, dependency)) {
         repoList.push(dependency);
       }
       revDepTree[dependency] = revDepTree[dependency] || [];
@@ -110,13 +110,13 @@ function getServiceConfigFromGithub(bosco, repo, next) {
   var configKey = 'cache:github:' + githubRepo;
   var cachedConfig = bosco.config.get(configKey);
 
-  if(cachedConfig) {
+  if (cachedConfig) {
     next(null, cachedConfig);
   } else {
     var ghrepo = client.repo(githubRepo);
     bosco.log('Retrieving ' + 'bosco-service.json'.green + ' config from github @ ' + githubRepo.cyan);
     ghrepo.contents('bosco-service.json', function(err, contents) {
-      if(err) { return next(err); }
+      if (err) { return next(err); }
       var content = new Buffer(contents.content, 'base64');
       var config = JSON.parse(content.toString());
       bosco.config.set(configKey, config);

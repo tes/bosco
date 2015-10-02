@@ -194,7 +194,7 @@ Bosco.prototype._initialiseConfig = function(next) {
       }
     }
   }, function(err, result) {
-    if(err) {
+    if (err) {
       return self.error('There was an error during setup: ' + err.message.red);
     }
     self.config.set('github:user', result.githubUser);
@@ -360,7 +360,7 @@ Bosco.prototype.getTeam = function() {
   var self = this;
   var teamConfig = self.config.get('teams'), currentTeam;
   _.keys(teamConfig).forEach(function(team) {
-    if(teamConfig[team].path === self.options.workspace) {
+    if (teamConfig[team].path === self.options.workspace) {
       currentTeam = team;
     }
   });
@@ -370,7 +370,7 @@ Bosco.prototype.getTeam = function() {
 Bosco.prototype.getRepos = function() {
   var self = this;
   var team = self.getTeam();
-  if(team == 'no-team') {
+  if (team == 'no-team') {
     return [path.relative('..','.')]
   } else {
     return self.config.get('teams:' + team).repos;
@@ -381,7 +381,7 @@ Bosco.prototype.getOrg = function() {
   var self = this;
   var teamConfig = self.config.get('teams'), currentOrg = '';
   _.keys(teamConfig).forEach(function(team) {
-    if(teamConfig[team].path === self.options.workspace) {
+    if (teamConfig[team].path === self.options.workspace) {
       currentOrg = team.split('/')[0];
     }
   });
@@ -467,7 +467,7 @@ Bosco.prototype.getAssetCdnUrl = function(assetUrl) {
 
 Bosco.prototype.checkInService = function() {
   var self = this, cwd = path.resolve('bosco-service.json');
-  if(self.exists(cwd) && self.options.service) {
+  if (self.exists(cwd) && self.options.service) {
     self.options.inService = true;
     self.options.workspace = path.resolve('..');
     // Replace getRepos

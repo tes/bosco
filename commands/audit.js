@@ -15,7 +15,7 @@ function cmd(bosco, args, next) {
   var repoRegex = new RegExp(repoPattern);
 
   var repos = bosco.getRepos();
-  if(!repos) return bosco.error('You are repo-less :( You need to initialise bosco first, try \'bosco fly\'.');
+  if (!repos) return bosco.error('You are repo-less :( You need to initialise bosco first, try \'bosco fly\'.');
 
   var auditRepos = function(done) {
     async.mapLimit(repos, bosco.concurrency.cpu, function iterateRepos(repo, cb) {
@@ -27,7 +27,7 @@ function cmd(bosco, args, next) {
   }
 
   function nsp(bosco, repo, repoPath, next) {
-    if(!repo.match(repoRegex) || !bosco.exists([repoPath,'package.json'].join('/'))) {
+    if (!repo.match(repoRegex) || !bosco.exists([repoPath,'package.json'].join('/'))) {
       bosco.log(repo.blue + ': ' + 'No package.json'.green);
       return next();
     }
@@ -50,6 +50,6 @@ function cmd(bosco, args, next) {
   console.warn = function() { };
   auditRepos(function() {
     bosco.log('Complete');
-    if(next) next();
+    if (next) next();
   });
 }

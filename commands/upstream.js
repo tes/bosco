@@ -13,12 +13,12 @@ function cmd(bosco) {
   var repoRegex = new RegExp(repoPattern);
 
   var repos = bosco.getRepos();
-  if(!repos) return bosco.error('You are repo-less :( You need to initialise bosco first, try \'bosco clone\'.');
+  if (!repos) return bosco.error('You are repo-less :( You need to initialise bosco first, try \'bosco clone\'.');
 
   var changedRepos = function(cb) {
     async.mapLimit(repos, bosco.concurrency.network, function repoStash(repo, repoCb) {
       var repoPath = bosco.getRepoPath(repo);
-      if(!repo.match(repoRegex)) return repoCb();
+      if (!repo.match(repoRegex)) return repoCb();
       upstream(bosco, repoPath, repoCb);
     }, function() {
       cb();
@@ -36,10 +36,10 @@ function upstream(bosco, orgPath, next) {
   exec('git fetch; git log HEAD..origin/master --oneline', {
     cwd: orgPath
   }, function(err, stdout, stderr) {
-    if(err) {
+    if (err) {
       bosco.error(stderr);
     } else {
-      if(stdout) {
+      if (stdout) {
         bosco.log('Changes in ' + orgPath.blue);
         console.log(stdout);
       } else {

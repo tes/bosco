@@ -27,7 +27,7 @@ function cmd(bosco, args, next) {
 
   var client = github.client(bosco.config.get('github:authToken'));
 
-  if(!teamConfig) {
+  if (!teamConfig) {
     // The user does not have a team, so just treat the repos config
     // as manually edited
     return bosco.error([
@@ -43,9 +43,9 @@ function cmd(bosco, args, next) {
       function() { return more; },
       function(callback) {
         getRepos(client, teamConfig, page, function(err, repos, isMore) {
-          if(err) { return callback(err); }
+          if (err) { return callback(err); }
           repoList = _.union(repoList, repos);
-          if(isMore) {
+          if (isMore) {
             page = page + 1;
           } else {
             more = false;
@@ -54,7 +54,7 @@ function cmd(bosco, args, next) {
         });
       },
       function(err) {
-        if(err) {
+        if (err) {
           return bosco.error(err.message);
         }
         bosco.log('Cloning ' + (repoList.length + '').green + ' repositories from Github for ' + team.green + ' team ...');
@@ -65,7 +65,7 @@ function cmd(bosco, args, next) {
 }
 
 function getRepos(client, teamConfig, page, next) {
-  if(teamConfig.isUser) {
+  if (teamConfig.isUser) {
     client.get('/user/repos', {per_page: 20, page: page}, function(err, status, body, headers) {
       next(err, _.pluck(body, 'name'), _.contains(headers.link, 'rel="next"'));
     });
@@ -133,20 +133,20 @@ function fetch(bosco, team, repos, repoRegex, args, next) {
     }) : null;
 
     async.mapLimit(repos, bosco.concurrency.network, function repoGet(repo, repoCb) {
-      if(!repo.match(repoRegex)) return repoCb();
+      if (!repo.match(repoRegex)) return repoCb();
 
       var repoPath = bosco.getRepoPath(repo);
       var repoUrl = bosco.getRepoUrl(repo);
 
-      if(bosco.exists(repoPath)) {
+      if (bosco.exists(repoPath)) {
         pullFlag = true;
-        if(progressbar) bar.tick();
+        if (progressbar) bar.tick();
         repoCb();
       } else {
         clone(bosco,  progressbar, bar, repoUrl, orgPath, repoCb);
       }
     }, function() {
-      if(pullFlag) {
+      if (pullFlag) {
         bosco.warn('Some repositories already existed, to pull changes use \'bosco pull\'');
       }
       cb();
@@ -157,7 +157,7 @@ function fetch(bosco, team, repos, repoRegex, args, next) {
     // Ensure repo folders are in workspace gitignore
     var gi = [bosco.getWorkspacePath(),'.gitignore'].join('/');
     fs.readFile(gi, function(err, contents) {
-      if(err) { cb(err); }
+      if (err) { cb(err); }
       contents = contents || '';
       var ignore = contents.toString().split('\n');
       var newIgnore = _.union(ignore, repos, ['.DS_Store','node_modules','.bosco/bosco.json','']);
@@ -167,7 +167,7 @@ function fetch(bosco, team, repos, repoRegex, args, next) {
 
   async.series([saveRepos, checkOrphans, getRepos, gitIgnoreRepos], function() {
     bosco.log('Complete');
-    if(next) next();
+    if (next) next();
   });
 }
 
@@ -192,16 +192,16 @@ function checkCanDelete(bosco, repoPath, next) {
 }
 
 function clone(bosco, progressbar, bar, repoUrl, orgPath, next) {
-  if(!progressbar) bosco.log('Cloning ' + repoUrl.blue + ' into ' + orgPath.blue);
+  if (!progressbar) bosco.log('Cloning ' + repoUrl.blue + ' into ' + orgPath.blue);
   exec('git clone ' + repoUrl, {
     cwd: orgPath
   }, function(err, stdout, stderr) {
-    if(progressbar) bar.tick();
-    if(err) {
-      if(progressbar) console.log('');
+    if (progressbar) bar.tick();
+    if (err) {
+      if (progressbar) console.log('');
       bosco.error(repoUrl.blue + ' >> ' + stderr);
     } else {
-      if(!progressbar && stdout) bosco.log(repoUrl.blue + ' >> ' + stdout);
+      if (!progressbar && stdout) bosco.log(repoUrl.blue + ' >> ' + stdout);
     }
     next();
   });

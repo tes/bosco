@@ -34,7 +34,7 @@ function cmd(bosco, args, next) {
     executeCommands
   ], function() {
     bosco.log('Completed linking modules.');
-    if(next) { next(); }
+    if (next) { next(); }
   })
 }
 

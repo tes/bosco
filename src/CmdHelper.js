@@ -37,19 +37,19 @@ function iterate(bosco, options, next) {
   var repoPattern = bosco.options.repo;
   var repoRegex = new RegExp(repoPattern);
   var repos = bosco.getRepos();
-  if(!repos) return bosco.error('You are repo-less :( You need to initialise bosco first, try \'bosco clone\'.');
+  if (!repos) return bosco.error('You are repo-less :( You need to initialise bosco first, try \'bosco clone\'.');
 
   async.mapLimit(repos, bosco.options.cpus, function(repo, repoCb) {
-    if(!repo.match(repoRegex)) return repoCb();
+    if (!repo.match(repoRegex)) return repoCb();
 
     var repoPath = bosco.getRepoPath(repo);
 
     options.guardFn(bosco, repoPath, options, function(err) {
-      if(err) return repoCb(err);
+      if (err) return repoCb(err);
       execute(bosco, options.cmd, options.args, repoPath, options, repoCb);
     });
   }, function(err) {
-    if(options.dieOnError) return next(err);
+    if (options.dieOnError) return next(err);
     next();
   });
 }
