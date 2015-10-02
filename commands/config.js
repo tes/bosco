@@ -37,12 +37,10 @@ function cmd(bosco, args) {
 
       console.log('Config for ' + 'css'.green + ':');
       logConfig(bosco.config.get('css'));
-
     } else {
       bosco.log('Config for ' + key.green + ':');
       logConfig(bosco.config.get(key));
     }
-
   }
 
   if(type == 'set') {
@@ -59,9 +57,7 @@ function cmd(bosco, args) {
     bosco.config.save(function() {
       bosco.log('Saved config');
     });
-
   }
-
 }
 
 function logConfig(config) {

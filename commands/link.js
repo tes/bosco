@@ -36,7 +36,6 @@ function cmd(bosco, args, next) {
     bosco.log('Completed linking modules.');
     if(next) { next(); }
   })
-
 }
 
 function execCmd(bosco, cmd, repoPath, next) {

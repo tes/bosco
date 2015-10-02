@@ -29,17 +29,14 @@ function cmd(bosco) {
       } else {
         repoCb();
       }
-
     }, function() {
       cb();
     });
-
   }
 
   pushRepos(function() {
     bosco.log('Complete');
   });
-
 }
 
 function confirm(bosco, message, next) {

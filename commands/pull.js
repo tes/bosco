@@ -36,11 +36,9 @@ function cmd(bosco, args, next) {
 
       var repoPath = bosco.getRepoPath(repo);
       pull(bosco, progressbar, bar, repoPath, repoCb);
-
     }, function() {
       cb();
     });
-
   }
 
   var pullDockerImages = function(cb) {
@@ -63,7 +61,6 @@ function cmd(bosco, args, next) {
     }, function() {
       cb();
     });
-
   }
 
   var clearGithubCache = function(cb) {
@@ -90,7 +87,6 @@ function cmd(bosco, args, next) {
     bosco.log('Complete!');
     if(next) next();
   });
-
 }
 
 function pull(bosco, progressbar, bar, repoPath, next) {
@@ -137,6 +133,5 @@ function dockerPull(bosco, progressbar, bar, repoPath, repo, next) {
   } else {
     return next();
   }
-
 }
 

@@ -36,7 +36,6 @@ function cmd(bosco, args, next) {
       '. If you can\'t see your team in the list, Try: ',
       'bosco team sync'.green
     ].join(''));
-
   } else {
     bosco.log('Fetching repository list from Github for ' + team.green + ' team ...');
     var more = true, page = 1, repoList = [];
@@ -63,7 +62,6 @@ function cmd(bosco, args, next) {
       }
     );
   }
-
 }
 
 function getRepos(client, teamConfig, page, next) {
@@ -76,7 +74,6 @@ function getRepos(client, teamConfig, page, next) {
       next(err, _.pluck(body, 'name'), _.contains(headers.link, 'rel="next"'));
     });
   }
-
 }
 
 function fetch(bosco, team, repos, repoRegex, args, next) {
@@ -154,7 +151,6 @@ function fetch(bosco, team, repos, repoRegex, args, next) {
       }
       cb();
     });
-
   }
 
   var gitIgnoreRepos = function(cb) {
@@ -173,7 +169,6 @@ function fetch(bosco, team, repos, repoRegex, args, next) {
     bosco.log('Complete');
     if(next) next();
   });
-
 }
 
 
@@ -194,7 +189,6 @@ function checkCanDelete(bosco, repoPath, next) {
   ], true, reducer, function(err, result) {
     next(err, result)
   });
-
 }
 
 function clone(bosco, progressbar, bar, repoUrl, orgPath, next) {

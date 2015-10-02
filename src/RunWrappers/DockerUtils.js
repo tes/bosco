@@ -61,7 +61,6 @@ function processCmdVars(optsCreate, name, cwd) {
     });
     optsCreate.Binds = processedBinds;
   }
-
 }
 
 function startContainer(bosco, docker, fqn, options, container, next) {
@@ -119,7 +118,6 @@ function startContainer(bosco, docker, fqn, options, container, next) {
     }
     bosco.log('Waiting for ' + options.name.green + ' to respond on port ' + ('' + checkPort).magenta);
     check();
-
   });
 }
 
@@ -267,7 +265,6 @@ function pullImage(bosco, docker, repoTag, next) {
     })
     stream.once('end', handler);
   });
-
 }
 
 function ensureManifest(bosco, name, cwd) {
@@ -290,7 +287,6 @@ function getHostIp() {
     .value();
 
   return ip;
-
 }
 
 module.exports = {

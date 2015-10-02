@@ -28,16 +28,13 @@ function cmd(bosco, args, next) {
         if (err && err.code != 1) bosco.error(err.message.substring(0, err.message.indexOf('\n')));
         grepCallback(null, result);
       });
-
     }, callback);
-
   };
 
   grepRepos(function(err, results) {
     if (err) bosco.error(err);
     if (next) next(err, results);
   });
-
 }
 
 var grepRepo = function(bosco, args, repo, repoPath, callback) {

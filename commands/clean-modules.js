@@ -35,18 +35,15 @@ function cmd(bosco, args, next) {
 
       var repoPath = bosco.getRepoPath(repo);
       clean(bosco, progressbar, bar, repoPath, repoCb);
-
     }, function() {
       cb();
     });
-
   }
 
   cleanRepos(function() {
     bosco.log('Complete');
     if(next) next();
   });
-
 }
 
 function clean(bosco, progressbar, bar, repoPath, next) {
@@ -70,5 +67,4 @@ function clean(bosco, progressbar, bar, repoPath, next) {
     }
     next();
   });
-
 }

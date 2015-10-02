@@ -30,7 +30,6 @@ module.exports = function(bosco) {
           if (err) return cb(err);
           createAssetList(service, options.buildNumber, options.minify, options.tagFilter, cb);
         });
-
       }, function(err, assetList) {
         if (err) return next(err);
 
@@ -95,7 +94,6 @@ module.exports = function(bosco) {
     }
 
     next(null, staticAssets);
-
   }
 
   function loadService(repo, next) {
@@ -133,5 +131,4 @@ module.exports = function(bosco) {
     getStaticAssets: getStaticAssets,
     getStaticRepos: getStaticRepos
   }
-
 };

@@ -113,10 +113,8 @@ function cmd(bosco, args, cb) {
         } else {
           runService(runConfig, cb);
         }
-
       }, next);
     })
-
   }
 
   var stopNotRunningServices = function(next) {
@@ -155,7 +153,6 @@ function cmd(bosco, args, cb) {
     },function(err) {
       next(err);
     });
-
   }
 
   bosco.log('Run each microservice ... ');
@@ -176,6 +173,5 @@ function cmd(bosco, args, cb) {
       if(cb) return cb();
     }
   })
-
 }
 

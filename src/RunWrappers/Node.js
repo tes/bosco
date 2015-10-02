@@ -101,7 +101,6 @@ Runner.prototype.start = function(options, next) {
   }
 
   pm2.start(location, startOptions, next);
-
 }
 
 /**
@@ -134,7 +133,6 @@ function getInterpreter(bosco, service) {
   }
 
   return path.join(homeFolder, nvmBase, 'v' + version, 'bin', 'node');
-
 }
 
 module.exports = new Runner();

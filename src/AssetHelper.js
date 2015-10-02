@@ -39,9 +39,7 @@ module.exports = function(bosco) {
           staticAssets.push(newAsset);
         }
       }
-
     }
-
   }
 
   function createKey(name, buildNumber, tag, hash, type, extension) {
@@ -74,5 +72,4 @@ module.exports = function(bosco) {
     createKey: createKey,
     checksum: checksum
   }
-
 }

@@ -10,5 +10,4 @@ gulp.task('default', function() {
         .pipe(gulp.dest('./man/man3'));
     });
   });
-
 });

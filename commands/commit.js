@@ -35,17 +35,14 @@ function cmd(bosco, args) {
       } else {
         repoCb();
       }
-
     }, function() {
       cb();
     });
-
   }
 
   commitRepos(function() {
     bosco.log('Complete');
   });
-
 }
 
 

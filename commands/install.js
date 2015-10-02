@@ -35,18 +35,15 @@ function cmd(bosco, args, next) {
 
       var repoPath = bosco.getRepoPath(repo);
       install(bosco, progressbar, bar, repoPath, repoCb);
-
     }, function() {
       cb();
     });
-
   }
 
   installRepos(function() {
     bosco.log('npm install complete');
     if(next) next();
   });
-
 }
 
 function install(bosco, progressbar, bar, repoPath, next) {
@@ -81,5 +78,4 @@ function install(bosco, progressbar, bar, repoPath, next) {
     }
     next();
   });
-
 }

@@ -35,17 +35,14 @@ function cmd(bosco, args) {
 
       var repoPath = bosco.getRepoPath(repo);
       stash(bosco, args, progressbar, bar, repoPath, repoCb);
-
     }, function() {
       cb();
     });
-
   }
 
   stashRepos(function() {
     bosco.log('Complete');
   });
-
 }
 
 function stash(bosco, args, progressbar, bar, orgPath, next) {

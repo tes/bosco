@@ -14,7 +14,6 @@ function cmd(bosco, args) {
 
   var man = 'bosco-' + cmdName + '.3';
   viewMan(man, function(){});
-
 }
 
 // Shamelessly stolen from npm
@@ -33,5 +32,4 @@ function viewMan (man, cb) {
   var conf = { env: env, customFds: [ 0, 1, 2] }
   var manProcess = spawn('man', [num, section], conf)
   manProcess.on('close', cb)
-
 }

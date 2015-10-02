@@ -16,7 +16,6 @@ module.exports = function(bosco) {
     compileJs(remainingAssets, jsAssets, function(err, minifiedStaticAssets) {
       compileCss(minifiedStaticAssets, cssAssets, next);
     });
-
   }
 
   return {
@@ -92,11 +91,9 @@ module.exports = function(bosco) {
       minifiedItem.mimeType = 'application/javascript';
       minifiedItem.content = compiled.code;
       staticAssets.push(minifiedItem);
-
     });
 
     next(null, staticAssets);
-
   }
 
   function compileCss(staticAssets, cssAssets, next) {
@@ -144,12 +141,8 @@ module.exports = function(bosco) {
       minifiedItem.mimeType = 'text/css';
       minifiedItem.content = cssContent;
       staticAssets.push(minifiedItem);
-
     });
 
     next(null, staticAssets);
-
   }
-
-
 }

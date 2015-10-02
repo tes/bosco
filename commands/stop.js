@@ -49,7 +49,6 @@ function cmd(bosco, args, next) {
     }
 
     return cb();
-
   }
 
   var stopRunningServices = function(cb) {
@@ -71,7 +70,6 @@ function cmd(bosco, args, next) {
         } else {
           return cb();
         }
-
       }, function() {
         // Special case for bosco-cdn, room for improvement to make this
         // generic for all custom bosco services.
@@ -82,7 +80,6 @@ function cmd(bosco, args, next) {
         }
       });
     });
-
   }
 
   var getRunningServices = function(cb) {
@@ -102,5 +99,4 @@ function cmd(bosco, args, next) {
   async.series([initialiseRunners, getRunningServices, stopRunningServices, disconnectRunners], function() {
     if(next) return next(null, runningServices);
   });
-
 }

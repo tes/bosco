@@ -81,7 +81,6 @@ function cmd(bosco, args) {
 
     server.listen(serverPort);
     bosco.log('Server is listening on ' + serverPort);
-
   }
 
   var startMonitor = function(staticAssets) {
@@ -161,11 +160,8 @@ function cmd(bosco, args) {
         if(reloading[fileKey]) return;
         reloading[fileKey] = true;
         reloadFile(fileKey);
-
       });
-
     });
-
   }
 
   if(minify) bosco.log('Minifying front end assets, this can take some time ...');
@@ -191,5 +187,4 @@ function cmd(bosco, args) {
     startServer(results.staticAssets, results.staticRepos, port);
     startMonitor(results.staticAssets);
   });
-
 }

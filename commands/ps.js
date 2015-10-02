@@ -45,7 +45,6 @@ function cmd(bosco) {
 
     console.log(table.toString());
     console.log('\r');
-
   }
 
   var printDockerServices = function(name, list) {
@@ -64,7 +63,6 @@ function cmd(bosco) {
 
     console.log(table.toString());
     console.log('\r');
-
   }
 
   bosco.log('Getting running microservices ...');
@@ -79,6 +77,5 @@ function cmd(bosco) {
 
     process.exit(0);
   })
-
 }
 

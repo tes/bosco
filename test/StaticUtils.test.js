@@ -45,9 +45,7 @@ describe('Bosco Static Asset Handling', function() {
       ]);
 
       done();
-
     });
-
   });
 
   it('should load static assets in un-minified cdn mode, deduping where necessary', function(done) {
@@ -83,9 +81,7 @@ describe('Bosco Static Asset Handling', function() {
         'project2/local/swf/flash.swf'
       ]);
       done();
-
     });
-
   });
 
   it('should load static assets in minified cdn mode, deduping where necessary', function(done) {
@@ -126,9 +122,7 @@ describe('Bosco Static Asset Handling', function() {
       ]);
 
       done();
-
     });
-
   });
 
   it('should load static assets via globs', function(done) {
@@ -156,9 +150,7 @@ describe('Bosco Static Asset Handling', function() {
       ]);
 
       done();
-
     });
-
   });
 
   it('should load static assets in minified cdn mode, filtering by tag if specified', function(done) {
@@ -189,9 +181,7 @@ describe('Bosco Static Asset Handling', function() {
       ]);
 
       done();
-
     });
-
   });
 
   it('should create a source map when minifying javascript', function(done) {
@@ -215,9 +205,7 @@ describe('Bosco Static Asset Handling', function() {
         'project2/local/js/top.js.map'
       ]);
       done();
-
     });
-
   });
 
   it('should create a formatted repo list when requested for cdn mode', function(done) {
@@ -239,9 +227,7 @@ describe('Bosco Static Asset Handling', function() {
       expect(assetKeys).to.contain('formattedRepos');
       done();
     });
-
   });
-
 });
 
 describe('Bosco Static Asset Handling - Custom Building', function() {
@@ -273,9 +259,7 @@ describe('Bosco Static Asset Handling - Custom Building', function() {
       ]);
 
       done();
-
     });
-
   });
 
   it('should fail if the build fails', function(done) {
@@ -321,9 +305,7 @@ describe('Bosco Static Asset Handling - Custom Building', function() {
         'project3/local/css/compiled.css'
       ]);
       done();
-
     });
-
   });
 
   it('should fail if the watch command fails', function(done) {
@@ -370,9 +352,6 @@ describe('Bosco Static Asset Handling - Custom Building', function() {
         'project3/local/css/compiled.css'
       ]);
       done();
-
     });
-
   });
-
 });

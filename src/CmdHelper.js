@@ -48,12 +48,10 @@ function iterate(bosco, options, next) {
       if(err) return repoCb(err);
       execute(bosco, options.cmd, options.args, repoPath, options, repoCb);
     });
-
   }, function(err) {
     if(options.dieOnError) return next(err);
     next();
   });
-
 }
 
 function execute(bosco, command, args, repoPath, options, next) {

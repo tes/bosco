@@ -16,7 +16,5 @@ describe('Asset Helper', function() {
     // expect
     expect(message).equal('Asset my-key not found at path /tmp/asset.hole, declared in our-repo');
     done();
-
   });
-
 });

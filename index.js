@@ -104,7 +104,6 @@ Bosco.prototype.run = function(options) {
     var teamDesc = self.getTeam() || 'Outside workspace!';
     self.log('Initialised using [' + self.options.configFile.magenta + '] in environment [' + self.options.environment.green + '] with team [' + teamDesc.cyan + ']');
     self._cmd();
-
   });
 }
 
@@ -139,9 +138,7 @@ Bosco.prototype._init = function(next) {
         next();
       }
     }
-
   });
-
 }
 
 Bosco.prototype._checkConfig = function(next) {

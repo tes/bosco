@@ -23,10 +23,7 @@ function cmd(bosco, args) {
           bosco.log('Completed deleting ' + toDelete.blue);
         }
       });
-
     });
-
-
   });
 
   var confirm = function(message, next) {
@@ -46,6 +43,4 @@ function cmd(bosco, args) {
       }
     });
   }
-
-
 }

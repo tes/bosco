@@ -46,7 +46,6 @@ function getRunConfig(bosco, repo, repoRegex, watchRegex) {
   }
 
   return svcConfig;
-
 }
 
 function getRunList(bosco, repos, repoRegex, watchRegex, repoTag, next) {
@@ -101,7 +100,6 @@ function getRunList(bosco, repos, repoRegex, watchRegex, repoTag, next) {
     }).value();
 
   next(null, runList);
-
 }
 
 function getServiceConfigFromGithub(bosco, repo, next) {
@@ -127,5 +125,4 @@ function getServiceConfigFromGithub(bosco, repo, next) {
       });
     });
   }
-
 }

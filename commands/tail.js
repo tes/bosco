@@ -65,8 +65,6 @@ function cmd(bosco, args) {
     getRunningServices(function(err, running) {
       describeRunningServices(running);
     });
-
   });
-
 }
 

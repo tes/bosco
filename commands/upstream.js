@@ -30,7 +30,6 @@ function cmd(bosco) {
   changedRepos(function() {
     bosco.log('Complete');
   });
-
 }
 
 function upstream(bosco, orgPath, next) {

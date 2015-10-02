@@ -30,7 +30,6 @@ function listTemplates(bosco, next) {
 
   bosco.log('Use the command: ' + 'bosco template add <githubRepo>'.green + ' to add to your template list.')
   if(next) { next(); }
-
 }
 
 function newServiceFromTemplate(bosco, args, next) {
@@ -77,7 +76,6 @@ function newServiceFromTemplate(bosco, args, next) {
     }
     bosco.log('Complete!');
   });
-
 }
 
 function copyTemplateFiles(bosco, serviceName, port, serviceDirectory, next) {
@@ -107,9 +105,7 @@ function copyTemplateFiles(bosco, serviceName, port, serviceDirectory, next) {
     }
 
     cb();
-
   }, next);
-
 }
 
 function getShortName(service) {
@@ -129,7 +125,6 @@ function addTemplate(bosco, args, next) {
     bosco.log('Added new template.');
     if(next) { next(); }
   });
-
 }
 
 function removeTemplate(bosco, args, next) {
@@ -144,7 +139,6 @@ function removeTemplate(bosco, args, next) {
     bosco.log('Removed any matching templates.');
     if(next) { next(); }
   });
-
 }
 
 function execCmd(bosco, cmd, params, cwd, next) {

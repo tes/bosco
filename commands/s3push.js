@@ -55,7 +55,6 @@ function cmd(bosco, args, callback) {
         type:     asset.type,
         mimeType: mimeType
       });
-
     });
 
     // Add index if doing full s3 push
@@ -161,7 +160,6 @@ function cmd(bosco, args, callback) {
     bosco.log('Priming compoxure cache at url: ' + compoxureUrl + compoxureKey);
     req.write(cacheString);
     req.end();
-
   }
 
   var confirm = function(message, next) {

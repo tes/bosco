@@ -61,7 +61,6 @@ function syncTeams(bosco, next) {
       bosco.log('Synchronisation with Github complete, added ' + (added ? added : 'no new') + ' teams.');
       if(next) { next(); }
     });
-
   });
 }
 
@@ -117,9 +116,7 @@ function setupInitialLink(bosco, next) {
     ], function( answer2 ) {
       linkTeam(bosco, answer1.repo, answer2.folder, next);
     });
-
   });
-
 }
 
 function linkTeam(bosco, team, folder, next) {
@@ -138,5 +135,4 @@ function linkTeam(bosco, team, folder, next) {
     bosco.log('Team ' + team.green + ' path updated to: ' + teamPath.cyan);
     if(next) { next(); }
   });
-
 }

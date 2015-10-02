@@ -40,7 +40,6 @@ module.exports = function(bosco) {
           'url': bosco.getAssetCdnUrl(asset.assetKey)
         });
       }
-
     });
 
     staticAssets = _.union(_.values(htmlAssets), staticAssets);
@@ -48,7 +47,6 @@ module.exports = function(bosco) {
     staticAssets.formattedAssets = formattedAssets(staticAssets);
 
     next(null, staticAssets);
-
   }
 
   function isJavascript(asset) {
@@ -93,7 +91,6 @@ module.exports = function(bosco) {
     assets.date = (new Date()).toString();
 
     return template(assets);
-
   }
 
   function formattedRepos(repos) {
@@ -105,12 +102,10 @@ module.exports = function(bosco) {
     templateData.date = (new Date()).toString();
 
     return template(templateData);
-
   }
 
   return {
     createAssetHtmlFiles:createAssetHtmlFiles,
     attachFormattedRepos: attachFormattedRepos
   }
-
 }
