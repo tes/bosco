@@ -9,7 +9,6 @@ module.exports = {
 }
 
 function cmd(bosco, args) {
-
   var stringCommand = args.join(' '),
     command = args[0],
     cmdArgs = _.rest(args);

@@ -3,15 +3,12 @@ var hb = require('handlebars');
 var fs = require('fs');
 
 module.exports = function(bosco) {
-
   var createKey = require('./AssetHelper')(bosco).createKey;
 
   function createAssetHtmlFiles(staticAssets, next) {
-
     var htmlAssets = {};
 
     _.forEach(staticAssets, function(asset) {
-
       var htmlFile = createKey(asset.serviceName, asset.buildNumber, asset.tag, asset.type, 'html', 'html');
 
       if (!isJavascript(asset) && !isStylesheet(asset)) return;
@@ -72,7 +69,6 @@ module.exports = function(bosco) {
 
 
   function formattedAssets(staticAssets) {
-
     var assets = {services:[]};
     var templateContent = fs.readFileSync(__dirname + '/../templates/assetList.html');
     var template = hb.compile(templateContent.toString());
@@ -101,7 +97,6 @@ module.exports = function(bosco) {
   }
 
   function formattedRepos(repos) {
-
     var templateContent = fs.readFileSync(__dirname + '/../templates/repoList.html'),
       template = hb.compile(templateContent.toString()),
       templateData = { repos: repos };

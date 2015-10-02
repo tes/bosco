@@ -14,7 +14,6 @@ module.exports = {
 }
 
 function cmd(bosco, args, next) {
-
   var repoPattern = bosco.options.repo;
   var repoRegex = new RegExp(repoPattern);
   var repos = bosco.getRepos();
@@ -35,7 +34,6 @@ function cmd(bosco, args, next) {
   }
 
   var stopService = function(repo, boscoService, runningServices, cb) {
-
     if (boscoService.service.type == 'docker') {
       if (_.contains(runningServices, repo)) {
         return DockerRunner.stop(boscoService, cb);
@@ -55,11 +53,8 @@ function cmd(bosco, args, next) {
   }
 
   var stopRunningServices = function(cb) {
-
     RunListHelper.getRunList(bosco, repos, repoRegex, null, repoTag, function(err, services) {
-
       async.mapSeries(services, function(boscoService, cb) {
-
         var repo = boscoService.name;
 
         if (repo.match(repoRegex)) {

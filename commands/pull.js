@@ -12,7 +12,6 @@ module.exports = {
 }
 
 function cmd(bosco, args, next) {
-
   var repoPattern = bosco.options.repo;
   var repoRegex = new RegExp(repoPattern);
 
@@ -22,7 +21,6 @@ function cmd(bosco, args, next) {
   bosco.log('Running ' + 'git pull --rebase'.blue + ' across all repos ...');
 
   var pullRepos = function(cb) {
-
     var progressbar = bosco.config.get('progress') == 'bar',
       total = repos.length;
 
@@ -34,7 +32,6 @@ function cmd(bosco, args, next) {
     }) : null;
 
     async.mapLimit(repos, bosco.concurrency.network, function repoStash(repo, repoCb) {
-
       if(!repo.match(repoRegex)) return repoCb();
 
       var repoPath = bosco.getRepoPath(repo);
@@ -47,7 +44,6 @@ function cmd(bosco, args, next) {
   }
 
   var pullDockerImages = function(cb) {
-
     bosco.log('Checking for docker images to pull ...');
 
     var progressbar = bosco.config.get('progress') == 'bar',
@@ -98,7 +94,6 @@ function cmd(bosco, args, next) {
 }
 
 function pull(bosco, progressbar, bar, repoPath, next) {
-
   if(!bosco.exists([repoPath,'.git'].join('/'))) {
     bosco.warn('Doesn\'t seem to be a git repo: '+ repoPath.blue);
     return next();
@@ -125,7 +120,6 @@ function pull(bosco, progressbar, bar, repoPath, next) {
 }
 
 function dockerPull(bosco, progressbar, bar, repoPath, repo, next) {
-
   var boscoService = [repoPath, 'bosco-service.json'].join('/');
   if (bosco.exists(boscoService)) {
     var definition = require(boscoService);

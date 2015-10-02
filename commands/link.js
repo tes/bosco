@@ -9,7 +9,6 @@ module.exports = {
 }
 
 function cmd(bosco, args, next) {
-
   var commands;
 
   var getCommands = function(next) {

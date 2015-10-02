@@ -9,7 +9,6 @@ module.exports = {
 }
 
 function cmd(bosco, args) {
-
   var cmdName = args.shift();
   if(!cmdName) return bosco.error('You need to provide a command name. e.g: bosco help ' + module.exports.usage);
 
@@ -20,7 +19,6 @@ function cmd(bosco, args) {
 
 // Shamelessly stolen from npm
 function viewMan (man, cb) {
-
   var nre = /([0-9]+)$/
   var num = man.match(nre)[1]
   var section = path.basename(man, '.' + num)

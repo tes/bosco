@@ -7,7 +7,6 @@ var hl = require('highland');
  * Helper functions to reduce repetition and boiler plate in commands
  */
 function createOptions(bosco, options) {
-
   options = _.defaults(options, {
     cmd: 'echo',
     args: ['NO COMMAND DEFINED!'],
@@ -35,7 +34,6 @@ function createOptions(bosco, options) {
 }
 
 function iterate(bosco, options, next) {
-
   var repoPattern = bosco.options.repo;
   var repoRegex = new RegExp(repoPattern);
   var repos = bosco.getRepos();
@@ -59,7 +57,6 @@ function iterate(bosco, options, next) {
 }
 
 function execute(bosco, command, args, repoPath, options, next) {
-
   if (options.init && (options.stdoutFn || options.stderrFn)) {
     bosco.error('command init and stdoutFn/stderrFn are not compatible.');
     return next(Error('Bad command'));

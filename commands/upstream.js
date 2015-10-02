@@ -9,7 +9,6 @@ module.exports = {
 }
 
 function cmd(bosco) {
-
   var repoPattern = bosco.options.repo;
   var repoRegex = new RegExp(repoPattern);
 
@@ -35,7 +34,6 @@ function cmd(bosco) {
 }
 
 function upstream(bosco, orgPath, next) {
-
   exec('git fetch; git log HEAD..origin/master --oneline', {
     cwd: orgPath
   }, function(err, stdout, stderr) {

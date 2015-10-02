@@ -3,7 +3,6 @@ var markedMan = require('gulp-marked-man');
 var fs = require('fs');
 
 gulp.task('default', function() {
-
   fs.readdir('./help', function(err, files) {
     files.forEach(function(file) {
       gulp.src('./help/' + file)

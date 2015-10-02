@@ -24,7 +24,6 @@ util.inherits(Bosco, events.EventEmitter);
 module.exports = Bosco;
 
 Bosco.prototype.init = function(options) {
-
   var self = this;
 
   self._defaults = {
@@ -55,7 +54,6 @@ Bosco.prototype.init = function(options) {
 }
 
 Bosco.prototype.run = function(options) {
-
   var self = this;
 
   if (!self.options && !options) {
@@ -65,7 +63,6 @@ Bosco.prototype.run = function(options) {
   if (options) self.init(options);
 
   self._init(function(err) {
-
     self._checkVersion();
 
     if (err) { return console.log(err); }
@@ -112,7 +109,6 @@ Bosco.prototype.run = function(options) {
 }
 
 Bosco.prototype._init = function(next) {
-
   var self = this;
 
   var loadConfig = function() {
@@ -126,7 +122,6 @@ Bosco.prototype._init = function(next) {
   }
 
   self._checkConfig(function(err, initialise) {
-
     if (err) return;
 
     loadConfig();
@@ -150,7 +145,6 @@ Bosco.prototype._init = function(next) {
 }
 
 Bosco.prototype._checkConfig = function(next) {
-
   var self = this,
     defaultConfig = self.options._defaultConfig,
     configPath = self.options.configPath,
@@ -190,7 +184,6 @@ Bosco.prototype._checkConfig = function(next) {
 }
 
 Bosco.prototype._initialiseConfig = function(next) {
-
   var self = this;
   prompt.start();
 
@@ -215,7 +208,6 @@ Bosco.prototype._initialiseConfig = function(next) {
 };
 
 Bosco.prototype._cmd = function() {
-
   var self = this,
     args = self.options.args,
     command = args.shift(),
@@ -256,7 +248,6 @@ Bosco.prototype._cmd = function() {
 }
 
 Bosco.prototype._shellCommands = function() {
-
   var self = this,
     cmdPath = self.getGlobalCommandFolder(),
     localPath =  self.getLocalCommandFolder();

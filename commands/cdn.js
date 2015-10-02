@@ -25,7 +25,6 @@ module.exports = {
 }
 
 function cmd(bosco, args) {
-
   var minify = _.contains(args,'minify');
   var port = bosco.config.get('cdn:port') || 7334;
   var repoPattern = bosco.options.repo;
@@ -40,7 +39,6 @@ function cmd(bosco, args) {
   if(!repos) return bosco.error('You are repo-less :( You need to initialise bosco first, try \'bosco clone\'.');
 
   var startServer = function(staticAssets, staticRepos, serverPort) {
-
     var getAsset = function(url) {
       url = url.replace('/', '');
       return _.find(staticAssets, 'assetKey', url);
@@ -87,7 +85,6 @@ function cmd(bosco, args) {
   }
 
   var startMonitor = function(staticAssets) {
-
     var watchSet = {}, reloading = {};
 
     _.forEach(staticAssets, function(asset) {
@@ -156,11 +153,9 @@ function cmd(bosco, args) {
     }
 
     watch.createMonitor(bosco.getOrgPath(), {filter: filterFn, ignoreDotFiles: true, ignoreUnreadableDir: true, ignoreDirectoryPattern: /node_modules|\.git|coverage/, interval: 1000}, function (monitor) {
-
       bosco.log('Watching '+ _.keys(monitor.files).length + ' files ...');
 
       monitor.on('changed', function (f) {
-
         var fileKey = watchSet[f];
 
         if(reloading[fileKey]) return;

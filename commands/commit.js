@@ -9,7 +9,6 @@ module.exports = {
 }
 
 function cmd(bosco, args) {
-
   var repos = bosco.getRepos();
   if(!repos) return bosco.error('You are repo-less :( You need to initialise bosco first, try \'bosco clone\'.');
 
@@ -28,9 +27,7 @@ function cmd(bosco, args) {
   bosco.log('Using message: ' + message.blue);
 
   var commitRepos = function(cb) {
-
     async.mapSeries(repos, function repoPush(repo, repoCb) {
-
       var repoPath = bosco.getRepoPath(repo);
       if(repo.match(repoRegex)) {
         bosco.log('Running \'git commit -am\' on ' + repo.blue);
@@ -74,7 +71,6 @@ function confirm(bosco, message, next) {
 
 
 function commit(bosco, commitMsg, orgPath, next) {
-
   if(!bosco.exists([orgPath,'.git'].join('/'))) {
     bosco.warn('Doesn\'t seem to be a git repo: '+ orgPath.blue);
     return next();

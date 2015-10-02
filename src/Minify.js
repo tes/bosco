@@ -4,11 +4,9 @@ var UglifyJS = require('uglify-js');
 var CleanCSS = require('clean-css');
 
 module.exports = function(bosco) {
-
   var createKey = require('./AssetHelper')(bosco).createKey;
 
   function minify(staticAssets, next) {
-
     var jsAssets = _.where(staticAssets, {type:'js'});
     var cssAssets = _.where(staticAssets, {type:'css'});
     var remainingAssets = _.filter(staticAssets, function(item) {
@@ -26,11 +24,9 @@ module.exports = function(bosco) {
   }
 
   function compileJs(staticAssets, jsAssets, next) {
-
     var bundleKeys = _.uniq(_.pluck(jsAssets, 'bundleKey'));
 
     _.forEach(bundleKeys, function(bundleKey) {
-
       var items = _.where(jsAssets, {bundleKey: bundleKey});
 
       if(items.length === 0) { return; }
@@ -104,12 +100,10 @@ module.exports = function(bosco) {
   }
 
   function compileCss(staticAssets, cssAssets, next) {
-
     var bundleKeys = _.uniq(_.pluck(cssAssets, 'bundleKey'));
 
 
     _.forEach(bundleKeys, function(bundleKey) {
-
       var items = _.where(cssAssets, {bundleKey: bundleKey});
       var cssContent = '', serviceName, buildNumber, tag;
 

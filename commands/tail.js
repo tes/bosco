@@ -11,13 +11,11 @@ module.exports = {
 }
 
 function cmd(bosco, args) {
-
   var repoPattern = bosco.options.repo;
   var repoRegex = new RegExp(repoPattern);
 
   // Connect or launch PM2
   pm2.connect(function(err) {
-
     if (err) {
       bosco.error(err);
       return;

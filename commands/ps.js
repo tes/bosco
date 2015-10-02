@@ -14,7 +14,6 @@ module.exports = {
 }
 
 function cmd(bosco) {
-
   var initialiseRunners = function(next) {
     var runners = [NodeRunner, DockerRunner];
     async.map(runners, function loadRunner(runner, cb) {
@@ -35,7 +34,6 @@ function cmd(bosco) {
   }
 
   var printNodeServices = function(name, list) {
-
     var table = new Table({
       chars: {'mid': '', 'left-mid': '', 'mid-mid': '', 'right-mid': ''},
       head: [name + ' Service', 'PID', 'Status', 'Mode', 'Watch'], colWidths: [60,10,10,12,10]
@@ -51,7 +49,6 @@ function cmd(bosco) {
   }
 
   var printDockerServices = function(name, list) {
-
     var table = new Table({
       chars: {'mid': '', 'left-mid': '', 'mid-mid': '', 'right-mid': ''},
       head: [name + ' Service', 'Status', 'FQN'], colWidths: [25,20,60]
@@ -73,7 +70,6 @@ function cmd(bosco) {
   bosco.log('Getting running microservices ...');
 
   async.series([initialiseRunners, getRunningServices], function() {
-
     console.log('');
     bosco.log('Running NodeJS Services (via PM2):');
     printNodeServices('Node', nodeList);

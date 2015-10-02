@@ -11,7 +11,6 @@ module.exports = {
 }
 
 function cmd(bosco, args) {
-
   var repoPattern = bosco.options.repo;
   var repoRegex = new RegExp(repoPattern);
 
@@ -21,7 +20,6 @@ function cmd(bosco, args) {
   bosco.log('Running git stash across all repos ...');
 
   var stashRepos = function(cb) {
-
     var progressbar = bosco.config.get('progress') == 'bar',
       total = repos.length;
 
@@ -33,7 +31,6 @@ function cmd(bosco, args) {
     }) : null;
 
     async.mapSeries(repos, function repoStash(repo, repoCb) {
-
       if(!repo.match(repoRegex)) return repoCb();
 
       var repoPath = bosco.getRepoPath(repo);
@@ -52,7 +49,6 @@ function cmd(bosco, args) {
 }
 
 function stash(bosco, args, progressbar, bar, orgPath, next) {
-
   if(!progressbar) bosco.log('Stashing '+ orgPath.blue);
   if(!bosco.exists([orgPath,'.git'].join('/'))) {
     bosco.warn('Doesn\'t seem to be a git repo: '+ orgPath.blue);

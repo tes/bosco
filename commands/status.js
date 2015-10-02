@@ -9,7 +9,6 @@ module.exports = {
 }
 var CHANGE_STRINGS = ['Changes not staged', 'Your branch is ahead', 'Untracked files', 'Changes to be committed'];
 function cmd(bosco) {
-
   bosco.log('Running git status across all matching repos ...');
 
   var options = ch.createOptions(bosco, {

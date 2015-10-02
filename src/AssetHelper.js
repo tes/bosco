@@ -6,12 +6,9 @@ var mime = require('mime');
 var sf = require('sf');
 
 module.exports = function(bosco) {
-
   function getAssetHelper(boscoRepo, tagFilter) {
-
     return {
       addAsset: function(staticAssets, buildNumber, assetKey, asset, tag, type, basePath, externalBuild) {
-
         if (tagFilter && tag !== tagFilter) return;
 
         var newAsset = {};
@@ -59,7 +56,6 @@ module.exports = function(bosco) {
   }
 
   function resolve(boscoRepo, basePath, asset, assetKey) {
-
     var resolvedPath = path.join(boscoRepo.path, basePath, asset);
 
     if (!fs.existsSync(resolvedPath)) {

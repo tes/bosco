@@ -74,7 +74,6 @@ Runner.prototype.stop = function(options, next) {
 }
 
 Runner.prototype.start = function(options, next) {
-
   var self = this, docker = self.docker;
   var dockerFqn = self.getFqn(options);
 

@@ -8,7 +8,6 @@ var semver = require('semver');
 require('colors');
 
 function Runner() {
-
 }
 
 Runner.prototype.init = function(bosco, next) {
@@ -49,7 +48,6 @@ Runner.prototype.listNotRunning = function(detailed, next) {
  * options = {cmd, cwd, name}
  */
 Runner.prototype.start = function(options, next) {
-
   var self = this;
 
   // Remove node from the start script as not req'd for PM2
@@ -121,7 +119,6 @@ Runner.prototype.stop = function(options, next) {
 }
 
 function getInterpreter(bosco, service) {
-
   var version = semver.parse(service.nodeVersion);
 
   if (!version) {

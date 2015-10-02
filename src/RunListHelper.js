@@ -8,7 +8,6 @@ module.exports = {
 }
 
 function getRunConfig(bosco, repo, repoRegex, watchRegex) {
-
   var pkg, svc,
     repoPath = bosco.getRepoPath(repo),
     watch = repo.match(watchRegex) ? true : false,
@@ -51,7 +50,6 @@ function getRunConfig(bosco, repo, repoRegex, watchRegex) {
 }
 
 function getRunList(bosco, repos, repoRegex, watchRegex, repoTag, next) {
-
   var depTree = {};
   var revDepTree = {};
   var repoList = [];
@@ -107,7 +105,6 @@ function getRunList(bosco, repos, repoRegex, watchRegex, repoTag, next) {
 }
 
 function getServiceConfigFromGithub(bosco, repo, next) {
-
   var team = bosco.getTeam();
   var organisation = team.split('/')[0];
   var client = github.client(bosco.config.get('github:authToken'));

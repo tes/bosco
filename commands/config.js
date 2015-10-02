@@ -9,7 +9,6 @@ module.exports = {
 }
 
 function cmd(bosco, args) {
-
   var type = args.shift();
   var key = args.shift();
   var value = args.shift();
@@ -21,7 +20,6 @@ function cmd(bosco, args) {
   if(type == 'get') {
     // Get the key
     if(!key) {
-
       console.log('')
 
       console.log('Config for ' + 'github'.green + ':');
@@ -48,7 +46,6 @@ function cmd(bosco, args) {
   }
 
   if(type == 'set') {
-
     if(!key && !value) return bosco.error('You need to specify a key and value: ' + 'bosco config set <key> <value>'.blue);
 
     var prevValue = bosco.config.get(key);

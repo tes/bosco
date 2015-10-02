@@ -8,7 +8,6 @@ var green = '\u001b[42m \u001b[0m';
 var red = '\u001b[41m \u001b[0m';
 
 function createContainer(docker, fqn, options, next) {
-
   var optsCreate = {
     'name': options.service.name,
     'Image': fqn,
@@ -42,7 +41,6 @@ function createContainer(docker, fqn, options, next) {
 }
 
 function processCmdVars(optsCreate, name, cwd) {
-
   // Allow simple variable substitution in Cmds
   var processedCommands = [], processedBinds = [],
     data = {
@@ -84,7 +82,6 @@ function startContainer(bosco, docker, fqn, options, container, next) {
   bosco.log('Starting ' + options.name.green + ': ' + fqn.magenta + '...');
 
   container.start(optsStart, function(err) {
-
     if (err) {
       bosco.error('Failed to start Docker image: ' + err.message);
       return next(err);
@@ -163,7 +160,6 @@ function prepareImage(bosco, docker, fqn, options, next) {
 }
 
 function buildImage(bosco, docker, fqn, options, next) {
-
   var path = sf(options.service.docker.build, {PATH: options.cwd});
 
   ensureManifest(bosco, options.service.name, options.cwd);
@@ -283,7 +279,6 @@ function ensureManifest(bosco, name, cwd) {
 }
 
 function getHostIp() {
-
   var ip = _.chain(os.networkInterfaces())
     .values()
     .flatten()

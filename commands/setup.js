@@ -6,7 +6,6 @@ module.exports = {
 }
 
 function cmd(bosco, args) {
-
   var clone = require('./clone');
   var install = require('./install');
   var team = require('./team');

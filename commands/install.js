@@ -11,7 +11,6 @@ module.exports = {
 }
 
 function cmd(bosco, args, next) {
-
   var repoPattern = bosco.options.repo;
   var repoRegex = new RegExp(repoPattern);
 
@@ -21,7 +20,6 @@ function cmd(bosco, args, next) {
   bosco.log('Running npm install across all repos ...');
 
   var installRepos = function(cb) {
-
     var progressbar = bosco.config.get('progress') == 'bar',
       total = repos.length;
 
@@ -33,7 +31,6 @@ function cmd(bosco, args, next) {
     }) : null;
 
     async.mapLimit(repos, bosco.concurrency.cpu, function repoStash(repo, repoCb) {
-
       if(!repo.match(repoRegex)) return repoCb();
 
       var repoPath = bosco.getRepoPath(repo);
@@ -53,7 +50,6 @@ function cmd(bosco, args, next) {
 }
 
 function install(bosco, progressbar, bar, repoPath, next) {
-
   var packageJson = [repoPath,'package.json'].join('/');
   if(!bosco.exists(packageJson)) {
     if(progressbar) bar.tick();

@@ -23,7 +23,6 @@ function cmd(bosco, args, next) {
 }
 
 function showTeams(bosco) {
-
   var teamConfig = bosco.config.get('teams'),
     teams = _.keys(teamConfig);
 
@@ -36,7 +35,6 @@ function showTeams(bosco) {
 }
 
 function syncTeams(bosco, next) {
-
   var client = github.client(bosco.config.get('github:authToken')),
     currentTeams = bosco.config.get('teams') || {},
     added = 0;
@@ -68,7 +66,6 @@ function syncTeams(bosco, next) {
 }
 
 function getTeams(client, cb) {
-
   client.get('/user/teams', {}, function(err, status, teams, headers) {
     if(err) { return cb(err); }
 
@@ -100,7 +97,6 @@ function getTeams(client, cb) {
 }
 
 function setupInitialLink(bosco, next) {
-
   var teams = _.keys(bosco.config.get('teams'));
 
   inquirer.prompt([
@@ -127,7 +123,6 @@ function setupInitialLink(bosco, next) {
 }
 
 function linkTeam(bosco, team, folder, next) {
-
   if(!team || !folder) {
     return bosco.error('You need to provide both the team name and folder, e.g. ' + 'bosco ln tes/resources .'.green);
   }

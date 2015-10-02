@@ -20,7 +20,6 @@ module.exports = {
 }
 
 function cmd(bosco, args, next) {
-
   var repoPattern = bosco.options.repo;
   var repoRegex = new RegExp(repoPattern);
   var team = bosco.getTeam();
@@ -29,7 +28,6 @@ function cmd(bosco, args, next) {
   var client = github.client(bosco.config.get('github:authToken'));
 
   if(!teamConfig) {
-
     // The user does not have a team, so just treat the repos config
     // as manually edited
     return bosco.error([
@@ -40,7 +38,6 @@ function cmd(bosco, args, next) {
     ].join(''));
 
   } else {
-
     bosco.log('Fetching repository list from Github for ' + team.green + ' team ...');
     var more = true, page = 1, repoList = [];
     async.whilst(
@@ -70,7 +67,6 @@ function cmd(bosco, args, next) {
 }
 
 function getRepos(client, teamConfig, page, next) {
-
   if(teamConfig.isUser) {
     client.get('/user/repos', {per_page: 20, page: page}, function (err, status, body, headers) {
       next(err, _.pluck(body, 'name'), _.contains(headers.link, 'rel="next"'));
@@ -84,7 +80,6 @@ function getRepos(client, teamConfig, page, next) {
 }
 
 function fetch(bosco, team, repos, repoRegex, args, next) {
-
   var orgPath = bosco.getOrgPath();
 
   var saveRepos = function(cb) {
@@ -129,7 +124,6 @@ function fetch(bosco, team, repos, repoRegex, args, next) {
   }
 
   var getRepos = function(cb) {
-
     var progressbar = bosco.config.get('progress') == 'bar',
       total = repos.length,
       pullFlag = false;
@@ -142,7 +136,6 @@ function fetch(bosco, team, repos, repoRegex, args, next) {
     }) : null;
 
     async.mapLimit(repos, bosco.concurrency.network, function repoGet(repo, repoCb) {
-
       if(!repo.match(repoRegex)) return repoCb();
 
       var repoPath = bosco.getRepoPath(repo);
@@ -186,7 +179,6 @@ function fetch(bosco, team, repos, repoRegex, args, next) {
 
 
 function checkCanDelete(bosco, repoPath, next) {
-
   var reducer = function(memo, cmd, cb) {
     exec(cmd, {
       cwd: repoPath

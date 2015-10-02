@@ -8,7 +8,6 @@ module.exports = {
 }
 
 function cmd(bosco, args) {
-
   var stop = require('./stop');
   var run = require('./run');
 

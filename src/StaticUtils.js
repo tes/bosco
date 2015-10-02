@@ -5,7 +5,6 @@ var async = require('async');
 var glob = require('glob');
 
 module.exports = function(bosco) {
-
   var AssetHelper = require('./AssetHelper')(bosco);
   var minify = require('./Minify')(bosco).minify;
   var doBuild = require('./ExternalBuild')(bosco).doBuild;
@@ -14,7 +13,6 @@ module.exports = function(bosco) {
   var attachFormattedRepos = html.attachFormattedRepos;
 
   function getStaticAssets(options, next) {
-
     var repoTag = options.repoTag;
 
     async.map(options.repos, loadService, function(err, services) {
@@ -28,7 +26,6 @@ module.exports = function(bosco) {
       });
 
       async.mapLimit(services, bosco.concurrency.cpu, function(service, cb) {
-
         doBuild(service, options, function(err) {
           if (err) return cb(err);
           createAssetList(service, options.buildNumber, options.minify, options.tagFilter, cb);
@@ -60,7 +57,6 @@ module.exports = function(bosco) {
   }
 
   function createAssetList(boscoRepo, buildNumber, minified, tagFilter, next) {
-
     var assetKey,
       staticAssets = [],
       assetBasePath,
@@ -103,7 +99,6 @@ module.exports = function(bosco) {
   }
 
   function loadService(repo, next) {
-
     var boscoRepo = {}, repoPath = bosco.getRepoPath(repo), boscoConfig,
       boscoRepoConfig = path.join(repoPath, 'bosco-service.json'),
       repoPackageFile = path.join(repoPath, 'package.json');

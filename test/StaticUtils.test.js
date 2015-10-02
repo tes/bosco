@@ -15,12 +15,10 @@ var arrayContains = function(arr, contains) {
 }
 
 describe('Bosco Static Asset Handling', function() {
-
   this.timeout(10000);
   this.slow(5000);
 
   it('should load static assets in un-minified cdn mode', function(done) {
-
     var options = {
       repos: ['project1','project2'],
       repoTag: 'testy',
@@ -53,7 +51,6 @@ describe('Bosco Static Asset Handling', function() {
   });
 
   it('should load static assets in un-minified cdn mode, deduping where necessary', function(done) {
-
     var options = {
       repos: ['project1','project2'],
       minify: false,
@@ -92,7 +89,6 @@ describe('Bosco Static Asset Handling', function() {
   });
 
   it('should load static assets in minified cdn mode, deduping where necessary', function(done) {
-
     var options = {
       repos: ['project1','project2'],
       buildNumber: 'local',
@@ -136,7 +132,6 @@ describe('Bosco Static Asset Handling', function() {
   });
 
   it('should load static assets via globs', function(done) {
-
     var options = {
       repos: ['project4'],
       minify: false,
@@ -167,7 +162,6 @@ describe('Bosco Static Asset Handling', function() {
   });
 
   it('should load static assets in minified cdn mode, filtering by tag if specified', function(done) {
-
     var options = {
       repos: ['project1','project2'],
       minify: true,
@@ -201,7 +195,6 @@ describe('Bosco Static Asset Handling', function() {
   });
 
   it('should create a source map when minifying javascript', function(done) {
-
     var options = {
       repos: ['project1','project2'],
       minify: true,
@@ -228,7 +221,6 @@ describe('Bosco Static Asset Handling', function() {
   });
 
   it('should create a formatted repo list when requested for cdn mode', function(done) {
-
     var options = {
       repos: ['project1','project2','project3'],
       minify: true,
@@ -253,12 +245,10 @@ describe('Bosco Static Asset Handling', function() {
 });
 
 describe('Bosco Static Asset Handling - Custom Building', function() {
-
   this.timeout(5000);
   this.slow(5000);
 
   it('should execute bespoke build commands and use output', function(done) {
-
     var options = {
       repos: ['project3'],
       minify: true,
@@ -308,7 +298,6 @@ describe('Bosco Static Asset Handling - Custom Building', function() {
   });
 
   it('should execute bespoke watch commands in watch mode', function(done) {
-
     var options = {
       repos: ['project3'],
       minify: true,
@@ -357,7 +346,6 @@ describe('Bosco Static Asset Handling - Custom Building', function() {
   });
 
   it('should execute bespoke watch commands in watch mode and not minified', function(done) {
-
     this.timeout(5000);
 
     var options = {

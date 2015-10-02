@@ -15,7 +15,6 @@ module.exports = {
 var tag = '', noprompt = false;
 
 function cmd(bosco, args, callback) {
-
   if(args.length > 0) tag = args[0];
 
   var cdnUrl = bosco.config.get('aws:cdn') + '/';
@@ -34,10 +33,8 @@ function cmd(bosco, args, callback) {
   }
 
   var pushAllToS3 = function(staticAssets, next) {
-
     var toPush = [];
     _.forEach(staticAssets, function(asset) {
-
       var key = asset.assetKey;
 
       if(key == 'formattedAssets') return;
@@ -114,7 +111,6 @@ function cmd(bosco, args, callback) {
   }
 
   var primeCompoxure = function(htmlUrl, content, next) {
-
     var compoxureKey = s3cxkey(htmlUrl);
     var ttl = 999 * 60 * 60 * 24; // 999 Days
     var cacheData = {
@@ -187,7 +183,6 @@ function cmd(bosco, args, callback) {
   }
 
   var go = function(next) {
-
     bosco.log('Compiling front end assets, this can take a while ... ');
 
     var options = {

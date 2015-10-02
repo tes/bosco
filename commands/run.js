@@ -36,7 +36,6 @@ module.exports = {
 }
 
 function cmd(bosco, args, cb) {
-
   var repoPattern = bosco.options.repo;
   var repoRegex = new RegExp(repoPattern);
   var watchPattern = bosco.options.watch || '$a';
@@ -69,9 +68,7 @@ function cmd(bosco, args, cb) {
   }
 
   var startRunnableServices = function(next) {
-
     var runService = function(runConfig, cb) {
-
       if (runConfig.service && runConfig.service.type == 'docker') {
         if (_.contains(runningServices, runConfig.name)) {
           bosco.warn('Service ' + runConfig.name.green + ' is already running ...');
@@ -97,7 +94,6 @@ function cmd(bosco, args, cb) {
     }
 
     getRunList(function(err, runList) {
-
       if (err) return next(err);
 
       async.mapSeries(runList, function(runConfig, cb) {
@@ -148,7 +144,6 @@ function cmd(bosco, args, cb) {
   };
 
   var ensurePM2 = function(next) {
-
     // Ensure that the ~/.pm2 folders exist
     var folders = [
       process.env.HOME + '/.pm2/logs',

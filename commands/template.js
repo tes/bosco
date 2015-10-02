@@ -21,7 +21,6 @@ function cmd(bosco, args, next) {
 }
 
 function listTemplates(bosco, next) {
-
   var templates = bosco.config.get('templates');
 
   bosco.log('Your current templates are:');
@@ -35,7 +34,6 @@ function listTemplates(bosco, next) {
 }
 
 function newServiceFromTemplate(bosco, args, next) {
-
   var templates = bosco.config.get('templates') || [];
 
   var templateRepoName = args.shift();
@@ -83,7 +81,6 @@ function newServiceFromTemplate(bosco, args, next) {
 }
 
 function copyTemplateFiles(bosco, serviceName, port, serviceDirectory, next) {
-
   var templateFiles = require(path.join(serviceDirectory, 'bosco-templates.json'));
   var variables = {
     serviceName: serviceName,
@@ -122,7 +119,6 @@ function getShortName(service) {
 }
 
 function addTemplate(bosco, args, next) {
-
   var templates = bosco.config.get('templates') || [];
   var templateRepo = args.shift();
 
@@ -137,7 +133,6 @@ function addTemplate(bosco, args, next) {
 }
 
 function removeTemplate(bosco, args, next) {
-
   var templates = bosco.config.get('templates') || [];
   var templateRepo = args.shift();
 

@@ -3,9 +3,7 @@
 var expect = require('expect.js');
 
 describe('Asset Helper', function() {
-
   it("Warns the user if an asset can't be located, but continues anyway", function(done) {
-
     var message;
 
     var bosco = {warn: function(msg) { message = msg }};

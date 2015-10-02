@@ -13,7 +13,6 @@ module.exports = {
 }
 
 function cmd(bosco) {
-
   var repos = bosco.getRepos();
   if (!repos) return bosco.error('You are repo-less :( You need to initialise bosco first, try \'bosco clone\'.');
 
@@ -22,9 +21,7 @@ function cmd(bosco) {
   bosco.log('Running git push across all repos that match ' + regex + '...');
 
   var pushRepos = function(cb) {
-
     async.mapSeries(repos, function repoPush(repo, repoCb) {
-
       var repoPath = bosco.getRepoPath(repo);
       if (repo.match(regex)) {
         bosco.log('Running git push on ' + repo.blue);

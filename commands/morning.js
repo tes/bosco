@@ -8,7 +8,6 @@ module.exports = {
 }
 
 function cmd(bosco, args) {
-
   var clone = require('./clone');
   var pull = require('./pull');
   var install = require('./install');
