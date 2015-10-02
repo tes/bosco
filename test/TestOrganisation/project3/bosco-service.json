@@ -1,34 +1,34 @@
 {
-    "tags": [ "testy" , "besty" ],
-    "service":{
-        "name":"project3"
-    },
-    "build":{
-        "command":"echo 'This is the pseudo output of a build command.'",
-        "watch":{
-            "command":["bash", "-c", "echo \"COMPLETA\"; sleep 1"],
-            "ready":"COMPLETA",
-            "checkDelay":10
-        }
-    },
-    "assets": {
-        "basePath":"/dist",
-        "js": {
-            "compiled": [
-                "js/compiled.js"
-            ]
-        },
-        "css": {
-            "compiled": [
-                "css/compiled.css"
-            ]
-        }
-    },
-    "files":{
-        "files-top":{
-            "swf": [
-                "flash.swf"
-            ]
-        }
+  "tags": [ "testy" , "besty" ],
+  "service":{
+    "name":"project3"
+  },
+  "build":{
+    "command":"echo 'This is the pseudo output of a build command.'",
+    "watch":{
+      "command":["bash", "-c", "echo \"COMPLETA\"; sleep 1"],
+      "ready":"COMPLETA",
+      "checkDelay":10
     }
+  },
+  "assets": {
+    "basePath":"/dist",
+    "js": {
+      "compiled": [
+        "js/compiled.js"
+      ]
+    },
+    "css": {
+      "compiled": [
+        "css/compiled.css"
+      ]
+    }
+  },
+  "files":{
+    "files-top":{
+      "swf": [
+        "flash.swf"
+      ]
+    }
+  }
 }

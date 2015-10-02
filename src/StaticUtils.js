@@ -6,137 +6,137 @@ var glob = require('glob');
 
 module.exports = function(bosco) {
 
-    var AssetHelper = require('./AssetHelper')(bosco);
-    var minify = require('./Minify')(bosco).minify;
-    var doBuild = require('./ExternalBuild')(bosco).doBuild;
-    var html = require('./Html')(bosco);
-    var createAssetHtmlFiles = html.createAssetHtmlFiles;
-    var attachFormattedRepos = html.attachFormattedRepos;
+  var AssetHelper = require('./AssetHelper')(bosco);
+  var minify = require('./Minify')(bosco).minify;
+  var doBuild = require('./ExternalBuild')(bosco).doBuild;
+  var html = require('./Html')(bosco);
+  var createAssetHtmlFiles = html.createAssetHtmlFiles;
+  var attachFormattedRepos = html.attachFormattedRepos;
 
-    function getStaticAssets(options, next) {
+  function getStaticAssets(options, next) {
 
-        var repoTag = options.repoTag;
+    var repoTag = options.repoTag;
 
-        async.map(options.repos, loadService, function(err, services) {
-            if (err) return next(err);
+    async.map(options.repos, loadService, function(err, services) {
+      if (err) return next(err);
 
-            // Remove any service that doesnt have an assets child
-            // or doesn't match repo tag
-            services = _.filter(services, function(service) {
-                return (!repoTag || _.contains(service.tags, repoTag)) &&
-                    (service.assets || service.files) && service.name.match(options.repoRegex);
-            });
+      // Remove any service that doesnt have an assets child
+      // or doesn't match repo tag
+      services = _.filter(services, function(service) {
+        return (!repoTag || _.contains(service.tags, repoTag)) &&
+          (service.assets || service.files) && service.name.match(options.repoRegex);
+      });
 
-            async.mapLimit(services, bosco.concurrency.cpu, function(service, cb) {
+      async.mapLimit(services, bosco.concurrency.cpu, function(service, cb) {
 
-                doBuild(service, options, function(err) {
-                    if (err) return cb(err);
-                    createAssetList(service, options.buildNumber, options.minify, options.tagFilter, cb);
-                });
-
-            }, function(err, assetList) {
-                if (err) return next(err);
-
-                var staticAssets = _.flatten(assetList);
-
-                if (!options.minify) {
-                    return createAssetHtmlFiles(staticAssets, next);
-                }
-
-                // Now go and minify
-                minify(staticAssets, function(err, minifiedAssets) {
-                    if (err) return next(err);
-                    createAssetHtmlFiles(minifiedAssets, next);
-                });
-            });
+        doBuild(service, options, function(err) {
+          if (err) return cb(err);
+          createAssetList(service, options.buildNumber, options.minify, options.tagFilter, cb);
         });
-    }
 
-    function getStaticRepos(options, next) {
-        async.map(options.repos, loadService, function(err, repos){
-            if (err) return next(err);
-            attachFormattedRepos(repos, next);
+      }, function(err, assetList) {
+        if (err) return next(err);
+
+        var staticAssets = _.flatten(assetList);
+
+        if (!options.minify) {
+          return createAssetHtmlFiles(staticAssets, next);
+        }
+
+        // Now go and minify
+        minify(staticAssets, function(err, minifiedAssets) {
+          if (err) return next(err);
+          createAssetHtmlFiles(minifiedAssets, next);
         });
-    }
+      });
+    });
+  }
 
-    function createAssetList(boscoRepo, buildNumber, minified, tagFilter, next) {
+  function getStaticRepos(options, next) {
+    async.map(options.repos, loadService, function(err, repos){
+      if (err) return next(err);
+      attachFormattedRepos(repos, next);
+    });
+  }
 
-        var assetKey,
-            staticAssets = [],
-            assetBasePath,
-            assetHelper = AssetHelper.getAssetHelper(boscoRepo, tagFilter);
+  function createAssetList(boscoRepo, buildNumber, minified, tagFilter, next) {
 
-        if (boscoRepo.assets) {
-            assetBasePath = boscoRepo.assets.basePath || '.';
-            _.forEach(_.pick(boscoRepo.assets, ['js', 'css', 'img', 'html', 'swf', 'fonts']), function (assets, type) {
-                _.forOwn(assets, function (value, tag) {
-                    if (!value) return;
-                    _.forEach(value, function (potentialAsset) {
-                        var assets = globAsset(potentialAsset, path.join(boscoRepo.path, assetBasePath));
-                        _.forEach(assets, function(asset) {
-                            assetKey = path.join(boscoRepo.serviceName, buildNumber, asset);
-                            assetHelper.addAsset(staticAssets, buildNumber, assetKey, asset, tag, type, assetBasePath, true);
-                        });
-                    });
-                });
+    var assetKey,
+      staticAssets = [],
+      assetBasePath,
+      assetHelper = AssetHelper.getAssetHelper(boscoRepo, tagFilter);
+
+    if (boscoRepo.assets) {
+      assetBasePath = boscoRepo.assets.basePath || '.';
+      _.forEach(_.pick(boscoRepo.assets, ['js', 'css', 'img', 'html', 'swf', 'fonts']), function (assets, type) {
+        _.forOwn(assets, function (value, tag) {
+          if (!value) return;
+          _.forEach(value, function (potentialAsset) {
+            var assets = globAsset(potentialAsset, path.join(boscoRepo.path, assetBasePath));
+            _.forEach(assets, function(asset) {
+              assetKey = path.join(boscoRepo.serviceName, buildNumber, asset);
+              assetHelper.addAsset(staticAssets, buildNumber, assetKey, asset, tag, type, assetBasePath, true);
             });
-        }
+          });
+        });
+      });
+    }
 
-        if (boscoRepo.files) {
-            _.forOwn(boscoRepo.files, function (assetTypes, tag) {
-                assetBasePath = assetTypes.basePath || '.';
-                _.forEach(_.pick(assetTypes, ['js', 'css', 'img', 'html', 'swf', 'fonts']), function (value, type) {
-                    if (!value) return;
-                    _.forEach(value, function (potentialAsset) {
-                        var assets = globAsset(potentialAsset, path.join(boscoRepo.path, assetBasePath));
-                        _.forEach(assets, function(asset) {
-                            assetKey = path.join(boscoRepo.serviceName, buildNumber, asset);
-                            assetHelper.addAsset(staticAssets, buildNumber, assetKey, asset, tag, type, assetBasePath, true);
-                        });
-                    });
-                });
+    if (boscoRepo.files) {
+      _.forOwn(boscoRepo.files, function (assetTypes, tag) {
+        assetBasePath = assetTypes.basePath || '.';
+        _.forEach(_.pick(assetTypes, ['js', 'css', 'img', 'html', 'swf', 'fonts']), function (value, type) {
+          if (!value) return;
+          _.forEach(value, function (potentialAsset) {
+            var assets = globAsset(potentialAsset, path.join(boscoRepo.path, assetBasePath));
+            _.forEach(assets, function(asset) {
+              assetKey = path.join(boscoRepo.serviceName, buildNumber, asset);
+              assetHelper.addAsset(staticAssets, buildNumber, assetKey, asset, tag, type, assetBasePath, true);
             });
-        }
-
-        next(null, staticAssets);
-
+          });
+        });
+      });
     }
 
-    function loadService(repo, next) {
+    next(null, staticAssets);
 
-        var boscoRepo = {}, repoPath = bosco.getRepoPath(repo), boscoConfig,
-            boscoRepoConfig = path.join(repoPath, 'bosco-service.json'),
-            repoPackageFile = path.join(repoPath, 'package.json');
+  }
 
-        boscoRepo.name = repo;
-        boscoRepo.path = repoPath;
-        boscoRepo.repoPath = repoPath;
+  function loadService(repo, next) {
 
-        if (bosco.exists(boscoRepoConfig)) {
-            boscoConfig = JSON.parse(fs.readFileSync(boscoRepoConfig)) || {};
-            boscoRepo = _.merge(boscoRepo, boscoConfig);
-            boscoRepo.serviceName = boscoRepo.service && boscoRepo.service.name ? boscoRepo.service.name : repo;
-            if (boscoRepo.assets && boscoRepo.assets.basePath) {
-                boscoRepo.basePath = boscoRepo.assets.basePath;
-            }
-        }
+    var boscoRepo = {}, repoPath = bosco.getRepoPath(repo), boscoConfig,
+      boscoRepoConfig = path.join(repoPath, 'bosco-service.json'),
+      repoPackageFile = path.join(repoPath, 'package.json');
 
-        if (bosco.exists(repoPackageFile)) {
-            boscoRepo.info = JSON.parse(fs.readFileSync(repoPackageFile) || {});
-        }
+    boscoRepo.name = repo;
+    boscoRepo.path = repoPath;
+    boscoRepo.repoPath = repoPath;
 
-        next(null, boscoRepo);
+    if (bosco.exists(boscoRepoConfig)) {
+      boscoConfig = JSON.parse(fs.readFileSync(boscoRepoConfig)) || {};
+      boscoRepo = _.merge(boscoRepo, boscoConfig);
+      boscoRepo.serviceName = boscoRepo.service && boscoRepo.service.name ? boscoRepo.service.name : repo;
+      if (boscoRepo.assets && boscoRepo.assets.basePath) {
+        boscoRepo.basePath = boscoRepo.assets.basePath;
+      }
     }
 
-    function globAsset(assetGlob, basePath) {
-        var resolvedBasePath = path.resolve(basePath);
-        var assets = glob.sync(assetGlob, {cwd:resolvedBasePath, nodir: true});
-        return assets;
+    if (bosco.exists(repoPackageFile)) {
+      boscoRepo.info = JSON.parse(fs.readFileSync(repoPackageFile) || {});
     }
 
-    return {
-        getStaticAssets: getStaticAssets,
-        getStaticRepos: getStaticRepos
-    }
+    next(null, boscoRepo);
+  }
+
+  function globAsset(assetGlob, basePath) {
+    var resolvedBasePath = path.resolve(basePath);
+    var assets = glob.sync(assetGlob, {cwd:resolvedBasePath, nodir: true});
+    return assets;
+  }
+
+  return {
+    getStaticAssets: getStaticAssets,
+    getStaticRepos: getStaticRepos
+  }
 
 };

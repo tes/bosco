@@ -1,12 +1,12 @@
 {
-    "tags": [ "testy" ],
-    "assets": {
-        "basePath": "/public",
-        "js": {
-            "glob": [
-                "js/**"
-            ]
-        },
-        "css": {}
-    }
+  "tags": [ "testy" ],
+  "assets": {
+    "basePath": "/public",
+    "js": {
+      "glob": [
+        "js/**"
+      ]
+    },
+    "css": {}
+  }
 }

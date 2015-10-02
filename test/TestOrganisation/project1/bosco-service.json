@@ -1,16 +1,16 @@
 {
-    "tags": [ "testy" ],
-    "assets": {
-        "basePath": "/public",
-        "js": {
-            "bottom": [
-                "js/bottom1.js",
-                "js/jquery-1.11.0-min.js"
-            ],
-            "top": [
-                "js/top1.js"
-            ]
-        },
-        "css": {}
-    }
+  "tags": [ "testy" ],
+  "assets": {
+    "basePath": "/public",
+    "js": {
+      "bottom": [
+        "js/bottom1.js",
+        "js/jquery-1.11.0-min.js"
+      ],
+      "top": [
+        "js/top1.js"
+      ]
+    },
+    "css": {}
+  }
 }

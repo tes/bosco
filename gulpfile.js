@@ -4,12 +4,12 @@ var fs = require('fs');
 
 gulp.task('default', function() {
 
-    fs.readdir('./help', function(err, files) {
-        files.forEach(function(file) {
-            gulp.src('./help/' + file)
-                .pipe(markedMan())
-                .pipe(gulp.dest('./man/man3'));
-        });
+  fs.readdir('./help', function(err, files) {
+    files.forEach(function(file) {
+      gulp.src('./help/' + file)
+        .pipe(markedMan())
+        .pipe(gulp.dest('./man/man3'));
     });
+  });
 
 });

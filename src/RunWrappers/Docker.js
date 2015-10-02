@@ -9,126 +9,126 @@ function Runner() {
 }
 
 Runner.prototype.init = function(bosco, next) {
-    this.bosco = bosco;
-    if(process.env.DOCKER_HOST) {
-        // We are likely on OSX and Boot2docker
-        var dockerUrl = url.parse(process.env.DOCKER_HOST || 'tcp://127.0.0.1:3000');
-        var dockerOpts = {
-            host: dockerUrl.hostname,
-            port: dockerUrl.port
-        };
+  this.bosco = bosco;
+  if(process.env.DOCKER_HOST) {
+    // We are likely on OSX and Boot2docker
+    var dockerUrl = url.parse(process.env.DOCKER_HOST || 'tcp://127.0.0.1:3000');
+    var dockerOpts = {
+      host: dockerUrl.hostname,
+      port: dockerUrl.port
+    };
 
-        var dockerCertPath = process.env.DOCKER_CERT_PATH;
-        if(dockerCertPath){
-            dockerOpts = _.extend(dockerOpts, {
-                protocol: 'https',
-                ca: readCert(dockerCertPath, 'ca.pem'),
-                cert: readCert(dockerCertPath, 'cert.pem'),
-                key: readCert(dockerCertPath, 'key.pem')
-            });
-        }
-
-        this.docker = new Docker(dockerOpts);
-    } else {
-        // Assume we are on linux and so connect on a socket
-        this.docker = new Docker({socketPath: '/var/run/docker.sock'});
+    var dockerCertPath = process.env.DOCKER_CERT_PATH;
+    if(dockerCertPath){
+      dockerOpts = _.extend(dockerOpts, {
+        protocol: 'https',
+        ca: readCert(dockerCertPath, 'ca.pem'),
+        cert: readCert(dockerCertPath, 'cert.pem'),
+        key: readCert(dockerCertPath, 'key.pem')
+      });
     }
-    next();
 
-    function readCert(certPath, certFile) {
-        return fs.readFileSync(certPath + '/' + certFile, {encoding: 'utf-8'})
-    }
+    this.docker = new Docker(dockerOpts);
+  } else {
+    // Assume we are on linux and so connect on a socket
+    this.docker = new Docker({socketPath: '/var/run/docker.sock'});
+  }
+  next();
+
+  function readCert(certPath, certFile) {
+    return fs.readFileSync(certPath + '/' + certFile, {encoding: 'utf-8'})
+  }
 }
 
 Runner.prototype.disconnect = function(next) {
-    return next();
+  return next();
 }
 
 Runner.prototype.list = function(detailed, next) {
-    var self = this, docker = self.docker;
-    docker.listContainers({
-        all: false
-    }, function(err, containers) {
-        if(!detailed) return next(err, _.pluck(containers, 'Names'));
-        next(err, containers);
-    });
+  var self = this, docker = self.docker;
+  docker.listContainers({
+    all: false
+  }, function(err, containers) {
+    if(!detailed) return next(err, _.pluck(containers, 'Names'));
+    next(err, containers);
+  });
 }
 
 Runner.prototype.stop = function(options, next) {
-    var self = this, docker = self.docker;
-    docker.listContainers({
-        all: false
-    }, function(err, containers) {
-        var toStop = [];
-        containers.forEach(function(container) {
-            if (self.containerNameMatches(container, options.service.name)) {
-                var cnt = docker.getContainer(container.Id);
-                self.bosco.log('Stopping ' + options.service.name.green);
-                toStop.push(cnt);
-            }
-        });
-        async.map(toStop, function(container, cb) {
-            container.stop(cb);
-        }, next);
+  var self = this, docker = self.docker;
+  docker.listContainers({
+    all: false
+  }, function(err, containers) {
+    var toStop = [];
+    containers.forEach(function(container) {
+      if (self.containerNameMatches(container, options.service.name)) {
+        var cnt = docker.getContainer(container.Id);
+        self.bosco.log('Stopping ' + options.service.name.green);
+        toStop.push(cnt);
+      }
     });
+    async.map(toStop, function(container, cb) {
+      container.stop(cb);
+    }, next);
+  });
 }
 
 Runner.prototype.start = function(options, next) {
 
-    var self = this, docker = self.docker;
-    var dockerFqn = self.getFqn(options);
+  var self = this, docker = self.docker;
+  var dockerFqn = self.getFqn(options);
 
-    DockerUtils.prepareImage(self.bosco, docker, dockerFqn, options, function(err) {
-        if (err) return next(err);
+  DockerUtils.prepareImage(self.bosco, docker, dockerFqn, options, function(err) {
+    if (err) return next(err);
 
-        DockerUtils.createContainer(docker, dockerFqn, options, function(err, container) {
-            if (err) return next(err);
-            DockerUtils.startContainer(self.bosco, docker, dockerFqn, options, container, next);
-        });
+    DockerUtils.createContainer(docker, dockerFqn, options, function(err, container) {
+      if (err) return next(err);
+      DockerUtils.startContainer(self.bosco, docker, dockerFqn, options, container, next);
     });
+  });
 }
 
 Runner.prototype.update = function(options, next) {
-    var self = this, docker = self.docker;
+  var self = this, docker = self.docker;
 
-    if (options.service.docker && options.service.docker.build) return next();
+  if (options.service.docker && options.service.docker.build) return next();
 
-    var dockerFqn = self.getFqn(options);
-    DockerUtils.pullImage(self.bosco, docker, dockerFqn, next);
+  var dockerFqn = self.getFqn(options);
+  DockerUtils.pullImage(self.bosco, docker, dockerFqn, next);
 }
 
 Runner.prototype.getFqn = function(options) {
-    var dockerFqn = '', service = options.service;
-    if (service.docker) {
-        if (service.docker.image) {
-            dockerFqn = service.docker.image;
-        }
-        if (!dockerFqn && service.docker.build) {
-            dockerFqn = 'local/' + service.name;
-        }
-        if (dockerFqn && dockerFqn.indexOf(':') === -1) {
-            dockerFqn += ':latest';
-        }
-        if (dockerFqn) {
-            return dockerFqn;
-        }
+  var dockerFqn = '', service = options.service;
+  if (service.docker) {
+    if (service.docker.image) {
+      dockerFqn = service.docker.image;
     }
+    if (!dockerFqn && service.docker.build) {
+      dockerFqn = 'local/' + service.name;
+    }
+    if (dockerFqn && dockerFqn.indexOf(':') === -1) {
+      dockerFqn += ':latest';
+    }
+    if (dockerFqn) {
+      return dockerFqn;
+    }
+  }
 
-    if (service.registry) dockerFqn += service.registry + '/';
-    if (service.username) dockerFqn += service.username + '/';
-    return dockerFqn + service.name + ':' + (service.version || 'latest');
+  if (service.registry) dockerFqn += service.registry + '/';
+  if (service.username) dockerFqn += service.username + '/';
+  return dockerFqn + service.name + ':' + (service.version || 'latest');
 }
 
 Runner.prototype.matchWithoutVersion = function(a, b) {
-    a = a.slice(0, a.lastIndexOf(':'));
-    b = b.slice(0, b.lastIndexOf(':'));
-    return a === b;
+  a = a.slice(0, a.lastIndexOf(':'));
+  b = b.slice(0, b.lastIndexOf(':'));
+  return a === b;
 }
 
 Runner.prototype.containerNameMatches = function(container, name) {
-    return _.any(container.Names, function(val) {
-        return val == '/' + name;
-    });
+  return _.any(container.Names, function(val) {
+    return val == '/' + name;
+  });
 }
 
 module.exports = new Runner();
