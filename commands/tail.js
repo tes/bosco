@@ -6,7 +6,7 @@ var Tail = require('tail').Tail;
 module.exports = {
     name:'tail',
     description:'Tails the logs from pm2',
-    example:'bosco tail [out|err] -r <repoPattern>',
+    usage:'[out|err] [-r <repoPattern>]',
     cmd:cmd
 }
 

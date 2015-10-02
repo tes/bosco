@@ -3,13 +3,16 @@ var execFile = require('child_process').execFile;
 var moment = require('moment');
 
 module.exports = {
-    name:'activity',
-    description:'Outputs a summary of activity on the repos',
-    example:'bosco activity -r <repoPattern> --since 2014-09-22T23:36:26-07:00',
-    cmd:cmd,
+    name: 'activity',
+    description: 'Outputs a summary of activity on the repos',
+    usage: '[-r <repoPattern>] [--since <ISO date>]',
+    example: 'bosco activity -r <repoPattern> --since 2014-09-22T23:36:26-07:00',
+    cmd: cmd,
     options: [{
-        option: 'since',
-        syntax: ['-s, --since [since]', 'Use for commands that need a start date such as activity']
+        name: 'since',
+        alias: 's',
+        type: 'string',
+        desc: 'Return all data after a ISO date'
     }]
 }
 

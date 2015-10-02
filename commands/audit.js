@@ -6,7 +6,7 @@ var join = require('path').join;
 module.exports = {
     name: 'audit',
     description: 'Audit npm packages across repos',
-    example: 'bosco audit -r <repoPattern>',
+    usage: '[-r <repoPattern>]',
     cmd: cmd
 };
 

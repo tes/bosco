@@ -7,7 +7,7 @@ var red = '\u001b[41m \u001b[0m';
 module.exports = {
     name:'pull',
     description:'Pulls any changes across all repos',
-    example:'bosco pull -r <repoPattern>',
+    usage:'[-r <repoPattern>]',
     cmd:cmd
 }
 

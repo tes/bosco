@@ -4,7 +4,6 @@ var moment = require('moment');
 module.exports = {
     name:'morning',
     description:'Runs clone, pull, installs and provides a summary of changes since your last morning command to get you ready for action for the day',
-    example:'bosco morning',
     cmd:cmd
 }
 

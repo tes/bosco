@@ -7,12 +7,13 @@ var exec = require('child_process').exec;
 
 module.exports = {
   name: 'unlink',
+  usage: '[--dry-run]',
   description: 'Automatically npm unlinks all projects in a workspace',
-  example: 'bosco unlink',
   options: [
     {
-      option: 'dry-run',
-      syntax: ['--dry-run', 'Print commands without unlinking']
+      name: 'dry-run',
+      type: 'boolean',
+      desc: 'Print commands without unlinking'
     }
   ],
   cmd: function (bosco, args, next) {

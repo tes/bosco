@@ -3,15 +3,15 @@ var spawn = require('child_process').spawn;
 
 module.exports = {
     name:'help',
-    description:'Shows help about Bosco',
-    example:'bosco help <command>',
+    description:'Shows help about a Bosco command',
+    usage:'<command>',
     cmd:cmd
 }
 
 function cmd(bosco, args) {
 
     var cmdName = args.shift();
-    if(!cmdName) return bosco.error('You need to provide a command name. e.g: ' + module.exports.example);
+    if(!cmdName) return bosco.error('You need to provide a command name. e.g: bosco help ' + module.exports.usage);
 
     var man = 'bosco-' + cmdName + '.3';
     viewMan(man, function(){});

@@ -1,6 +1,6 @@
 var github = require('octonode');
 var _ = require('lodash');
-var mkdirp = require('mkdirp');
+var fs = require('fs-extra');
 var path = require('path');
 var inquirer = require('inquirer');
 var parseLinkHeader = require('parse-link-header');
@@ -9,7 +9,7 @@ var async = require('async');
 module.exports = {
     name:'team',
     description:'A command to keep your Github organisation and team setup in sync with Bosco',
-    example:'bosco team sync | bosco team ls | bosco team ln <team> <directory>',
+    usage:'sync|ls|ln <team> <directory>',
     cmd:cmd
 }
 
@@ -137,7 +137,7 @@ function linkTeam(bosco, team, folder, next) {
       return bosco.error('Cant find the team: ' + team.red + ', maybe try to sync first?');
     }
 
-    mkdirp(path.join(teamPath,'.bosco')); // Always create config folder
+    fs.mkdirpSync(path.join(teamPath,'.bosco')); // Always create config folder
     bosco.config.set('teams:' + team + ':path', teamPath);
 
     bosco.config.save(function() {

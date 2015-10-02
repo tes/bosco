@@ -5,122 +5,201 @@
 /**
  * Bosco command line tool
  */
-var program = require('commander');
-var Bosco = require('../index');
 var _ = require('lodash');
-var pkg = require('../package.json');
-var completion = require('../src/completion');
+require('colors'); // No need to define elsewhere
 var fs = require('fs');
 var path = require('path');
-require('colors'); // No need to define elsewhere
+var yargs = require('yargs');
+
+var Bosco = require('../index');
+var pkg = require('../package.json');
 
 var bosco = new Bosco();
 
-// Go over every command in the global and local commands folder and add the options
-program.boscoOptionsArray = function(boscoOptionsArray) {
-  if (!boscoOptionsArray || !boscoOptionsArray.length) { return this; }
+function addCommandOptions(args, command) {
+  args = args.wrap(null);
 
-  var _this = this;
+  if (command.example) args = args.example(command.example);
 
-  _.forEach(boscoOptionsArray, function(boscoOption) {
-    if (!boscoOption.option || !boscoOption.syntax || boscoOption.syntax.length < 2) {
-        throw new Error('Error parsing bosco command');
+  var usage = 'Usage: $0';
+  if (command.name) usage += ' ' + command.name;
+  if (command.usage) usage += ' ' + command.usage;
+  if (command.description) usage += '\n\n' + command.description;
+  args = args.usage(usage);
+
+  var options = command.options || [];
+
+  _.forEach(options, function(option) {
+    if (!option.name) {
+      throw new Error('Error parsing bosco command ' + command.name + ' options');
     }
 
-    _this.option(boscoOption.syntax[0], boscoOption.syntax[1], boscoOption.syntax[2]);
+    args = args.option(option.name, option);
   });
 
-  return _this;
-};
+  _.forEach(globalOptions, function(option) {
+    args = args.option(option.name, option);
+  });
 
-var getOptionsForCommandsOnPath = function(folderPath) {
+  return args.help('help').alias('help', 'h');
+}
+
+function addBoscoCommands(args, commands) {
+  if (!commands || !commands.length) { return args; }
+
+  function checkCommandOptions(command) {
+    if (!command.options) return true;
+
+    var oldStyleArgs = false;
+    _.forEach(command.options, function(option) {
+      if (!option.name) {
+        if (!option.option || !option.syntax || option.syntax.length < 2) {
+          throw new Error('Error parsing bosco command ' + command.name + ' options');
+        }
+        oldStyleArgs = true;
+      }
+    });
+    return !oldStyleArgs;
+  }
+
+  _.forEach(commands, function(command) {
+    if (!command) return;
+
+    if (!checkCommandOptions(command)) {
+      bosco.warn('The ' + command.name + ' command uses old-style options, it will not be available until upgraded to the new style.');
+      return;
+    }
+
+    args.command(command.name, command.description, function(commandArgs) {
+      addCommandOptions(commandArgs, command);
+    });
+  });
+
+  return args;
+}
+
+function getCommandsOnPath(folderPath) {
   if (!fs.existsSync(folderPath)) return [];
 
-  var wrappedFiles = _(fs.readdirSync(folderPath));
+  return _.map(fs.readdirSync(folderPath), function(filename) {
+    if (path.extname(filename) !== '.js') return null;
 
-  var wrappedCommandsArray = wrappedFiles.map(function(filename) {
-    if (path.extname(filename) !== '.js') { return null; }
     var file = folderPath + filename;
-    var commandFile;
     try {
-      commandFile = require(file);
+      var command = require(file);
+      if (command.name && command.cmd) return command;
+      if (!command.name) bosco.error('Error: ' + file + ' does not have a name specified');
+      if (!command.cmd) bosco.error('Error: ' + file + ' does not have a cmd specified');
     } catch (err) {
       bosco.error('Error requiring command file: ' + file + ': ' + err);
-      return [];
     }
-    return commandFile.options;
+    return null;
   });
-
-  return wrappedCommandsArray.flatten().compact().value();
-};
+}
 
 var globalOptions = [
   {
-    option: 'configFile',
-    syntax: ['-c, --configFile [file]', 'Use specific config file']
+    name: 'configFile',
+    alias: 'c',
+    type: 'string',
+    desc: 'Path to bosco config file'
   },
   {
-    option: 'configPath',
-    syntax: ['-p, --configPath [folder]', 'Use specific config path']
+    name: 'configDir',
+    alias: ['p', 'configPath'],
+    type: 'string',
+    desc: 'Path to bosco config directory'
   },
   {
-    option: 'environment',
-    syntax: ['-e, --environment [environment]', 'Set environment to use', 'local']
+    name: 'environment',
+    alias: 'e',
+    type: 'string',
+    default: 'local',
+    desc: 'Set environment to use'
   },
   {
-    option: 'service',
-    syntax: ['-s, --service', 'Run only with service in cwd (if bosco-service.json file exists in cwd)', false]
+    name: 'service',
+    alias: 's',
+    type: 'boolean',
+    desc: 'Run only with service in cwd (if bosco-service.json file exists in cwd)'
   },
   {
-    option: 'build',
-    syntax: ['-b, --build [build]', 'Set build identifier to use', 'default']
+    name: 'build',
+    alias: 'b',
+    type: 'string',
+    default: 'default',
+    desc: 'Set build identifier to use'
   },
   {
-    option: 'repo',
-    syntax: ['-r, --repo [pattern]', 'Use a specific repository (parsed as regexp)', '.*']
+    name: 'repo',
+    alias: 'r',
+    type: 'string',
+    default: '.*',
+    desc: 'Use a specific repository (parsed as regexp)'
   },
   {
-    option: 'noprompt',
-    syntax: ['-n, --noprompt', 'Do not prompt for confirmation']
+    name: 'noprompt',
+    alias: 'n',
+    type: 'boolean',
+    desc: 'Do not prompt for confirmation'
   },
   {
-    option: 'force',
-    syntax: ['-f, --force', 'Force over ride on publish even if no changes']
-  },
-  {
-    option: 'completion',
-    syntax: ['--completion [shell]','Generate the shell completion code']
-  },
-  {
-    option: 'shellCommands',
-    syntax: ['--shellCommands','Generate commands for shell completion mode [used internally]']
+    name: 'force',
+    alias: 'f',
+    type: 'boolean',
+    desc: 'Force over ride on publish even if no changes'
   }
 ];
 
-var localCommandsOptions = getOptionsForCommandsOnPath(bosco.getLocalCommandFolder());
-var commandOptions = getOptionsForCommandsOnPath(bosco.getGlobalCommandFolder());
-
-var allBoscoCommands = _.union(globalOptions, localCommandsOptions, commandOptions);
-
-program
-  .version(pkg.version)
-  .usage('[options] <command>')
-  .boscoOptionsArray(allBoscoCommands)
-  .parse(process.argv);
-
-var options = {
-  program: program,
-  version: pkg.version,
-  args: program.args
+var globalCommand = {
+  name: '',
+  usage: '[<options>] <command> [<args>]',
+  description: pkg.description,
+  options: [
+    {
+      name: 'completion',
+      type: 'string',
+      desc: 'Generate the shell completion code'
+    },
+    {
+      name: 'shellCommands',
+      type: 'boolean',
+      desc: 'Generate commands for shell completion mode [used internally]'
+    }
+  ]
 };
 
-// Add all parsed options to the Bosco options
-_.forEach(allBoscoCommands, function(boscoOption){
-  options[boscoOption.option] = program[boscoOption.option];
-});
+var args = addCommandOptions(yargs, globalCommand)
+  .version(pkg.version);
 
-if(program.completion) {
-    completion.print(program.completion);
+var globalCommandPath = bosco.getGlobalCommandFolder();
+var commands = getCommandsOnPath(bosco.getGlobalCommandFolder());
+
+var localCommandPath = bosco.getLocalCommandFolder();
+var localCommands = [];
+if (localCommandPath !== globalCommandPath) {
+  localCommands = getCommandsOnPath(localCommandPath);
 }
 
-bosco.init(options);
+// Go over every command in the global and local commands folder and add the options
+args = addBoscoCommands(args, commands);
+args = addBoscoCommands(args, localCommands);
+
+var argv = args.argv || {};
+
+if (argv.completion) {
+  args.showCompletionScript();
+  process.exit();
+}
+
+// Only take options we have specified.
+var options = {};
+_.forOwn((args.parsed || {}).aliases || {}, function(val, optionName) {
+  options[optionName] = argv[optionName];
+});
+
+options.program = args;
+options.args = argv._;
+options.version = pkg.version;
+
+bosco.run(options);

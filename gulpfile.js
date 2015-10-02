@@ -1,6 +1,5 @@
 var gulp = require('gulp');
 var markedMan = require('gulp-marked-man');
-var mocha = require('gulp-mocha');
 var fs = require('fs');
 
 gulp.task('default', function() {
@@ -13,9 +12,4 @@ gulp.task('default', function() {
         });
     });
 
-});
-
-gulp.task('test', function () {
-    return gulp.src('test/*.test.js', {read: false})
-        .pipe(mocha({reporter: 'nyan'}));
 });

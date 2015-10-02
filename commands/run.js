@@ -1,31 +1,38 @@
 var _ = require('lodash');
 var async = require('async');
+var fs = require('fs-extra');
+
 var RunListHelper = require('../src/RunListHelper');
 var NodeRunner = require('../src/RunWrappers/Node');
 var DockerRunner = require('../src/RunWrappers/Docker');
 var DockerComposeRunner = require('../src/RunWrappers/DockerCompose');
-var mkdirp = require('mkdirp');
+
 var runningServices = [];
 var notRunningServices = [];
 
 module.exports = {
     name: 'run',
     description: 'Runs all of the microservices (or subset based on regex pattern)',
-    example: 'bosco run -r <repoPattern> -t <tag>',
+    usage: '[-r <repoPattern>] [-t <tag>]',
     cmd: cmd,
     options: [{
-        option: 'tag',
-        syntax: ['-t, --tag [tag]', 'Filter by a tag defined within bosco-service.json']
+        name: 'tag',
+        alias: 't',
+        type: 'string',
+        desc: 'Filter by a tag defined within bosco-service.json'
     },
     {
-        option: 'watch',
-        syntax: ['-w, --watch', 'Watch the applications started with run for changes']
+        name: 'watch',
+        alias: 'w',
+        type: 'string',
+        desc: 'Watch the applications started with run for changes that match this regular expression'
     },
     {
-        option: 'list',
-        syntax: ['-l, --list [list]', 'Start a list of repos (comma separated).']
-    }
-    ]
+        name: 'list',
+        alias: 'l',
+        type: 'string',
+        desc: 'Start a list of repos (comma separated)'
+    }]
 }
 
 function cmd(bosco, args, cb) {
@@ -149,9 +156,7 @@ function cmd(bosco, args, cb) {
         ];
 
         async.map(folders, function(folder, cb) {
-            mkdirp(folder, function (err) {
-                cb(err);
-            });
+            fs.mkdirp(folder, cb);
         },function(err) {
             next(err);
         });

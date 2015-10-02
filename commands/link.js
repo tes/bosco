@@ -5,7 +5,6 @@ var exec = require('child_process').exec;
 module.exports = {
     name: 'link',
     description: 'Automatically npm links any project in a workspace with any other project that depends on it',
-    example: 'bosco link',
     cmd: cmd
 }
 

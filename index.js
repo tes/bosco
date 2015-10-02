@@ -3,20 +3,19 @@
  */
 
 var _ = require('lodash');
+var AppDirectory = require('appdirectory');
 var async = require('async');
 var events = require('events');
-var fs = require('fs');
+var fs = require('fs-extra');
 var knox = require('knox');
-var mkdirp = require('mkdirp');
+var osenv = require('osenv');
 var path = require('path');
 var progress = require('progress');
 var prompt = require('prompt');
 var request = require('request');
 var semver = require('semver');
 var sf = require('sf');
-var Table = require('cli-table');
 var util = require('util');
-var osenv = require('osenv');
 
 prompt.message = 'Bosco'.green;
 
@@ -36,7 +35,7 @@ Bosco.prototype.init = function(options) {
 
     // Load base bosco config from home folder unless over ridden with path
     self.options.configPathSet = options.configPath ? true : false;
-    self.options.configPath = options.configPath ? path.resolve(options.configPath) : [self.findHomeFolder(), '.bosco'].join('/');
+    self.options.configPath = options.configPath ? path.resolve(options.configPath) : self.findConfigFolder();
     self.options.configFile = options.configFile ? path.resolve(options.configFile) : [self.options.configPath, 'bosco.json'].join('/');
     self.options.defaultsConfigFile = [self.options.configPath, 'defaults.json'].join('/');
 
@@ -53,14 +52,17 @@ Bosco.prototype.init = function(options) {
     }
 
     events.EventEmitter.call(this);
-
-    self.run();
-
 }
 
-Bosco.prototype.run = function() {
+Bosco.prototype.run = function(options) {
 
     var self = this;
+
+    if (!self.options && !options) {
+        return console.log('You must call init(options) first, or supply options to run()');
+    }
+
+    if (options) self.init(options);
 
     self._init(function(err) {
 
@@ -156,7 +158,7 @@ Bosco.prototype._checkConfig = function(next) {
 
     var checkConfigPath = function(cb) {
         if (self.exists(configPath)) return cb();
-        mkdirp(configPath, cb);
+        fs.mkdirp(configPath, cb);
     }
 
     var checkConfig = function(cb) {
@@ -250,7 +252,7 @@ Bosco.prototype._cmd = function() {
 
     if (self.options.shellCommands) return self._shellCommands();
 
-    self._commands();
+    self.options.program.showHelp();
 }
 
 Bosco.prototype._shellCommands = function() {
@@ -288,83 +290,6 @@ Bosco.prototype._shellCommands = function() {
         });
 }
 
-Bosco.prototype._commands = function() {
-
-    var self = this,
-        cmdPath = self.getGlobalCommandFolder(),
-        localPath =  self.getLocalCommandFolder();
-
-    var showTable = function(tableName, cPath, files, next) {
-
-        var table = new Table({
-            chars: {'mid': '', 'left-mid': '', 'mid-mid': '', 'right-mid': ''},
-            head: [tableName, 'Example'],
-            colWidths: [12, 80]
-        });
-
-        var showCommand = function(cmd) {
-            table.push([cmd.name, cmd.example || '']);
-        }
-
-        if (cPath) {
-            files = files.map(function(file) {
-            return path.join(cPath, file);
-            }).filter(function(file) {
-                return fs.statSync(file).isFile();
-            }).forEach(function(file) {
-                if (path.extname(file) !== '.js') { return null; }
-                showCommand(require(file));
-            });
-        } else {
-            files.forEach(function(file) {
-                showCommand(file);
-            });
-        }
-
-        console.log(table.toString());
-        console.log('\r');
-        next();
-    }
-
-    console.log('\r');
-    self.warn('Hey, to use bosco, you need to enter one of the following commands:')
-
-    async.series([
-
-            function(next) {
-                fs.readdir(cmdPath, function(err, files) {
-                    showTable('Core', cmdPath, files, next)
-                })
-            },
-            function(next) {
-                fs.readdir(localPath, function(err, files) {
-                    if (!files || files.length === 0) return next();
-                    showTable('Local', localPath, files, next)
-                })
-            },
-            function(next) {
-                var wait = function() {
-                    if (self._checkingVersion) {
-                        setTimeout(wait, 100);
-                    } else {
-                        next();
-                    }
-                }
-                wait();
-            },
-            function(next) {
-                console.log('You can also specify these parameters:')
-                console.log(self.options.program.help());
-                next();
-            }
-        ],
-        function() {
-            // Do nothing
-        });
-
-
-}
-
 Bosco.prototype._checkVersion = function() {
     // Check the version in the background
     var self = this;
@@ -387,7 +312,47 @@ Bosco.prototype._checkVersion = function() {
 }
 
 Bosco.prototype.findHomeFolder = function() {
-    return osenv.home() || process.env.HOME || process.env.HOMEPATH || process.env.USERPROFILE;
+    return osenv.home();
+};
+
+Bosco.prototype.findConfigFolder = function() {
+    var platform = process.platform;
+    var oldConfig = [osenv.home(), '.bosco'].join('/');
+
+    if (platform == 'darwin' || platform == 'win32') {
+        var env = process.env;
+        if (!env.XDG_CONFIG_HOME || !env.XDG_DATA_HOME || !env.XDG_CACHE_HOME) {
+            return oldConfig;
+        }
+        platform = 'xdg';
+    }
+
+    var dirs = new AppDirectory({
+        platform: platform,
+        appName: 'bosco',
+        appAuthor: 'tes',
+    });
+    var newConfig = dirs.userConfig();
+
+    this._migrateConfig(oldConfig, newConfig);
+
+    return newConfig;
+}
+
+// TODO(geophree): remove this after a while (added 2015-09-26)
+Bosco.prototype._migrateConfig = function(oldConfig, newConfig) {
+    var self = this;
+    if (!self.exists(oldConfig)) return;
+
+    var oldConfigWarning = 'You still have an old config directory at ' + oldConfig.red + ' that you should remove.';
+
+    if (self.exists(newConfig)) return self.warn(oldConfigWarning);
+
+    fs.mkdirpSync(newConfig);
+    fs.copySync(oldConfig, newConfig, {clobber: true});
+
+    self.warn('Your configuration has been copied to ' + newConfig.red);
+    self.warn(oldConfigWarning);
 }
 
 Bosco.prototype.findWorkspace = function() {

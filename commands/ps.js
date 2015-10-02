@@ -10,7 +10,6 @@ var dockerList = [];
 module.exports = {
     name:'ps',
     description:'Lists all running services',
-    example:'bosco ps',
     cmd:cmd
 }
 

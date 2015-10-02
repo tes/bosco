@@ -9,7 +9,7 @@ var runningServices = [];
 module.exports = {
     name: 'stop',
     description: 'Stops all of the microservices (or subset based on regex pattern)',
-    example: 'bosco stop -r <repoPattern>',
+    usage: '[-r <repoPattern>]',
     cmd: cmd
 }
 

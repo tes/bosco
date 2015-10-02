@@ -4,7 +4,7 @@ var exec = require('child_process').exec;
 module.exports = {
     name:'upstream',
     description:'Runs a git fetch and tells you what has changed upstream for all your repos',
-    example:'bosco upstream -r <repoPattern>',
+    usage: '[-r <repoPattern>]',
     cmd:cmd
 }
 
