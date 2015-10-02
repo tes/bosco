@@ -36,7 +36,7 @@ module.exports = {
 
       dependencyMap[dependency].push(dependent);
       dependentsMap[dependent].push(dependency);
-    }
+    };
 
     async.map(repos, function(repo, next) {
       var repoPath = bosco.getRepoPath(repo);
@@ -106,7 +106,7 @@ module.exports = {
         }
 
         return install;
-      };
+      }
 
       while (packageDiff !== 0 && packageCount > 0) {
         bosco.log(util.format('%s packages remain', packageCount));
@@ -173,4 +173,4 @@ module.exports = {
       });
     });
   }
-}
+};

@@ -20,7 +20,7 @@ module.exports = function(bosco) {
 
   return {
     minify: minify
-  }
+  };
 
   function compileJs(staticAssets, jsAssets, next) {
     var bundleKeys = _.uniq(_.pluck(jsAssets, 'bundleKey'));
@@ -143,4 +143,4 @@ module.exports = function(bosco) {
 
     next(null, staticAssets);
   }
-}
+};

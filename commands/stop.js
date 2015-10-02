@@ -11,7 +11,7 @@ module.exports = {
   description: 'Stops all of the microservices (or subset based on regex pattern)',
   usage: '[-r <repoPattern>]',
   cmd: cmd
-}
+};
 
 function cmd(bosco, args, next) {
   var repoPattern = bosco.options.repo;
@@ -88,10 +88,10 @@ function cmd(bosco, args, next) {
         dockerRunning = _.map(_.flatten(dockerRunning), function(item) { return item.replace('/', ''); });
         DockerComposeRunner.list(false, function(err, dockerComposeRunning) {
           runningServices = _.union(nodeRunning, dockerRunning, dockerComposeRunning);
-          cb()
-        })
-      })
-    })
+          cb();
+        });
+      });
+    });
   }
 
   bosco.log('Stop each microservice ' + args);

@@ -48,10 +48,10 @@ Bosco.prototype.init = function(options) {
   self.concurrency = {
     network: self.options.cpus * 4, // network constrained
     cpu: self.options.cpus // cpu constrained
-  }
+  };
 
   events.EventEmitter.call(this);
-}
+};
 
 Bosco.prototype.run = function(options) {
   var self = this;
@@ -105,7 +105,7 @@ Bosco.prototype.run = function(options) {
     self.log('Initialised using [' + self.options.configFile.magenta + '] in environment [' + self.options.environment.green + '] with team [' + teamDesc.cyan + ']');
     self._cmd();
   });
-}
+};
 
 Bosco.prototype._init = function(next) {
   var self = this;
@@ -139,7 +139,7 @@ Bosco.prototype._init = function(next) {
       }
     }
   });
-}
+};
 
 Bosco.prototype._checkConfig = function(next) {
   var self = this,
@@ -163,7 +163,7 @@ Bosco.prototype._checkConfig = function(next) {
         }
       }
     }, function(err, result) {
-      if (!result || (result.confirm != 'Y' && result.confirm != 'y')) {
+      if (!result || (result.confirm !== 'Y' && result.confirm !== 'y')) {
         return cb({
           message: 'Did not confirm'
         });
@@ -178,7 +178,7 @@ Bosco.prototype._checkConfig = function(next) {
   async.series([checkConfigPath, checkConfig], function(err, result) {
     next(err, result[1]);
   });
-}
+};
 
 Bosco.prototype._initialiseConfig = function(next) {
   var self = this;
@@ -242,12 +242,12 @@ Bosco.prototype._cmd = function() {
   if (self.options.shellCommands) return self._shellCommands();
 
   self.options.program.showHelp();
-}
+};
 
 Bosco.prototype._shellCommands = function() {
   var self = this,
     cmdPath = self.getGlobalCommandFolder(),
-    localPath =  self.getLocalCommandFolder();
+    localPath = self.getLocalCommandFolder();
 
   function showCommands(cPath, files, next) {
     var cmdString = '';
@@ -259,24 +259,24 @@ Bosco.prototype._shellCommands = function() {
 
   async.series([
 
-      function(next) {
+    function(next) {
         fs.readdir(cmdPath, function(err, files) {
-          showCommands(cmdPath, files, next)
-        })
+          showCommands(cmdPath, files, next);
+        });
       },
-      function(next) {
+    function(next) {
         fs.readdir(localPath, function(err, files) {
           if (!files || files.length === 0) return next();
           showCommands(localPath, files, next);
-        })
+        });
       }
-    ],
+  ],
     function(err, files) {
       files = _.uniq(_.flatten(files));
       console.log('Available commands: ' + files.join(' '));
       process.exit(0);
     });
-}
+};
 
 Bosco.prototype._checkVersion = function() {
   // Check the version in the background
@@ -297,7 +297,7 @@ Bosco.prototype._checkVersion = function() {
     }
     self._checkingVersion = false;
   });
-}
+};
 
 Bosco.prototype.findHomeFolder = function() {
   return osenv.home();
@@ -325,7 +325,7 @@ Bosco.prototype.findConfigFolder = function() {
   this._migrateConfig(oldConfig, newConfig);
 
   return newConfig;
-}
+};
 
 // TODO(geophree): remove this after a while (added 2015-09-26)
 Bosco.prototype._migrateConfig = function(oldConfig, newConfig) {
@@ -341,7 +341,7 @@ Bosco.prototype._migrateConfig = function(oldConfig, newConfig) {
 
   self.warn('Your configuration has been copied to ' + newConfig.red);
   self.warn(oldConfigWarning);
-}
+};
 
 Bosco.prototype.findWorkspace = function() {
   for (var p = path.resolve('.');; p = path.resolve(p, '..')) {
@@ -349,12 +349,12 @@ Bosco.prototype.findWorkspace = function() {
     if (p === '/') break;
   }
   return path.resolve('.');
-}
+};
 
 Bosco.prototype.getWorkspacePath = function() {
   var self = this;
   return self.options.workspace;
-}
+};
 
 Bosco.prototype.getTeam = function() {
   var self = this;
@@ -365,17 +365,17 @@ Bosco.prototype.getTeam = function() {
     }
   });
   return currentTeam || 'no-team';
-}
+};
 
 Bosco.prototype.getRepos = function() {
   var self = this;
   var team = self.getTeam();
   if (team === 'no-team') {
-    return [path.relative('..', '.')]
+    return [path.relative('..', '.')];
   } else {
     return self.config.get('teams:' + team).repos;
   }
-}
+};
 
 Bosco.prototype.getOrg = function() {
   var self = this;
@@ -386,11 +386,11 @@ Bosco.prototype.getOrg = function() {
     }
   });
   return currentOrg;
-}
+};
 
 Bosco.prototype.getOrgPath = function() {
   return path.resolve(this.getWorkspacePath());
-}
+};
 
 Bosco.prototype.getRepoPath = function(repo) {
   // Strip out / to support full github references
@@ -401,30 +401,30 @@ Bosco.prototype.getRepoPath = function(repo) {
     repoName = repo.split('/')[1];
   }
   return [path.resolve(this.getWorkspacePath()), repoName].join('/');
-}
+};
 
 // Additional exports
 Bosco.prototype.getGlobalCommandFolder = function() {
   return [__dirname, '/', 'commands', '/'].join('');
-}
+};
 
 Bosco.prototype.getLocalCommandFolder = function() {
   var self = this,
     workspace = self.options && self.options.workspace ? self.options.workspace : self.findWorkspace();
   return [workspace, '/', 'commands', '/'].join('');
-}
+};
 
 Bosco.prototype.getRepoUrl = function(repo) {
   var org;
-  var host     = this.config.get('github:hostname') || 'github.com';
+  var host = this.config.get('github:hostname') || 'github.com';
   var hostUser = this.config.get('github:hostUser') || 'git';
-  host         = hostUser + '@' + host + ':';
+  host = hostUser + '@' + host + ':';
 
   if (repo.indexOf('/') < 0) {
     org = this.getOrg() + '/';
   }
   return [host, org ? org : '', repo, '.git'].join('');
-}
+};
 
 Bosco.prototype.isLocalCdn = function() {
   return !this.config.get('aws:cdn');
@@ -438,7 +438,7 @@ Bosco.prototype.getCdnUrl = function() {
   var cdnPort = this.config.get('cdn:port') || '7334';
   var cdnHostname = this.config.get('cdn:hostname') || 'localhost';
 
-  return 'http://'+ cdnHostname +':' + cdnPort;
+  return 'http://' + cdnHostname + ':' + cdnPort;
 };
 
 Bosco.prototype.getBaseCdnUrl = function() {
@@ -453,7 +453,7 @@ Bosco.prototype.getBaseCdnUrl = function() {
   }
 
   return baseUrl;
-}
+};
 
 Bosco.prototype.getAssetCdnUrl = function(assetUrl) {
   var baseUrl = this.getBaseCdnUrl();
@@ -463,7 +463,7 @@ Bosco.prototype.getAssetCdnUrl = function(assetUrl) {
   }
 
   return baseUrl + '/' + assetUrl;
-}
+};
 
 Bosco.prototype.checkInService = function() {
   var self = this, cwd = path.resolve('bosco-service.json');
@@ -473,21 +473,21 @@ Bosco.prototype.checkInService = function() {
     // Replace getRepos
     self.getRepos = function() {
       return [path.relative('..', '.')];
-    }
+    };
   }
-}
+};
 
 Bosco.prototype.warn = function(msg, args) {
   this._log('Bosco'.yellow, msg, args);
-}
+};
 
 Bosco.prototype.log = function(msg, args) {
   this._log('Bosco'.cyan, msg, args);
-}
+};
 
 Bosco.prototype.error = function(msg, args) {
   this._log('Bosco'.red, msg, args);
-}
+};
 
 Bosco.prototype._log = function(identifier, msg, args) {
   var parts = {
@@ -496,10 +496,10 @@ Bosco.prototype._log = function(identifier, msg, args) {
     message: args ? sf(msg, args) : msg
   };
   console.log(sf('[{time:hh:mm:ss}] {identifier}: {message}', parts));
-}
+};
 
 Bosco.prototype.console = global.console;
 
 Bosco.prototype.exists = function(path) {
   return fs.existsSync(path);
-}
+};

@@ -130,5 +130,5 @@ module.exports = function(bosco) {
   return {
     getStaticAssets: getStaticAssets,
     getStaticRepos: getStaticRepos
-  }
+  };
 };

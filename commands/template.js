@@ -10,7 +10,7 @@ module.exports = {
   description: 'A command to allow generic, template driven creation of new services and apps',
   usage: '[add <githubRepo>|remove <githubRepo>|new <templateName> <serviceName>]',
   cmd: cmd
-}
+};
 
 function cmd(bosco, args, next) {
   var action = args.shift();
@@ -28,7 +28,7 @@ function listTemplates(bosco, next) {
     bosco.log(' - ' + template.green);
   });
 
-  bosco.log('Use the command: ' + 'bosco template add <githubRepo>'.green + ' to add to your template list.')
+  bosco.log('Use the command: ' + 'bosco template add <githubRepo>'.green + ' to add to your template list.');
   if (next) { next(); }
 }
 
@@ -53,9 +53,9 @@ function newServiceFromTemplate(bosco, args, next) {
   bosco.log('Creating new service: ' + targetServiceName.green + ' from template: ' + template.green);
 
   var gitCmd = 'git';
-  var host     = bosco.config.get('github:hostname') || 'github.com';
+  var host = bosco.config.get('github:hostname') || 'github.com';
   var hostUser = bosco.config.get('github:hostUser') || 'git';
-  host         = hostUser + '@' + host + ':';
+  host = hostUser + '@' + host + ':';
 
   var gitOptions = ['clone', '--depth=1', host + template, targetServiceName];
 
@@ -85,7 +85,7 @@ function copyTemplateFiles(bosco, serviceName, port, serviceDirectory, next) {
     serviceShortName: getShortName(serviceName),
     user: bosco.config.get('github:user'),
     port: port
-  }
+  };
   async.map(templateFiles, function(template, cb) {
     if (!template.source || !template.destination) {
       return cb(new Error('You must specify both a source and destination'));
@@ -99,7 +99,7 @@ function copyTemplateFiles(bosco, serviceName, port, serviceDirectory, next) {
       var templateContent = fs.readFileSync(path.join(serviceDirectory, source));
       var outputContent = hb.compile(templateContent.toString())(variables);
       fs.writeFileSync(path.join(serviceDirectory, destination), outputContent);
-    } catch(ex) {
+    } catch (ex) {
       bosco.error('There has been an error applying the templates, check the configuration of the template project.');
       return cb(ex);
     }

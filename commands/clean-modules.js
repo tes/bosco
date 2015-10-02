@@ -8,7 +8,7 @@ module.exports = {
   description: 'Cleans out node_modules and re-runs npm install against all repos',
   usage: '[-r <repoPattern>]',
   cmd: cmd
-}
+};
 
 function cmd(bosco, args, next) {
   var repoPattern = bosco.options.repo;

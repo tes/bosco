@@ -5,7 +5,7 @@ module.exports = {
   description: 'Runs stop and then run with the same parameters - aka restart ;)',
   usage: '[-r <repoPattern>] [-t <tag>]',
   cmd: cmd
-}
+};
 
 function cmd(bosco, args) {
   var stop = require('./stop');
@@ -13,13 +13,13 @@ function cmd(bosco, args) {
 
   function executeStop(next) {
     stop.cmd(bosco, args, next);
-  };
+  }
 
   function executeRun(repos, next) {
     if (repos.length === 0) return next();
     bosco.options.list = repos.join(',');
     run.cmd(bosco, args, next);
-  };
+  }
 
   async.waterfall([executeStop, executeRun], function() {
     // Done

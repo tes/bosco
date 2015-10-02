@@ -34,7 +34,7 @@ function createContainer(docker, fqn, options, next) {
   function doCreate(err) {
     if (err && err.statusCode !== 404) return next(err);
     docker.createContainer(optsCreate, next);
-  };
+  }
   var container = docker.getContainer(optsCreate.name);
   if (container) return container.remove(doCreate);
   doCreate();
@@ -131,7 +131,7 @@ function checkRunning(port, next) {
   var start = new Date();
   var timer;
   socket.on('connect', function() {
-    timer = setTimeout(function() { socket.end() }, 200);
+    timer = setTimeout(function() { socket.end(); }, 200);
   });
   socket.on('close', function(hadError) {
     if (hadError) return; // If we are closing due to an error ignore it
@@ -244,7 +244,7 @@ function pullImage(bosco, docker, repoTag, next) {
               logged = true;
             }
           }
-        }
+        };
       }
     }
 
@@ -262,7 +262,7 @@ function pullImage(bosco, docker, repoTag, next) {
         progress.tick(json.progressDetail.current - previousTotal);
         previousTotal = json.progressDetail.current;
       }
-    })
+    });
     stream.once('end', handler);
   });
 }
@@ -270,7 +270,7 @@ function pullImage(bosco, docker, repoTag, next) {
 function ensureManifest(bosco, name, cwd) {
   var manifest = path.join(cwd, 'manifest.json');
   if (fs.existsSync(manifest)) { return; }
-  bosco.log('Adding default manifest file for docker build ...')
+  bosco.log('Adding default manifest file for docker build ...');
   var manifestContent = { 'service': name, 'build': 'local' };
   fs.writeFileSync(manifest, JSON.stringify(manifestContent));
 }
@@ -280,7 +280,7 @@ function getHostIp() {
     .values()
     .flatten()
     .filter(function(val) {
-      return (val.family === 'IPv4' && val.internal === false)
+      return (val.family === 'IPv4' && val.internal === false);
     })
     .pluck('address')
     .first()
@@ -296,4 +296,4 @@ module.exports = {
   prepareImage: prepareImage,
   pullImage: pullImage,
   startContainer: startContainer
-}
+};

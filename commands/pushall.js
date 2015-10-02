@@ -10,7 +10,7 @@ module.exports = {
   description: 'Will push any changes across all repos - useful for batch updates, typicall used after bosco commit',
   usage: '[-r <repoPattern>]',
   cmd: cmd
-}
+};
 
 function cmd(bosco) {
   var repos = bosco.getRepos();
@@ -90,8 +90,8 @@ function push(bosco, orgPath, repo, next) {
         }
         next(err);
       });
-    })
-  })
+    });
+  });
 }
 
 function countCommitsAhead(bosco, orgPath, next) {

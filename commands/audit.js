@@ -39,7 +39,7 @@ function cmd(bosco, args, next) {
         bosco.log(repo.blue + ': ' + 'Looks ok...'.green);
       } else {
         d.forEach(function(item) {
-          item.advisory.url = 'https://nodesecurity.io/advisories/' + item.advisory.url
+          item.advisory.url = 'https://nodesecurity.io/advisories/' + item.advisory.url;
         });
         bosco.log(repoPath.blue + ': \n' + JSON.stringify(d, false, 2).red);
       }

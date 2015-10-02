@@ -17,7 +17,7 @@ module.exports = {
     type: 'boolean',
     desc: 'Remove any repositories in the workspace that are no longer in the github team'
   }]
-}
+};
 
 function cmd(bosco, args, next) {
   var repoPattern = bosco.options.repo;
@@ -99,7 +99,7 @@ function fetch(bosco, team, repos, repoRegex, args, next) {
         }
 
         bosco.log('Deleted project ' + orphan.green + ' as it is no longer in the github team and you have no local changes.');
-        fs.remove(orphanPath, cb2)
+        fs.remove(orphanPath, cb2);
       });
     }
 
@@ -110,11 +110,11 @@ function fetch(bosco, team, repos, repoRegex, args, next) {
 
     fs.readdir(bosco.getOrgPath(), function(err, files) {
       var orphans = _.chain(files)
-        .map(function(file) { return path.join(bosco.getOrgPath(), file) })
-        .filter(function(file) { return fs.statSync(file).isDirectory() && bosco.exists(path.join(file, '.git')) })
+        .map(function(file) { return path.join(bosco.getOrgPath(), file); })
+        .filter(function(file) { return fs.statSync(file).isDirectory() && bosco.exists(path.join(file, '.git')); })
         .map(function(file) { return path.relative(bosco.getOrgPath(), file); })
         .difference(repos)
-        .value()
+        .value();
 
       async.map(orphans, orphanAction, cb);
     });
@@ -143,7 +143,7 @@ function fetch(bosco, team, repos, repoRegex, args, next) {
         if (progressbar) bar.tick();
         repoCb();
       } else {
-        clone(bosco,  progressbar, bar, repoUrl, orgPath, repoCb);
+        clone(bosco, progressbar, bar, repoUrl, orgPath, repoCb);
       }
     }, function() {
       if (pullFlag) {
@@ -187,7 +187,7 @@ function checkCanDelete(bosco, repoPath, next) {
     'git branch --no-merged origin/master',
     'git status --porcelain'
   ], true, reducer, function(err, result) {
-    next(err, result)
+    next(err, result);
   });
 }
 

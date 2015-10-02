@@ -80,7 +80,7 @@ module.exports = function(bosco) {
         bundleAssets = _.map(bundleAssets, function(asset) {
           asset.url = bosco.getAssetCdnUrl(asset.assetKey);
           return asset;
-        })
+        });
         var bundle = {bundle: bundleTag, assets: bundleAssets};
         service.bundles.push(bundle);
       });
@@ -107,5 +107,5 @@ module.exports = function(bosco) {
   return {
     createAssetHtmlFiles: createAssetHtmlFiles,
     attachFormattedRepos: attachFormattedRepos
-  }
-}
+  };
+};

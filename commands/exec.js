@@ -6,7 +6,7 @@ module.exports = {
   description: 'Runs arbitrary commands across all services - take care!',
   usage: '[-r <repoRegex>] -- <command>',
   cmd: cmd
-}
+};
 
 function cmd(bosco, args) {
   var stringCommand = args.join(' '),

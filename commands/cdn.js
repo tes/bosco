@@ -22,7 +22,7 @@ module.exports = {
     type: 'string',
     desc: 'Filter by a regex of services to watch (similar to -r in run)'
   }]
-}
+};
 
 function cmd(bosco, args) {
   var minify = _.contains(args, 'minify');
@@ -33,7 +33,7 @@ function cmd(bosco, args) {
   var watchRegex = new RegExp(watchPattern);
   var repoTag = bosco.options.tag;
 
-  bosco.log('Starting pseudo CDN on port: ' + (port+'').blue);
+  bosco.log('Starting pseudo CDN on port: ' + (port + '').blue);
 
   var repos = bosco.getRepos();
   if (!repos) return bosco.error('You are repo-less :( You need to initialise bosco first, try \'bosco clone\'.');
@@ -120,7 +120,7 @@ function cmd(bosco, args) {
         }
         fs.readFile(staticAssets[assetIndex].path, function(err, data) {
           if (err) {
-            bosco.log('Error reloading '+fileKey);
+            bosco.log('Error reloading ' + fileKey);
             bosco.log(err.toString());
             return;
           }
@@ -140,7 +140,7 @@ function cmd(bosco, args) {
         tagFilter: fileKey,
         watchBuilds: false,
         reloadOnly: true
-      }
+      };
       bosco.staticUtils.getStaticAssets(options, function(err, updatedAssets) {
         _.forEach(updatedAssets, function(value) {
           var index = getIndexForKey(staticAssets, value.assetKey);
@@ -152,7 +152,7 @@ function cmd(bosco, args) {
     }
 
     watch.createMonitor(bosco.getOrgPath(), {filter: filterFn, ignoreDotFiles: true, ignoreUnreadableDir: true, ignoreDirectoryPattern: /node_modules|\.git|coverage/, interval: 1000}, function(monitor) {
-      bosco.log('Watching '+ _.keys(monitor.files).length + ' files ...');
+      bosco.log('Watching ' + _.keys(monitor.files).length + ' files ...');
 
       monitor.on('changed', function(f) {
         var fileKey = watchSet[f];
@@ -176,12 +176,12 @@ function cmd(bosco, args) {
     watchRegex: watchRegex,
     repoRegex: repoRegex,
     repoTag: repoTag
-  }
+  };
 
   var executeAsync = {
     staticAssets: bosco.staticUtils.getStaticAssets.bind(null, options),
     staticRepos: bosco.staticUtils.getStaticRepos.bind(null, options)
-  }
+  };
 
   async.parallel(executeAsync, function(err, results) {
     startServer(results.staticAssets, results.staticRepos, port);

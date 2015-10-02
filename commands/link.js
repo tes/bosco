@@ -6,7 +6,7 @@ module.exports = {
   name: 'link',
   description: 'Automatically npm links any project in a workspace with any other project that depends on it',
   cmd: cmd
-}
+};
 
 function cmd(bosco, args, next) {
   var commands;
@@ -27,7 +27,7 @@ function cmd(bosco, args, next) {
     execCmd(bosco, command, bosco.getWorkspacePath(), next);
   }
 
-  bosco.log('Auto linking modules together and installing deps ...')
+  bosco.log('Auto linking modules together and installing deps ...');
 
   async.series([
     getCommands,
@@ -35,7 +35,7 @@ function cmd(bosco, args, next) {
   ], function() {
     bosco.log('Completed linking modules.');
     if (next) { next(); }
-  })
+  });
 }
 
 function execCmd(bosco, cmd, repoPath, next) {

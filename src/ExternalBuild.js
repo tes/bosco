@@ -21,9 +21,9 @@ module.exports = function(bosco) {
       var log;
       if (realError) {
         log = 'Failed'.red + ' build command for ' + service.name.blue;
-        if (err.code != null) {
+        if (err.code !== null) {
           log += ' exited with code ' + err.code;
-          if (err.signal != null) log += ' and signal ' + err.signal;
+          if (err.signal !== null) log += ' and signal ' + err.signal;
         }
 
         if (stderr || stdout) log += ':';
@@ -42,7 +42,7 @@ module.exports = function(bosco) {
       }
 
       next(realError);
-    };
+    }
 
     if (arrayCommand) {
       commandForLog = JSON.stringify(command);
@@ -144,17 +144,17 @@ module.exports = function(bosco) {
       timer = timer + checkDelay;
       if (timer < timeout) return setTimeout(checkFinished, checkDelay);
 
-      bosco.error('Build timed out beyond ' + timeout/1000 + ' seconds, likely an issue with the project build - you may need to check locally. Was looking for: ' + readyText);
+      bosco.error('Build timed out beyond ' + timeout / 1000 + ' seconds, likely an issue with the project build - you may need to check locally. Was looking for: ' + readyText);
 
-      childError = new Error('build timed out beyond ' + timeout/1000 + ' seconds');
+      childError = new Error('build timed out beyond ' + timeout / 1000 + ' seconds');
       wc.kill();
       checkFinished();
-    };
+    }
 
     checkFinished();
   }
 
   return {
     doBuild: doBuild
-  }
-}
+  };
+};

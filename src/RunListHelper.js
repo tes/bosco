@@ -5,7 +5,7 @@ var github = require('octonode');
 module.exports = {
   getRunList: getRunList,
   getServiceConfigFromGithub: getServiceConfigFromGithub
-}
+};
 
 function getRunConfig(bosco, repo, repoRegex, watchRegex) {
   var pkg, svc,
@@ -96,7 +96,7 @@ function getRunList(bosco, repos, repoRegex, watchRegex, repoTag, next) {
     .uniq(function(item) { return item.name; })
     .sortBy(function(item) {
       if (item.order) return item.order;
-      return (item.service.type === 'docker' || item.service.type === 'docker-compose') ? 100 : 500
+      return (item.service.type === 'docker' || item.service.type === 'docker-compose') ? 100 : 500;
     }).value();
 
   next(null, runList);

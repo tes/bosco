@@ -33,7 +33,7 @@ module.exports = {
     type: 'string',
     desc: 'Start a list of repos (comma separated)'
   }]
-}
+};
 
 function cmd(bosco, args, cb) {
   var repoPattern = bosco.options.repo;
@@ -109,12 +109,12 @@ function cmd(bosco, args, cb) {
               svcConfig.name = runConfig.name;
             }
             runService(svcConfig, cb);
-          })
+          });
         } else {
           runService(runConfig, cb);
         }
       }, next);
-    })
+    });
   }
 
   function stopNotRunningServices(next) {
@@ -122,7 +122,7 @@ function cmd(bosco, args, cb) {
     async.each(notRunningServices, function(service, cb) {
       NodeRunner.stop({name: service}, cb);
     }, next);
-  };
+  }
 
   function getRunningServices(next) {
     NodeRunner.listRunning(false, function(err, nodeRunning) {
@@ -139,7 +139,7 @@ function cmd(bosco, args, cb) {
       notRunningServices = nodeNotRunning;
       next();
     });
-  };
+  }
 
   function ensurePM2(next) {
     // Ensure that the ~/.pm2 folders exist
@@ -172,6 +172,6 @@ function cmd(bosco, args, cb) {
     } else {
       if (cb) return cb();
     }
-  })
+  });
 }
 

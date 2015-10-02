@@ -11,7 +11,7 @@ module.exports = {
   name: 'ps',
   description: 'Lists all running services',
   cmd: cmd
-}
+};
 
 function cmd(bosco) {
   function initialiseRunners(next) {
@@ -29,8 +29,8 @@ function cmd(bosco) {
         if (err) return next(err);
         dockerList = dockerRunning;
         next();
-      })
-    })
+      });
+    });
   }
 
   function printNodeServices(name, list) {
@@ -76,6 +76,6 @@ function cmd(bosco) {
     printDockerServices('Docker', dockerList);
 
     process.exit(0);
-  })
+  });
 }
 

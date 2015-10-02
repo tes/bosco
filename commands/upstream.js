@@ -6,7 +6,7 @@ module.exports = {
   description: 'Runs a git fetch and tells you what has changed upstream for all your repos',
   usage: '[-r <repoPattern>]',
   cmd: cmd
-}
+};
 
 function cmd(bosco) {
   var repoPattern = bosco.options.repo;
@@ -25,7 +25,7 @@ function cmd(bosco) {
     });
   }
 
-  bosco.log('Checking upstream origin for changes, this may take a while ...')
+  bosco.log('Checking upstream origin for changes, this may take a while ...');
 
   changedRepos(function() {
     bosco.log('Complete');

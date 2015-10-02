@@ -8,7 +8,7 @@ module.exports = {
   description: 'Tails the logs from pm2',
   usage: '[out|err] [-r <repoPattern>]',
   cmd: cmd
-}
+};
 
 function cmd(bosco, args) {
   var repoPattern = bosco.options.repo;

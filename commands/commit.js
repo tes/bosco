@@ -6,7 +6,7 @@ module.exports = {
   description: 'Run git commit across all repos - useful for batch updates',
   usage: '[-r <repoPattern>] \'<commit message>\'',
   cmd: cmd
-}
+};
 
 function cmd(bosco, args) {
   var repos = bosco.getRepos();
@@ -69,7 +69,7 @@ function confirm(bosco, message, next) {
 
 function commit(bosco, commitMsg, orgPath, next) {
   if (!bosco.exists([orgPath, '.git'].join('/'))) {
-    bosco.warn('Doesn\'t seem to be a git repo: '+ orgPath.blue);
+    bosco.warn('Doesn\'t seem to be a git repo: ' + orgPath.blue);
     return next();
   }
 
@@ -81,9 +81,9 @@ function commit(bosco, commitMsg, orgPath, next) {
       return next();
     }
 
-    var gitCmd = 'git commit -am \'' + commitMsg +'\'';
+    var gitCmd = 'git commit -am \'' + commitMsg + '\'';
 
-      exec(gitCmd, {
+    exec(gitCmd, {
         cwd: orgPath
       }, function(err, stdout) {
         if (err) {
@@ -93,5 +93,5 @@ function commit(bosco, commitMsg, orgPath, next) {
         }
         next();
       });
-  })
+  });
 }

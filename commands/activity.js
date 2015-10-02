@@ -14,7 +14,7 @@ module.exports = {
     type: 'string',
     desc: 'Return all data after a ISO date'
   }]
-}
+};
 
 var FORMAT = '%C(auto)%h %s %C(yellow)(%Cgreen%aN%C(yellow) %ad)%Creset';
 
@@ -31,7 +31,7 @@ function cmd(bosco, args, next) {
     args: ['log', '--date=relative', '--pretty=format:' + FORMAT, '--no-merges', '--since=' + since],
     guardFn: function(bosco, repoPath, options, next) {
       if (bosco.exists([repoPath, '.git'].join('/'))) return next();
-      next(new Error('Doesn\'t seem to be a git repo: '+ repoPath.blue));
+      next(new Error('Doesn\'t seem to be a git repo: ' + repoPath.blue));
     },
     stdoutFn: makeRepoActivityStdoutFn(bosco)
   });

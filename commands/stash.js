@@ -8,7 +8,7 @@ module.exports = {
   description: 'Stashes any local changes across all repos',
   usage: '[-r <repoPattern>]',
   cmd: cmd
-}
+};
 
 function cmd(bosco, args) {
   var repoPattern = bosco.options.repo;
@@ -46,9 +46,9 @@ function cmd(bosco, args) {
 }
 
 function stash(bosco, args, progressbar, bar, orgPath, next) {
-  if (!progressbar) bosco.log('Stashing '+ orgPath.blue);
+  if (!progressbar) bosco.log('Stashing ' + orgPath.blue);
   if (!bosco.exists([orgPath, '.git'].join('/'))) {
-    bosco.warn('Doesn\'t seem to be a git repo: '+ orgPath.blue);
+    bosco.warn('Doesn\'t seem to be a git repo: ' + orgPath.blue);
     return next();
   }
 

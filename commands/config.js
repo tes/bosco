@@ -6,7 +6,7 @@ module.exports = {
   description: 'Lets you manage config from the command line instead of editing json files',
   usage: 'set <key> <value> | get <key>',
   cmd: cmd
-}
+};
 
 function cmd(bosco, args) {
   var type = args.shift();
@@ -20,7 +20,7 @@ function cmd(bosco, args) {
   if (type === 'get') {
     // Get the key
     if (!key) {
-      console.log('')
+      console.log('');
 
       console.log('Config for ' + 'github'.green + ':');
       var github = _.clone(bosco.config.get('github'));
@@ -28,7 +28,7 @@ function cmd(bosco, args) {
       delete github.ignoredRepos;
       logConfig(github);
 
-      console.log('Config for ' + 'aws'.green + ':')
+      console.log('Config for ' + 'aws'.green + ':');
       var aws = bosco.config.get('aws');
       logConfig(aws ? aws : 'Not defined');
 

@@ -39,7 +39,7 @@ module.exports = function(bosco) {
           staticAssets.push(newAsset);
         }
       }
-    }
+    };
   }
 
   function createKey(name, buildNumber, tag, hash, type, extension) {
@@ -50,7 +50,7 @@ module.exports = function(bosco) {
     return crypto
       .createHash(algorithm || 'md5')
       .update(str, 'utf8')
-      .digest(encoding || 'hex')
+      .digest(encoding || 'hex');
   }
 
   function resolve(boscoRepo, basePath, asset, assetKey) {
@@ -71,5 +71,5 @@ module.exports = function(bosco) {
     getAssetHelper: getAssetHelper,
     createKey: createKey,
     checksum: checksum
-  }
-}
+  };
+};

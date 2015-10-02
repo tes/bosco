@@ -36,13 +36,13 @@ Runner.prototype.init = function(bosco, next) {
   next();
 
   function readCert(certPath, certFile) {
-    return fs.readFileSync(certPath + '/' + certFile, {encoding: 'utf-8'})
+    return fs.readFileSync(certPath + '/' + certFile, {encoding: 'utf-8'});
   }
-}
+};
 
 Runner.prototype.disconnect = function(next) {
   return next();
-}
+};
 
 Runner.prototype.list = function(detailed, next) {
   var self = this, docker = self.docker;
@@ -52,7 +52,7 @@ Runner.prototype.list = function(detailed, next) {
     if (!detailed) return next(err, _.pluck(containers, 'Names'));
     next(err, containers);
   });
-}
+};
 
 Runner.prototype.stop = function(options, next) {
   var self = this, docker = self.docker;
@@ -71,7 +71,7 @@ Runner.prototype.stop = function(options, next) {
       container.stop(cb);
     }, next);
   });
-}
+};
 
 Runner.prototype.start = function(options, next) {
   var self = this, docker = self.docker;
@@ -85,7 +85,7 @@ Runner.prototype.start = function(options, next) {
       DockerUtils.startContainer(self.bosco, docker, dockerFqn, options, container, next);
     });
   });
-}
+};
 
 Runner.prototype.update = function(options, next) {
   var self = this, docker = self.docker;
@@ -94,7 +94,7 @@ Runner.prototype.update = function(options, next) {
 
   var dockerFqn = self.getFqn(options);
   DockerUtils.pullImage(self.bosco, docker, dockerFqn, next);
-}
+};
 
 Runner.prototype.getFqn = function(options) {
   var dockerFqn = '', service = options.service;
@@ -116,18 +116,18 @@ Runner.prototype.getFqn = function(options) {
   if (service.registry) dockerFqn += service.registry + '/';
   if (service.username) dockerFqn += service.username + '/';
   return dockerFqn + service.name + ':' + (service.version || 'latest');
-}
+};
 
 Runner.prototype.matchWithoutVersion = function(a, b) {
   a = a.slice(0, a.lastIndexOf(':'));
   b = b.slice(0, b.lastIndexOf(':'));
   return a === b;
-}
+};
 
 Runner.prototype.containerNameMatches = function(container, name) {
   return _.any(container.Names, function(val) {
     return val === '/' + name;
   });
-}
+};
 
 module.exports = new Runner();

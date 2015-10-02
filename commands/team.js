@@ -11,7 +11,7 @@ module.exports = {
   description: 'A command to keep your Github organisation and team setup in sync with Bosco',
   usage: 'sync|ls|ln <team> <directory>',
   cmd: cmd
-}
+};
 
 function cmd(bosco, args, next) {
   var action = args.shift();
@@ -31,7 +31,7 @@ function showTeams(bosco) {
     bosco.log(' - ' + team.green + ' > ' + (teamConfig[team].path ? teamConfig[team].path.cyan : 'Not linked'.grey));
   });
 
-  bosco.log('Use the command: ' + 'bosco team sync'.green + ' to update your team list.')
+  bosco.log('Use the command: ' + 'bosco team sync'.green + ' to update your team list.');
 }
 
 function syncTeams(bosco, next) {
@@ -91,7 +91,7 @@ function getTeams(client, cb) {
       client.get('/user/teams', {page: page}, function(err, status, body) {
         cb(err, body);
       });
-    }
+    };
   }
 }
 

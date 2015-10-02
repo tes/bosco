@@ -68,7 +68,7 @@ function execute(bosco, command, args, repoPath, options, next) {
       if (error) return next(error);
       next(returnCode === 0 ? null : 'Process exited with status code ' + returnCode);
     }
-  }
+  };
 
   if (!options.init) {
     stdio[0] = 'ignore';
@@ -89,7 +89,7 @@ function execute(bosco, command, args, repoPath, options, next) {
     bosco.error('spawn error: ' + err);
   });
 
-  if (stdio[1] != 'ignore') {
+  if (stdio[1] !== 'ignore') {
     sc.stdio[1] = sc.stdout = hl(sc.stdout);
 
     if (options.stdoutFn) {
@@ -107,7 +107,7 @@ function execute(bosco, command, args, repoPath, options, next) {
     }
   }
 
-  if (stdio[2] != 'ignore') {
+  if (stdio[2] !== 'ignore') {
     sc.stdio[2] = sc.stderr = hl(sc.stderr);
 
     if (options.stderrFn) {
@@ -139,4 +139,4 @@ module.exports = {
   createOptions: createOptions,
   iterate: iterate,
   execute: execute
-}
+};

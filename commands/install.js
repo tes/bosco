@@ -8,7 +8,7 @@ module.exports = {
   description: 'Runs npm install against all repos',
   usage: '[-r <repoPattern>]',
   cmd: cmd
-}
+};
 
 function cmd(bosco, args, next) {
   var repoPattern = bosco.options.repo;

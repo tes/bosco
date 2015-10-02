@@ -9,7 +9,7 @@ module.exports = {
   description: 'Pulls any changes across all repos',
   usage: '[-r <repoPattern>]',
   cmd: cmd
-}
+};
 
 function cmd(bosco, args, next) {
   var repoPattern = bosco.options.repo;
@@ -91,7 +91,7 @@ function cmd(bosco, args, next) {
 
 function pull(bosco, progressbar, bar, repoPath, next) {
   if (!bosco.exists([repoPath, '.git'].join('/'))) {
-    bosco.warn('Doesn\'t seem to be a git repo: '+ repoPath.blue);
+    bosco.warn('Doesn\'t seem to be a git repo: ' + repoPath.blue);
     return next();
   }
 
@@ -125,7 +125,7 @@ function dockerPull(bosco, progressbar, bar, repoPath, repo, next) {
           var errMessage = err.reason ? err.reason : err;
           bosco.error('Error pulling ' + repo.green + ', reason: ' + errMessage.red);
         }
-        next()
+        next();
       });
     } else {
       return next();

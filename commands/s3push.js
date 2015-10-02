@@ -10,7 +10,7 @@ module.exports = {
   description: 'Builds all of the front end assets for each microservice and pushes them to S3 for the current environment',
   usage: '[-e <environment>] [-b <build>] [<tag>]',
   cmd: cmd
-}
+};
 
 var tag = '', noprompt = false;
 
@@ -47,7 +47,7 @@ function cmd(bosco, args, callback) {
       var s3Filename = getS3Filename(key);
       var mimeType = asset.mimeType || mime.lookup(key);
 
-      bosco.log('Staging publish: ' + s3Filename.blue + ' ('+ mimeType +')');
+      bosco.log('Staging publish: ' + s3Filename.blue + ' (' + mimeType + ')');
 
       toPush.push({
         content:  getS3Content(asset),
@@ -97,7 +97,7 @@ function cmd(bosco, args, callback) {
         if (err) return next(err);
 
         bosco.log('Pushed to S3: ' + cdnUrl + file.path);
-        if (!compoxureUrl || file.type != 'html') {
+        if (!compoxureUrl || file.type !== 'html') {
           return next(null, {file: file});
         }
 
@@ -113,10 +113,10 @@ function cmd(bosco, args, callback) {
     var compoxureKey = s3cxkey(htmlUrl);
     var ttl = 999 * 60 * 60 * 24; // 999 Days
     var cacheData = {
-      expires: Date.now()+ ttl,
+      expires: Date.now() + ttl,
       content: content,
       ttl: ttl
-    }
+    };
     var cacheUrl = url.parse(compoxureUrl + compoxureKey);
     var cacheString = JSON.stringify(cacheData);
     var headers = {
@@ -190,7 +190,7 @@ function cmd(bosco, args, callback) {
       tagFilter: tag,
       watchBuilds: false,
       reloadOnly: false
-    }
+    };
 
     bosco.staticUtils.getStaticAssets(options, function(err, staticAssets) {
       if (err) {
@@ -211,12 +211,12 @@ function cmd(bosco, args, callback) {
 
   if (noprompt) return go(callback);
 
-  var confirmMsg = 'Are you sure you want to publish '.white + (tag ? 'all ' + tag.blue + ' assets in ' : 'ALL'.red + ' assets in ').white + bosco.options.environment.blue + ' (y/N)?'.white
+  var confirmMsg = 'Are you sure you want to publish '.white + (tag ? 'all ' + tag.blue + ' assets in ' : 'ALL'.red + ' assets in ').white + bosco.options.environment.blue + ' (y/N)?'.white;
   confirm(confirmMsg, function(err, confirmed) {
     if (err) return callback(err);
     if (!confirmed) return callback(new Error('Not confirmed'));
     go(callback);
-  })
+  });
 
   function getS3Content(file) {
     return file.data || new Buffer(file.content);

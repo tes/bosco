@@ -6,7 +6,7 @@ module.exports = {
   description: 'runs git grep across your repos, use -- to separate bosco options from git grep options',
   usage: '<git grep args>',
   cmd: cmd
-}
+};
 
 function cmd(bosco, args, next) {
   var repoPattern = bosco.options.repo;
@@ -25,11 +25,11 @@ function cmd(bosco, args, next) {
 
       grepRepo(bosco, args, repo, repoPath, function(err, result) {
         // err.code is 1 when nothing is found.
-        if (err && err.code != 1) bosco.error(err.message.substring(0, err.message.indexOf('\n')));
+        if (err && err.code !== 1) bosco.error(err.message.substring(0, err.message.indexOf('\n')));
         grepCallback(null, result);
       });
     }, callback);
-  };
+  }
 
   grepRepos(function(err, results) {
     if (err) bosco.error(err);
@@ -52,7 +52,7 @@ function grepRepo(bosco, args, repo, repoPath, callback) {
       result = {
         repo: repo,
         grep: stdout
-      }
+      };
     }
 
     callback(null, result);
