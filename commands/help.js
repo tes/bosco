@@ -13,7 +13,7 @@ function cmd(bosco, args) {
   if(!cmdName) return bosco.error('You need to provide a command name. e.g: bosco help ' + module.exports.usage);
 
   var man = 'bosco-' + cmdName + '.3';
-  viewMan(man, function(){});
+  viewMan(man, function() {});
 }
 
 // Shamelessly stolen from npm

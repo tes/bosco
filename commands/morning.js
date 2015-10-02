@@ -38,7 +38,7 @@ function cmd(bosco, args) {
     bosco.config.save(next);
   };
 
-  async.series([executeClone, executePull, executeInstall, showActivitySummary, setConfigKeyForLastMorningRun], function(){
+  async.series([executeClone, executePull, executeInstall, showActivitySummary, setConfigKeyForLastMorningRun], function() {
     bosco.log('Morning completed');
   });
 }

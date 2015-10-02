@@ -1,9 +1,9 @@
 {
   "tags": [ "testy" , "besty" ],
-  "service":{
+  "service": {
     "name":"project3"
   },
-  "build":{
+  "build": {
     "command":"false",
     "watch": {
       "checkDelay": 10
@@ -22,8 +22,8 @@
       ]
     }
   },
-  "files":{
-    "files-top":{
+  "files": {
+    "files-top": {
       "swf": [
         "flash.swf"
       ]

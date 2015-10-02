@@ -24,7 +24,7 @@ Runner.prototype.disconnect = function(next) {
  */
 Runner.prototype.listRunning = function(detailed, next) {
   pm2.list(function(err, list) {
-    var filteredList = _.filter(list, function(pm2Process){ return pm2Process.pm2_env.status === 'online' || pm2Process.pm2_env.status === 'errored' })
+    var filteredList = _.filter(list, function(pm2Process) { return pm2Process.pm2_env.status === 'online' || pm2Process.pm2_env.status === 'errored' })
 
     if(!detailed) return next(err, _.pluck(filteredList,'name'));
     next(err, filteredList);
@@ -36,7 +36,7 @@ Runner.prototype.listRunning = function(detailed, next) {
  */
 Runner.prototype.listNotRunning = function(detailed, next) {
   pm2.list(function(err, list) {
-    var filteredList = _.filter(list, function(pm2Process){ return pm2Process.pm2_env.status !== 'online' })
+    var filteredList = _.filter(list, function(pm2Process) { return pm2Process.pm2_env.status !== 'online' })
 
     if(!detailed) return next(err, _.pluck(filteredList,'name'));
     next(err, filteredList);

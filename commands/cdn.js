@@ -183,7 +183,7 @@ function cmd(bosco, args) {
     staticRepos: bosco.staticUtils.getStaticRepos.bind(null, options)
   }
 
-  async.parallel(executeAsync, function(err, results){
+  async.parallel(executeAsync, function(err, results) {
     startServer(results.staticAssets, results.staticRepos, port);
     startMonitor(results.staticAssets);
   });

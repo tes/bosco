@@ -49,7 +49,7 @@ module.exports = function(bosco) {
   }
 
   function getStaticRepos(options, next) {
-    async.map(options.repos, loadService, function(err, repos){
+    async.map(options.repos, loadService, function(err, repos) {
       if (err) return next(err);
       attachFormattedRepos(repos, next);
     });

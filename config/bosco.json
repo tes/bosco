@@ -1,22 +1,22 @@
 {
   "progress":"verbose",
-  "teams":{},
-  "css":{
-    "clean":{
+  "teams": {},
+  "css": {
+    "clean": {
       "enabled":true,
-      "options":{
+      "options": {
         "keepBreaks":false,
         "processImport":true
       }
     }
   },
-  "js":{
-    "uglify":{
+  "js": {
+    "uglify": {
       "mangle":false,
-      "outputOptions":{
+      "outputOptions": {
         "semicolons":false
       },
-      "compressorOptions":{}
+      "compressorOptions": {}
     }
   }
 }

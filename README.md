@@ -184,7 +184,7 @@ If you add a bosco-service.json at the base of your docker projects, you can tak
         "username": "tescloud",
         "version": "latest",
         "alwaysPull": true,
-        "docker":{
+        "docker": {
             "HostConfig": {
                 "PortBindings": {
                     "6379/tcp": [{
@@ -243,9 +243,9 @@ For example, a project that uses Gulp to create assets as well as watch for chan
 
 ```json
 {
-    "build":{
+    "build": {
         "command":"gulp build",
-        "watch":{
+        "watch": {
             "command":"gulp build --watch",
             "ready":"Finished 'build'"
         }
@@ -325,7 +325,7 @@ This command requires that you have configured your AWS details for S3.  Best to
 
 ```json
 {
-    "aws":{
+    "aws": {
         "key": "XXXXXX",
         "secret": "XXXXXX",
         "bucket": "bucket-name",

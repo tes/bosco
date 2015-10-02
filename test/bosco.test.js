@@ -81,7 +81,7 @@ describe('bosco', function() {
   });
 
   describe('config folder migration', function() {
-    it('should not use fs when old does not exist', function(){
+    it('should not use fs when old does not exist', function() {
       var mockFs = sandbox.mock(fs);
       mockFs.expects('mkdirpSync').never();
       mockFs.expects('copySync').never();
@@ -92,7 +92,7 @@ describe('bosco', function() {
       bosco._migrateConfig('foo', 'bar');
     });
 
-    it('should warn and not use fs when old and new exist', function(){
+    it('should warn and not use fs when old and new exist', function() {
       var mockFs = sandbox.mock(fs);
       mockFs.expects('mkdirpSync').never();
       mockFs.expects('copySync').never();
@@ -105,7 +105,7 @@ describe('bosco', function() {
       bosco._migrateConfig('foo', 'bar');
     });
 
-    it('should create and copy when new does not exist', function(){
+    it('should create and copy when new does not exist', function() {
       var mockFs = sandbox.mock(fs);
       mockFs.expects('mkdirpSync').once().withArgs('bar');
       mockFs.expects('copySync').once().withArgs('foo', 'bar');

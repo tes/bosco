@@ -119,7 +119,7 @@ function cmd(bosco, args, cb) {
 
   var stopNotRunningServices = function(next) {
     bosco.log('Removing stopped/dead services');
-    async.each(notRunningServices, function(service, cb){
+    async.each(notRunningServices, function(service, cb) {
       NodeRunner.stop({name: service}, cb);
     }, next);
   };

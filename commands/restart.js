@@ -21,7 +21,7 @@ function cmd(bosco, args) {
     run.cmd(bosco, args, next);
   };
 
-  async.waterfall([executeStop, executeRun], function(){
+  async.waterfall([executeStop, executeRun], function() {
     // Done
   });
 }

@@ -19,7 +19,7 @@ Runner.prototype.init = function(bosco, next) {
     };
 
     var dockerCertPath = process.env.DOCKER_CERT_PATH;
-    if(dockerCertPath){
+    if(dockerCertPath) {
       dockerOpts = _.extend(dockerOpts, {
         protocol: 'https',
         ca: readCert(dockerCertPath, 'ca.pem'),

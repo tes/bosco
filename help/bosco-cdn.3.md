@@ -40,9 +40,9 @@ An example `bosco-service.json` file is shown below for a simple service that do
 For a project that has it's own build step, you can have Bosco wrap around it:
 
     {
-        "build":{
+        "build": {
             "command":"gulp build",
-            "watch":{
+            "watch": {
                 "command":"gulp build --watch",
                 "ready":"Finished 'build'"
             }
