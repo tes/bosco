@@ -47,7 +47,7 @@ function cmd(bosco, args, next) {
 }
 
 function clean(bosco, progressbar, bar, repoPath, next) {
-  var packageJson = [repoPath,'package.json'].join('/');
+  var packageJson = [repoPath, 'package.json'].join('/');
   if (!bosco.exists(packageJson)) {
     if (progressbar) bar.tick();
     return next();

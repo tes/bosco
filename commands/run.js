@@ -127,7 +127,7 @@ function cmd(bosco, args, cb) {
   var getRunningServices = function(next) {
     NodeRunner.listRunning(false, function(err, nodeRunning) {
       DockerRunner.list(false, function(err, dockerRunning) {
-        dockerRunning = _.map(_.flatten(dockerRunning), function(item) { return item.replace('/',''); });
+        dockerRunning = _.map(_.flatten(dockerRunning), function(item) { return item.replace('/', ''); });
         runningServices = _.union(nodeRunning, dockerRunning);
         next();
       });
@@ -150,7 +150,7 @@ function cmd(bosco, args, cb) {
 
     async.map(folders, function(folder, cb) {
       fs.mkdirp(folder, cb);
-    },function(err) {
+    }, function(err) {
       next(err);
     });
   }

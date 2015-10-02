@@ -57,19 +57,19 @@ function newServiceFromTemplate(bosco, args, next) {
   var hostUser = bosco.config.get('github:hostUser') || 'git';
   host         = hostUser + '@' + host + ':';
 
-  var gitOptions = ['clone','--depth=1', host + template, targetServiceName];
+  var gitOptions = ['clone', '--depth=1', host + template, targetServiceName];
 
   var serviceDirectory = path.resolve('.', targetServiceName);
 
   async.series([
     async.apply(execCmd, bosco, gitCmd, gitOptions, path.resolve('.')),
-    async.apply(execCmd, bosco, 'rm',['-rf','.git'], serviceDirectory),
-    async.apply(execCmd, bosco, 'git',['init'], serviceDirectory),
+    async.apply(execCmd, bosco, 'rm', ['-rf', '.git'], serviceDirectory),
+    async.apply(execCmd, bosco, 'git', ['init'], serviceDirectory),
     async.apply(copyTemplateFiles, bosco, targetServiceName, targetServicePort, serviceDirectory),
-    async.apply(execCmd, bosco, 'rm',['-rf','templates'], serviceDirectory),
-    async.apply(execCmd, bosco, 'rm',['-f','bosco-templates.json'], serviceDirectory),
-    async.apply(execCmd, bosco, 'git',['add','--all','.'], serviceDirectory),
-    async.apply(execCmd, bosco, 'git',['commit','-m','First commit'], serviceDirectory)
+    async.apply(execCmd, bosco, 'rm', ['-rf', 'templates'], serviceDirectory),
+    async.apply(execCmd, bosco, 'rm', ['-f', 'bosco-templates.json'], serviceDirectory),
+    async.apply(execCmd, bosco, 'git', ['add', '--all', '.'], serviceDirectory),
+    async.apply(execCmd, bosco, 'git', ['commit', '-m', 'First commit'], serviceDirectory)
   ], function(err) {
     if (err) {
       return bosco.error(err.message);
@@ -109,8 +109,8 @@ function copyTemplateFiles(bosco, serviceName, port, serviceDirectory, next) {
 }
 
 function getShortName(service) {
-  service = service.replace(/^app\-/,'');
-  service = service.replace(/^service\-/,'');
+  service = service.replace(/^app\-/, '');
+  service = service.replace(/^service\-/, '');
   return service;
 }
 

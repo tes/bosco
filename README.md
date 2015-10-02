@@ -428,7 +428,7 @@ In the above command, the command is cdn, the args are: ["minify"]
 To use in a command, you typically scan the array for their presence and set a variable (as in most instances they actually represent a Boolean vs a string).
 
 ```
-var minify = _.contains(args,'minify');
+var minify = _.contains(args, 'minify');
 ```
 
 ## Troubleshooting

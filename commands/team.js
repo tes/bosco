@@ -128,7 +128,7 @@ function linkTeam(bosco, team, folder, next) {
     return bosco.error('Cant find the team: ' + team.red + ', maybe try to sync first?');
   }
 
-  fs.mkdirpSync(path.join(teamPath,'.bosco')); // Always create config folder
+  fs.mkdirpSync(path.join(teamPath, '.bosco')); // Always create config folder
   bosco.config.set('teams:' + team + ':path', teamPath);
 
   bosco.config.save(function() {

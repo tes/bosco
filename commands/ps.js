@@ -36,7 +36,7 @@ function cmd(bosco) {
   var printNodeServices = function(name, list) {
     var table = new Table({
       chars: {'mid': '', 'left-mid': '', 'mid-mid': '', 'right-mid': ''},
-      head: [name + ' Service', 'PID', 'Status', 'Mode', 'Watch'], colWidths: [60,10,10,12,10]
+      head: [name + ' Service', 'PID', 'Status', 'Mode', 'Watch'], colWidths: [60, 10, 10, 12, 10]
     });
 
     list.forEach(function(item) {
@@ -50,12 +50,12 @@ function cmd(bosco) {
   var printDockerServices = function(name, list) {
     var table = new Table({
       chars: {'mid': '', 'left-mid': '', 'mid-mid': '', 'right-mid': ''},
-      head: [name + ' Service', 'Status', 'FQN'], colWidths: [25,20,60]
+      head: [name + ' Service', 'Status', 'FQN'], colWidths: [25, 20, 60]
     });
 
     list.forEach(function(item) {
       table.push([
-        _.map(item.Names, function(item) { return item.replace('/',''); }).join(', '),
+        _.map(item.Names, function(item) { return item.replace('/', ''); }).join(', '),
         item.Status,
         item.Image
       ]);

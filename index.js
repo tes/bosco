@@ -371,7 +371,7 @@ Bosco.prototype.getRepos = function() {
   var self = this;
   var team = self.getTeam();
   if (team == 'no-team') {
-    return [path.relative('..','.')]
+    return [path.relative('..', '.')]
   } else {
     return self.config.get('teams:' + team).repos;
   }
@@ -472,7 +472,7 @@ Bosco.prototype.checkInService = function() {
     self.options.workspace = path.resolve('..');
     // Replace getRepos
     self.getRepos = function() {
-      return [path.relative('..','.')];
+      return [path.relative('..', '.')];
     }
   }
 }

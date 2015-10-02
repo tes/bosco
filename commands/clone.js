@@ -80,7 +80,7 @@ function fetch(bosco, team, repos, repoRegex, args, next) {
   var orgPath = bosco.getOrgPath();
 
   var saveRepos = function(cb) {
-    bosco.config.set('teams:' + team + ':repos',repos);
+    bosco.config.set('teams:' + team + ':repos', repos);
     bosco.config.save(cb);
   }
 
@@ -110,7 +110,7 @@ function fetch(bosco, team, repos, repoRegex, args, next) {
 
     fs.readdir(bosco.getOrgPath(), function(err, files) {
       var orphans = _.chain(files)
-        .map(function(file) { return path.join(bosco.getOrgPath(),file) })
+        .map(function(file) { return path.join(bosco.getOrgPath(), file) })
         .filter(function(file) { return fs.statSync(file).isDirectory() && bosco.exists(path.join(file, '.git')) })
         .map(function(file) { return path.relative(bosco.getOrgPath(), file); })
         .difference(repos)
@@ -155,12 +155,12 @@ function fetch(bosco, team, repos, repoRegex, args, next) {
 
   var gitIgnoreRepos = function(cb) {
     // Ensure repo folders are in workspace gitignore
-    var gi = [bosco.getWorkspacePath(),'.gitignore'].join('/');
+    var gi = [bosco.getWorkspacePath(), '.gitignore'].join('/');
     fs.readFile(gi, function(err, contents) {
       if (err) { cb(err); }
       contents = contents || '';
       var ignore = contents.toString().split('\n');
-      var newIgnore = _.union(ignore, repos, ['.DS_Store','node_modules','.bosco/bosco.json','']);
+      var newIgnore = _.union(ignore, repos, ['.DS_Store', 'node_modules', '.bosco/bosco.json', '']);
       fs.writeFile(gi, newIgnore.join('\n') + '\n', cb);
     });
   }

@@ -20,7 +20,7 @@ describe('Bosco Static Asset Handling', function() {
 
   it('should load static assets in un-minified cdn mode', function(done) {
     var options = {
-      repos: ['project1','project2'],
+      repos: ['project1', 'project2'],
       repoTag: 'testy',
       minify: false,
       buildNumber: 'local',
@@ -35,7 +35,7 @@ describe('Bosco Static Asset Handling', function() {
     utils.getStaticAssets(options, function(err, assets) {
       if (err) return done(err);
 
-      var assetKeys = _.pluck(assets,'assetKey');
+      var assetKeys = _.pluck(assets, 'assetKey');
       arrayContains(assetKeys, [
         'project1/local/html/bottom.js.html',
         'project1/local/html/top.js.html',
@@ -50,7 +50,7 @@ describe('Bosco Static Asset Handling', function() {
 
   it('should load static assets in un-minified cdn mode, deduping where necessary', function(done) {
     var options = {
-      repos: ['project1','project2'],
+      repos: ['project1', 'project2'],
       minify: false,
       buildNumber: 'local',
       tagFilter: null,
@@ -64,7 +64,7 @@ describe('Bosco Static Asset Handling', function() {
     utils.getStaticAssets(options, function(err, assets) {
       if (err) return done(err);
 
-      var assetKeys = _.pluck(assets,'assetKey');
+      var assetKeys = _.pluck(assets, 'assetKey');
       arrayContains(assetKeys, [
         'project1/local/html/bottom.js.html',
         'project1/local/html/top.js.html',
@@ -86,7 +86,7 @@ describe('Bosco Static Asset Handling', function() {
 
   it('should load static assets in minified cdn mode, deduping where necessary', function(done) {
     var options = {
-      repos: ['project1','project2'],
+      repos: ['project1', 'project2'],
       buildNumber: 'local',
       minify: true,
       tagFilter: null,
@@ -98,7 +98,7 @@ describe('Bosco Static Asset Handling', function() {
     utils.getStaticAssets(options, function(err, assets) {
       if (err) return done(err);
 
-      var assetKeys = _.pluck(assets,'assetKey');
+      var assetKeys = _.pluck(assets, 'assetKey');
       arrayContains(assetKeys, [
         'project1/local/html/bottom.js.html',
         'project1/local/html/top.js.html',
@@ -141,7 +141,7 @@ describe('Bosco Static Asset Handling', function() {
     utils.getStaticAssets(options, function(err, assets) {
       if (err) return done(err);
 
-      var assetKeys = _.pluck(assets,'assetKey');
+      var assetKeys = _.pluck(assets, 'assetKey');
       arrayContains(assetKeys, [
         'project4/local/html/glob.js.html',
         'project4/local/js/bottom1.js',
@@ -155,7 +155,7 @@ describe('Bosco Static Asset Handling', function() {
 
   it('should load static assets in minified cdn mode, filtering by tag if specified', function(done) {
     var options = {
-      repos: ['project1','project2'],
+      repos: ['project1', 'project2'],
       minify: true,
       tagFilter: 'top',
       buildNumber: 'local',
@@ -168,7 +168,7 @@ describe('Bosco Static Asset Handling', function() {
     utils.getStaticAssets(options, function(err, assets) {
       if (err) return done(err);
 
-      var assetKeys = _.pluck(assets,'assetKey');
+      var assetKeys = _.pluck(assets, 'assetKey');
       arrayContains(assetKeys, [
         'project1/local/html/top.js.html',
         'project2/local/html/top.js.html',
@@ -186,7 +186,7 @@ describe('Bosco Static Asset Handling', function() {
 
   it('should create a source map when minifying javascript', function(done) {
     var options = {
-      repos: ['project1','project2'],
+      repos: ['project1', 'project2'],
       minify: true,
       tagFilter: 'top',
       buildNumber: 'local',
@@ -199,7 +199,7 @@ describe('Bosco Static Asset Handling', function() {
     utils.getStaticAssets(options, function(err, assets) {
       if (err) return done(err);
 
-      var assetKeys = _.pluck(assets,'assetKey');
+      var assetKeys = _.pluck(assets, 'assetKey');
       arrayContains(assetKeys, [
         'project1/local/js/top.js.map',
         'project2/local/js/top.js.map'
@@ -210,7 +210,7 @@ describe('Bosco Static Asset Handling', function() {
 
   it('should create a formatted repo list when requested for cdn mode', function(done) {
     var options = {
-      repos: ['project1','project2','project3'],
+      repos: ['project1', 'project2', 'project3'],
       minify: true,
       tagFilter: null,
       buildNumber: 'local',
@@ -249,7 +249,7 @@ describe('Bosco Static Asset Handling - Custom Building', function() {
     utils.getStaticAssets(options, function(err, assets) {
       if (err) return done(err);
 
-      var assetKeys = _.pluck(assets,'assetKey');
+      var assetKeys = _.pluck(assets, 'assetKey');
       arrayContains(assetKeys, [
         'project3/local/html/compiled.js.html',
         'project3/local/html/compiled.css.html',
@@ -296,7 +296,7 @@ describe('Bosco Static Asset Handling - Custom Building', function() {
     utils.getStaticAssets(options, function(err, assets) {
       if (err) return done(err);
 
-      var assetKeys = _.pluck(assets,'assetKey');
+      var assetKeys = _.pluck(assets, 'assetKey');
       arrayContains(assetKeys, [
         'project3/local/html/compiled.js.html',
         'project3/local/html/compiled.css.html',
@@ -344,7 +344,7 @@ describe('Bosco Static Asset Handling - Custom Building', function() {
     utils.getStaticAssets(options, function(err, assets) {
       if (err) return done(err);
 
-      var assetKeys = _.pluck(assets,'assetKey');
+      var assetKeys = _.pluck(assets, 'assetKey');
       arrayContains(assetKeys, [
         'project3/local/html/compiled.js.html',
         'project3/local/html/compiled.css.html',

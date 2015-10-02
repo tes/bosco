@@ -53,7 +53,7 @@ module.exports = function(bosco) {
       };
 
       try {
-        compiled = UglifyJS.minify(_.values(_.pluck(items,'path')), uglifyOptions);
+        compiled = UglifyJS.minify(_.values(_.pluck(items, 'path')), uglifyOptions);
       } catch (ex) {
         bosco.error('There was an error minifying files in ' + bundleKey.blue + ', error:');
         console.log(ex.message + '\n');

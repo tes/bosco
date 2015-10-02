@@ -268,11 +268,11 @@ function pullImage(bosco, docker, repoTag, next) {
 }
 
 function ensureManifest(bosco, name, cwd) {
-  var manifest = path.join(cwd,'manifest.json');
+  var manifest = path.join(cwd, 'manifest.json');
   if (fs.existsSync(manifest)) { return; }
   bosco.log('Adding default manifest file for docker build ...')
   var manifestContent = { 'service': name, 'build': 'local' };
-  fs.writeFileSync(manifest,JSON.stringify(manifestContent));
+  fs.writeFileSync(manifest, JSON.stringify(manifestContent));
 }
 
 function getHostIp() {

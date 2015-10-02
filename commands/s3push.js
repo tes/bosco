@@ -225,11 +225,11 @@ function cmd(bosco, args, callback) {
   // Create a Compoxure cache key for a given S3 url
   function s3cxkey(url) {
     var key = _.clone(url);
-    key = key.replace('http://','');
-    key = key.replace(/\./g,'_');
-    key = key.replace(/-/g,'_');
-    key = key.replace(/:/g,'_');
-    key = key.replace(/\//g,'_');
+    key = key.replace('http://', '');
+    key = key.replace(/\./g, '_');
+    key = key.replace(/-/g, '_');
+    key = key.replace(/:/g, '_');
+    key = key.replace(/\//g, '_');
     return key;
   }
 

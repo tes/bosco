@@ -27,7 +27,7 @@ function cmd(bosco, args, next) {
   }
 
   function nsp(bosco, repo, repoPath, next) {
-    if (!repo.match(repoRegex) || !bosco.exists([repoPath,'package.json'].join('/'))) {
+    if (!repo.match(repoRegex) || !bosco.exists([repoPath, 'package.json'].join('/'))) {
       bosco.log(repo.blue + ': ' + 'No package.json'.green);
       return next();
     }

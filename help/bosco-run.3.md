@@ -29,7 +29,7 @@ For example, in `package.json`:
 In `bosco-service.json`:
 
     {
-        "tags": ["review","summary"],
+        "tags": ["review", "summary"],
         "service": {
             "type": "node",
             "start": "node cluster"

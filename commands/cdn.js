@@ -25,7 +25,7 @@ module.exports = {
 }
 
 function cmd(bosco, args) {
-  var minify = _.contains(args,'minify');
+  var minify = _.contains(args, 'minify');
   var port = bosco.config.get('cdn:port') || 7334;
   var repoPattern = bosco.options.repo;
   var repoRegex = new RegExp(repoPattern);

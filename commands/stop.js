@@ -85,7 +85,7 @@ function cmd(bosco, args, next) {
   var getRunningServices = function(cb) {
     NodeRunner.listRunning(false, function(err, nodeRunning) {
       DockerRunner.list(false, function(err, dockerRunning) {
-        dockerRunning = _.map(_.flatten(dockerRunning), function(item) { return item.replace('/',''); });
+        dockerRunning = _.map(_.flatten(dockerRunning), function(item) { return item.replace('/', ''); });
         DockerComposeRunner.list(false, function(err, dockerComposeRunning) {
           runningServices = _.union(nodeRunning, dockerRunning, dockerComposeRunning);
           cb()

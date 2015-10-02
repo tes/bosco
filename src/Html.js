@@ -71,7 +71,7 @@ module.exports = function(bosco) {
     var templateContent = fs.readFileSync(__dirname + '/../templates/assetList.html');
     var template = hb.compile(templateContent.toString());
 
-    var assetsByService = _.groupBy(staticAssets,'serviceName');
+    var assetsByService = _.groupBy(staticAssets, 'serviceName');
 
     _.forOwn(assetsByService, function(serviceAssets, serviceName) {
       var service = {serviceName: serviceName, bundles: []};

@@ -68,7 +68,7 @@ function confirm(bosco, message, next) {
 
 
 function commit(bosco, commitMsg, orgPath, next) {
-  if (!bosco.exists([orgPath,'.git'].join('/'))) {
+  if (!bosco.exists([orgPath, '.git'].join('/'))) {
     bosco.warn('Doesn\'t seem to be a git repo: '+ orgPath.blue);
     return next();
   }

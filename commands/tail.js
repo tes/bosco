@@ -58,7 +58,7 @@ function cmd(bosco, args) {
 
     var getRunningServices = function(next) {
       pm2.list(function(err, list) {
-        next(err, _.pluck(list,'name'));
+        next(err, _.pluck(list, 'name'));
       });
     }
 

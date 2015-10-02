@@ -90,7 +90,7 @@ function cmd(bosco, args, next) {
 }
 
 function pull(bosco, progressbar, bar, repoPath, next) {
-  if (!bosco.exists([repoPath,'.git'].join('/'))) {
+  if (!bosco.exists([repoPath, '.git'].join('/'))) {
     bosco.warn('Doesn\'t seem to be a git repo: '+ repoPath.blue);
     return next();
   }
