@@ -23,7 +23,7 @@ module.exports = function boscoMock(extra) {
     getRepoPath: function(repo) {
       return __dirname + "/TestOrganisation/" + repo
     },
-    getAssetCdnUrl: function (asset) {
+    getAssetCdnUrl: function(asset) {
       return 'http://my-awesome-cdn.example.com/' + asset;
     },
     exists: function(file) {

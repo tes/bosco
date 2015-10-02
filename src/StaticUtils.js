@@ -63,10 +63,10 @@ module.exports = function(bosco) {
 
     if (boscoRepo.assets) {
       assetBasePath = boscoRepo.assets.basePath || '.';
-      _.forEach(_.pick(boscoRepo.assets, ['js', 'css', 'img', 'html', 'swf', 'fonts']), function (assets, type) {
-        _.forOwn(assets, function (value, tag) {
+      _.forEach(_.pick(boscoRepo.assets, ['js', 'css', 'img', 'html', 'swf', 'fonts']), function(assets, type) {
+        _.forOwn(assets, function(value, tag) {
           if (!value) return;
-          _.forEach(value, function (potentialAsset) {
+          _.forEach(value, function(potentialAsset) {
             var assets = globAsset(potentialAsset, path.join(boscoRepo.path, assetBasePath));
             _.forEach(assets, function(asset) {
               assetKey = path.join(boscoRepo.serviceName, buildNumber, asset);
@@ -78,11 +78,11 @@ module.exports = function(bosco) {
     }
 
     if (boscoRepo.files) {
-      _.forOwn(boscoRepo.files, function (assetTypes, tag) {
+      _.forOwn(boscoRepo.files, function(assetTypes, tag) {
         assetBasePath = assetTypes.basePath || '.';
-        _.forEach(_.pick(assetTypes, ['js', 'css', 'img', 'html', 'swf', 'fonts']), function (value, type) {
+        _.forEach(_.pick(assetTypes, ['js', 'css', 'img', 'html', 'swf', 'fonts']), function(value, type) {
           if (!value) return;
-          _.forEach(value, function (potentialAsset) {
+          _.forEach(value, function(potentialAsset) {
             var assets = globAsset(potentialAsset, path.join(boscoRepo.path, assetBasePath));
             _.forEach(assets, function(asset) {
               assetKey = path.join(boscoRepo.serviceName, buildNumber, asset);

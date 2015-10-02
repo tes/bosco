@@ -129,7 +129,7 @@ function execute(bosco, command, args, repoPath, options, next) {
     options.init(bosco, sc, repoPath);
   }
 
-  sc.on('close', function (code) {
+  sc.on('close', function(code) {
     returnCode = code;
     tryNext();
   });

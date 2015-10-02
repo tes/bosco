@@ -16,7 +16,7 @@ module.exports = {
       desc: 'Print commands without unlinking'
     }
   ],
-  cmd: function (bosco, args, next) {
+  cmd: function(bosco, args, next) {
     var repoPattern = bosco.options.repo;
     var repoRegex = repoPattern && new RegExp(repoPattern);
 
@@ -38,11 +38,11 @@ module.exports = {
       dependentsMap[dependent].push(dependency);
     }
 
-    async.map(repos, function (repo, next) {
+    async.map(repos, function(repo, next) {
       var repoPath = bosco.getRepoPath(repo);
       var repoPackage = path.join(repoPath, 'package.json');
 
-      fs.readFile(path.join(repoPath, 'package.json'), function (err, data) {
+      fs.readFile(path.join(repoPath, 'package.json'), function(err, data) {
         if (err) {
           bosco.log(util.format('skipping %s', repo));
           return next();
@@ -68,7 +68,7 @@ module.exports = {
 
         return next();
       });
-    }, function (err) {
+    }, function(err) {
       if (err) {
         return next(err);
       }
@@ -91,7 +91,7 @@ module.exports = {
         return repoRegex.test(repo);
       }
 
-      var removeDependents = function (install, dependency) {
+      var removeDependents = function(install, dependency) {
         var index = dependencyMap[dependency].indexOf(packageName);
 
         if (index === -1) {
@@ -138,7 +138,7 @@ module.exports = {
         packageCount = Object.keys(packageRepos).length;
       }
 
-      async.mapSeries(commands, function (cmd, next) {
+      async.mapSeries(commands, function(cmd, next) {
         var packageName = cmd[0];
         var command = cmd[1];
         var options = cmd[2];
@@ -149,7 +149,7 @@ module.exports = {
           return next();
         }
 
-        exec(command, options, function (err, stdout, stderr) {
+        exec(command, options, function(err, stdout, stderr) {
           if (err) {
             return next(err);
           }
@@ -159,7 +159,7 @@ module.exports = {
 
           return next();
         });
-      }, function (err) {
+      }, function(err) {
         if (err) {
           if (next) {
             return next(err);

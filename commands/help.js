@@ -24,7 +24,7 @@ function viewMan (man, cb) {
 
   // at this point, we know that the specified man page exists
   var manpath = path.join(__dirname, '..', 'man'), env = {};
-  Object.keys(process.env).forEach(function (i) {
+  Object.keys(process.env).forEach(function(i) {
     env[i] = process.env[i]
   })
   env.MANPATH = manpath;

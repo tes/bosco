@@ -426,11 +426,11 @@ Bosco.prototype.getRepoUrl = function(repo) {
   return [host, org ? org : '', repo, '.git'].join('');
 }
 
-Bosco.prototype.isLocalCdn = function () {
+Bosco.prototype.isLocalCdn = function() {
   return !this.config.get('aws:cdn');
 };
 
-Bosco.prototype.getCdnUrl = function () {
+Bosco.prototype.getCdnUrl = function() {
   if (!this.isLocalCdn()) {
     return this.config.get('aws:cdn');
   }
@@ -441,7 +441,7 @@ Bosco.prototype.getCdnUrl = function () {
   return 'http://'+ cdnHostname +':' + cdnPort;
 };
 
-Bosco.prototype.getBaseCdnUrl = function () {
+Bosco.prototype.getBaseCdnUrl = function() {
   var baseUrl = this.getCdnUrl();
 
   if (baseUrl.substr(-1) === '/') {
@@ -455,7 +455,7 @@ Bosco.prototype.getBaseCdnUrl = function () {
   return baseUrl;
 }
 
-Bosco.prototype.getAssetCdnUrl = function (assetUrl) {
+Bosco.prototype.getAssetCdnUrl = function(assetUrl) {
   var baseUrl = this.getBaseCdnUrl();
 
   if (assetUrl.substr(0, 1) === '/') {

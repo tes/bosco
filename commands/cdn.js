@@ -118,7 +118,7 @@ function cmd(bosco, args) {
           bosco.error('Unable to locate asset with key: ' + fileKey);
           return;
         }
-        fs.readFile(staticAssets[assetIndex].path, function (err, data) {
+        fs.readFile(staticAssets[assetIndex].path, function(err, data) {
           if (err) {
             bosco.log('Error reloading '+fileKey);
             bosco.log(err.toString());
@@ -151,10 +151,10 @@ function cmd(bosco, args) {
       });
     }
 
-    watch.createMonitor(bosco.getOrgPath(), {filter: filterFn, ignoreDotFiles: true, ignoreUnreadableDir: true, ignoreDirectoryPattern: /node_modules|\.git|coverage/, interval: 1000}, function (monitor) {
+    watch.createMonitor(bosco.getOrgPath(), {filter: filterFn, ignoreDotFiles: true, ignoreUnreadableDir: true, ignoreDirectoryPattern: /node_modules|\.git|coverage/, interval: 1000}, function(monitor) {
       bosco.log('Watching '+ _.keys(monitor.files).length + ' files ...');
 
-      monitor.on('changed', function (f) {
+      monitor.on('changed', function(f) {
         var fileKey = watchSet[f];
 
         if(reloading[fileKey]) return;

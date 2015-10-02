@@ -40,8 +40,8 @@ function cmd(bosco, args, next) {
     bosco.log('Fetching repository list from Github for ' + team.green + ' team ...');
     var more = true, page = 1, repoList = [];
     async.whilst(
-      function () { return more; },
-      function (callback) {
+      function() { return more; },
+      function(callback) {
         getRepos(client, teamConfig, page, function(err, repos, isMore) {
           if(err) { return callback(err); }
           repoList = _.union(repoList, repos);
@@ -53,7 +53,7 @@ function cmd(bosco, args, next) {
           callback();
         });
       },
-      function (err) {
+      function(err) {
         if(err) {
           return bosco.error(err.message);
         }
@@ -66,11 +66,11 @@ function cmd(bosco, args, next) {
 
 function getRepos(client, teamConfig, page, next) {
   if(teamConfig.isUser) {
-    client.get('/user/repos', {per_page: 20, page: page}, function (err, status, body, headers) {
+    client.get('/user/repos', {per_page: 20, page: page}, function(err, status, body, headers) {
       next(err, _.pluck(body, 'name'), _.contains(headers.link, 'rel="next"'));
     });
   } else {
-    client.get('/teams/' + teamConfig.id + '/repos', {per_page: 20, page: page}, function (err, status, body, headers) {
+    client.get('/teams/' + teamConfig.id + '/repos', {per_page: 20, page: page}, function(err, status, body, headers) {
       next(err, _.pluck(body, 'name'), _.contains(headers.link, 'rel="next"'));
     });
   }

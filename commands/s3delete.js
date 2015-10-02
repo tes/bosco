@@ -34,7 +34,7 @@ function cmd(bosco, args) {
           description: message
         }
       }
-    }, function (err, result) {
+    }, function(err, result) {
       if(!result) return next({message:'Did not confirm'});
       if(result.confirm == 'Y' || result.confirm == 'y') {
         next(null, true);

@@ -13,7 +13,7 @@ function cmd(bosco, args, next) {
 
   var getCommands = function(next) {
     var workspacePath = bosco.getWorkspacePath();
-    symlink(workspacePath, false, function (err, cmds) {
+    symlink(workspacePath, false, function(err, cmds) {
       commands = cmds;
       next(err, cmds);
     });

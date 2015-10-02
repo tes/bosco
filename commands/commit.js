@@ -55,7 +55,7 @@ function confirm(bosco, message, next) {
         description: message
       }
     }
-  }, function (err, result) {
+  }, function(err, result) {
     if(!result) return next({message:'Did not confirm'});
 
     if(result.confirm == 'Y' || result.confirm == 'y') {
