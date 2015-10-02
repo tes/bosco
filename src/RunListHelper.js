@@ -55,7 +55,7 @@ function getRunList(bosco, repos, repoRegex, watchRegex, repoTag, next) {
   var runList = [];
   var svcConfig;
 
-  var addDependencies = function(dependent, dependsOn) {
+  function addDependencies(dependent, dependsOn) {
     dependsOn.forEach(function(dependency) {
       if (!_.contains(repoList, dependency)) {
         repoList.push(dependency);

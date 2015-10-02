@@ -38,8 +38,8 @@ function cmd(bosco, args) {
   var repos = bosco.getRepos();
   if (!repos) return bosco.error('You are repo-less :( You need to initialise bosco first, try \'bosco clone\'.');
 
-  var startServer = function(staticAssets, staticRepos, serverPort) {
-    var getAsset = function(url) {
+  function startServer(staticAssets, staticRepos, serverPort) {
+    function getAsset(url) {
       url = url.replace('/', '');
       return _.find(staticAssets, 'assetKey', url);
     }
@@ -83,7 +83,7 @@ function cmd(bosco, args) {
     bosco.log('Server is listening on ' + serverPort);
   }
 
-  var startMonitor = function(staticAssets) {
+  function startMonitor(staticAssets) {
     var watchSet = {}, reloading = {};
 
     _.forEach(staticAssets, function(asset) {
@@ -99,17 +99,17 @@ function cmd(bosco, args) {
       if (asset.path) watchSet[asset.path] = asset.assetKey;
     });
 
-    var filterFn = function(f, stat) {
+    function filterFn(f, stat) {
       return f.match(watchRegex) && stat.isDirectory() || watchSet[f];
     }
 
-    var getIndexForKey = function(assetList, fileKey) {
+    function getIndexForKey(assetList, fileKey) {
       var find = (_.isObject(assetList)) ? _.findKey : _.findIndex;
 
       return find(assetList, 'assetKey', fileKey);
     }
 
-    var reloadFile = function(fileKey) {
+    function reloadFile(fileKey) {
       if (!fileKey) return;
 
       if (!minify) {

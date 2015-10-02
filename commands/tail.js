@@ -21,7 +21,7 @@ function cmd(bosco, args) {
       return;
     }
 
-    var describeRunningServices = function(running) {
+    function describeRunningServices(running) {
       async.map(running, function(repo, next) {
         if (repo.match(repoRegex)) {
           pm2.describe(repo, function(err, list) {
@@ -56,7 +56,7 @@ function cmd(bosco, args) {
       });
     }
 
-    var getRunningServices = function(next) {
+    function getRunningServices(next) {
       pm2.list(function(err, list) {
         next(err, _.pluck(list, 'name'));
       });

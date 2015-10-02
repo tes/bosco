@@ -49,26 +49,26 @@ function cmd(bosco, args, cb) {
     repos = bosco.getRepos();
   }
 
-  var initialiseRunners = function(next) {
+  function initialiseRunners(next) {
     var runners = [NodeRunner, DockerRunner, DockerComposeRunner];
     async.map(runners, function loadRunner(runner, cb) {
       runner.init(bosco, cb);
     }, next);
   }
 
-  var disconnectRunners = function(next) {
+  function disconnectRunners(next) {
     var runners = [NodeRunner, DockerRunner];
     async.map(runners, function loadRunner(runner, cb) {
       runner.disconnect(cb);
     }, next);
   }
 
-  var getRunList = function(next) {
+  function getRunList(next) {
     RunListHelper.getRunList(bosco, repos, repoRegex, watchRegex, repoTag, next);
   }
 
-  var startRunnableServices = function(next) {
-    var runService = function(runConfig, cb) {
+  function startRunnableServices(next) {
+    function runService(runConfig, cb) {
       if (runConfig.service && runConfig.service.type === 'docker') {
         if (_.contains(runningServices, runConfig.name)) {
           bosco.warn('Service ' + runConfig.name.green + ' is already running ...');
@@ -117,14 +117,14 @@ function cmd(bosco, args, cb) {
     })
   }
 
-  var stopNotRunningServices = function(next) {
+  function stopNotRunningServices(next) {
     bosco.log('Removing stopped/dead services');
     async.each(notRunningServices, function(service, cb) {
       NodeRunner.stop({name: service}, cb);
     }, next);
   };
 
-  var getRunningServices = function(next) {
+  function getRunningServices(next) {
     NodeRunner.listRunning(false, function(err, nodeRunning) {
       DockerRunner.list(false, function(err, dockerRunning) {
         dockerRunning = _.map(_.flatten(dockerRunning), function(item) { return item.replace('/', ''); });
@@ -134,14 +134,14 @@ function cmd(bosco, args, cb) {
     });
   }
 
-  var getStoppedServices = function(next) {
+  function getStoppedServices(next) {
     NodeRunner.listNotRunning(false, function(err, nodeNotRunning) {
       notRunningServices = nodeNotRunning;
       next();
     });
   };
 
-  var ensurePM2 = function(next) {
+  function ensurePM2(next) {
     // Ensure that the ~/.pm2 folders exist
     var folders = [
       process.env.HOME + '/.pm2/logs',

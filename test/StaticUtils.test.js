@@ -8,7 +8,7 @@ var fs = require('fs');
 var boscoMock = require('./boscoMock');
 var StaticUtils = require('../src/StaticUtils');
 
-var arrayContains = function(arr, contains) {
+function arrayContains(arr, contains) {
   contains.forEach(function(contain) {
     expect(arr).to.contain(contain);
   });

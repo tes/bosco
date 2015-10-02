@@ -15,7 +15,7 @@ module.exports = function(bosco) {
       arrayCommand = Array.isArray(command),
       args;
 
-    var buildFinished = function(err, stdout, stderr) {
+    function buildFinished(err, stdout, stderr) {
       // watch stderr output isn't considered fatal
       var realError = (err && err !== true) ? err : null;
       var log;
@@ -130,7 +130,7 @@ module.exports = function(bosco) {
       }
     });
 
-    var checkFinished = function() {
+    function checkFinished() {
       if (calledReady) return;
 
       if (childError && childError !== true) {

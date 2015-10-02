@@ -91,7 +91,7 @@ module.exports = {
         return repoRegex.test(repo);
       }
 
-      var removeDependents = function(install, dependency) {
+      function removeDependents(install, dependency) {
         var index = dependencyMap[dependency].indexOf(packageName);
 
         if (index === -1) {

@@ -110,7 +110,7 @@ Bosco.prototype.run = function(options) {
 Bosco.prototype._init = function(next) {
   var self = this;
 
-  var loadConfig = function() {
+  function loadConfig() {
     self.config.env()
       .file({
         file: self.options.configFile
@@ -147,12 +147,12 @@ Bosco.prototype._checkConfig = function(next) {
     configPath = self.options.configPath,
     configFile = self.options.configFile;
 
-  var checkConfigPath = function(cb) {
+  function checkConfigPath(cb) {
     if (self.exists(configPath)) return cb();
     fs.mkdirp(configPath, cb);
   }
 
-  var checkConfig = function(cb) {
+  function checkConfig(cb) {
     if (self.exists(configFile)) return cb();
 
     prompt.start();
@@ -249,7 +249,7 @@ Bosco.prototype._shellCommands = function() {
     cmdPath = self.getGlobalCommandFolder(),
     localPath =  self.getLocalCommandFolder();
 
-  var showCommands = function(cPath, files, next) {
+  function showCommands(cPath, files, next) {
     var cmdString = '';
     files.forEach(function(file) {
       cmdString += file.replace('.js', '') + ' ';

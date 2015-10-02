@@ -14,14 +14,14 @@ module.exports = {
 }
 
 function cmd(bosco) {
-  var initialiseRunners = function(next) {
+  function initialiseRunners(next) {
     var runners = [NodeRunner, DockerRunner];
     async.map(runners, function loadRunner(runner, cb) {
       runner.init(bosco, cb);
     }, next);
   }
 
-  var getRunningServices = function(next) {
+  function getRunningServices(next) {
     NodeRunner.listRunning(true, function(err, nodeRunning) {
       if (err) return next(err);
       nodeList = nodeRunning;
@@ -33,7 +33,7 @@ function cmd(bosco) {
     })
   }
 
-  var printNodeServices = function(name, list) {
+  function printNodeServices(name, list) {
     var table = new Table({
       chars: {'mid': '', 'left-mid': '', 'mid-mid': '', 'right-mid': ''},
       head: [name + ' Service', 'PID', 'Status', 'Mode', 'Watch'], colWidths: [60, 10, 10, 12, 10]
@@ -47,7 +47,7 @@ function cmd(bosco) {
     console.log('\r');
   }
 
-  var printDockerServices = function(name, list) {
+  function printDockerServices(name, list) {
     var table = new Table({
       chars: {'mid': '', 'left-mid': '', 'mid-mid': '', 'right-mid': ''},
       head: [name + ' Service', 'Status', 'FQN'], colWidths: [25, 20, 60]

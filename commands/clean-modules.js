@@ -19,7 +19,7 @@ function cmd(bosco, args, next) {
 
   bosco.log('Clearing out node modules and re-running npm install across all repos ...');
 
-  var cleanRepos = function(cb) {
+  function cleanRepos(cb) {
     var progressbar = bosco.config.get('progress') === 'bar',
       total = repos.length;
 

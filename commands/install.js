@@ -19,7 +19,7 @@ function cmd(bosco, args, next) {
 
   bosco.log('Running npm install across all repos ...');
 
-  var installRepos = function(cb) {
+  function installRepos(cb) {
     var progressbar = bosco.config.get('progress') === 'bar',
       total = repos.length;
 

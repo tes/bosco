@@ -32,7 +32,7 @@ function cmd(bosco, args, callback) {
     return callback(new Error('no repos'));
   }
 
-  var pushAllToS3 = function(staticAssets, next) {
+  function pushAllToS3(staticAssets, next) {
     var toPush = [];
     _.forEach(staticAssets, function(asset) {
       var key = asset.assetKey;
@@ -70,11 +70,11 @@ function cmd(bosco, args, callback) {
     async.mapSeries(toPush, pushToS3, next);
   }
 
-  var gzip = function(content, next) {
+  function gzip(content, next) {
     zlib.gzip(content, next);
   }
 
-  var pushToS3 = function(file, next) {
+  function pushToS3(file, next) {
     if (!bosco.knox) {
       bosco.warn('Knox AWS not configured for environment ' + bosco.options.envrionment + ' - so not pushing ' + file.path + ' to S3.');
       return next(null, {file: file});
@@ -109,7 +109,7 @@ function cmd(bosco, args, callback) {
     });
   }
 
-  var primeCompoxure = function(htmlUrl, content, next) {
+  function primeCompoxure(htmlUrl, content, next) {
     var compoxureKey = s3cxkey(htmlUrl);
     var ttl = 999 * 60 * 60 * 24; // 999 Days
     var cacheData = {
@@ -162,7 +162,7 @@ function cmd(bosco, args, callback) {
     req.end();
   }
 
-  var confirm = function(message, next) {
+  function confirm(message, next) {
     bosco.prompt.start();
     bosco.prompt.get({
       properties: {
@@ -180,7 +180,7 @@ function cmd(bosco, args, callback) {
     });
   }
 
-  var go = function(next) {
+  function go(next) {
     bosco.log('Compiling front end assets, this can take a while ... ');
 
     var options = {

@@ -19,7 +19,7 @@ function cmd(bosco, args) {
 
   bosco.log('Running git stash across all repos ...');
 
-  var stashRepos = function(cb) {
+  function stashRepos(cb) {
     var progressbar = bosco.config.get('progress') === 'bar',
       total = repos.length;
 

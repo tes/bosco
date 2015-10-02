@@ -20,7 +20,7 @@ function cmd(bosco, args, next) {
 
   bosco.log('Running ' + 'git pull --rebase'.blue + ' across all repos ...');
 
-  var pullRepos = function(cb) {
+  function pullRepos(cb) {
     var progressbar = bosco.config.get('progress') === 'bar',
       total = repos.length;
 
@@ -41,7 +41,7 @@ function cmd(bosco, args, next) {
     });
   }
 
-  var pullDockerImages = function(cb) {
+  function pullDockerImages(cb) {
     bosco.log('Checking for docker images to pull ...');
 
     var progressbar = bosco.config.get('progress') === 'bar',
@@ -63,17 +63,17 @@ function cmd(bosco, args, next) {
     });
   }
 
-  var clearGithubCache = function(cb) {
+  function clearGithubCache(cb) {
     var configKey = 'cache:github';
     bosco.config.set(configKey, {});
     bosco.config.save(cb);
   }
 
-  var initialiseRunners = function(cb) {
+  function initialiseRunners(cb) {
     DockerRunner.init(bosco, cb);
   }
 
-  var disconnectRunners = function(cb) {
+  function disconnectRunners(cb) {
     DockerRunner.disconnect(cb);
   }
 

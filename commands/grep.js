@@ -17,7 +17,7 @@ function cmd(bosco, args, next) {
 
   bosco.log('Running grep across all repos...');
 
-  var grepRepos = function(callback) {
+  function grepRepos(callback) {
     async.mapLimit(repos, bosco.concurrency.network, function(repo, grepCallback) {
       if (!repo.match(repoRegex)) return grepCallback();
 
@@ -37,7 +37,7 @@ function cmd(bosco, args, next) {
   });
 }
 
-var grepRepo = function(bosco, args, repo, repoPath, callback) {
+function grepRepo(bosco, args, repo, repoPath, callback) {
   var gitArgs = ['grep', '--color=always', '-n'].concat(args);
 
   execFile('git', gitArgs, {

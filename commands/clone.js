@@ -79,12 +79,12 @@ function getRepos(client, teamConfig, page, next) {
 function fetch(bosco, team, repos, repoRegex, args, next) {
   var orgPath = bosco.getOrgPath();
 
-  var saveRepos = function(cb) {
+  function saveRepos(cb) {
     bosco.config.set('teams:' + team + ':repos', repos);
     bosco.config.save(cb);
   }
 
-  var checkOrphans = function(cb) {
+  function checkOrphans(cb) {
     function warnOrphan(orphan, cb2) {
       bosco.warn('I am concerned that you still have the repo ' + orphan.red + ' as it is no longer in the github team, run "bosco clone --clean" to remove them.');
       cb2();
@@ -120,7 +120,7 @@ function fetch(bosco, team, repos, repoRegex, args, next) {
     });
   }
 
-  var getRepos = function(cb) {
+  function getRepos(cb) {
     var progressbar = bosco.config.get('progress') === 'bar',
       total = repos.length,
       pullFlag = false;
@@ -153,7 +153,7 @@ function fetch(bosco, team, repos, repoRegex, args, next) {
     });
   }
 
-  var gitIgnoreRepos = function(cb) {
+  function gitIgnoreRepos(cb) {
     // Ensure repo folders are in workspace gitignore
     var gi = [bosco.getWorkspacePath(), '.gitignore'].join('/');
     fs.readFile(gi, function(err, contents) {
@@ -174,7 +174,7 @@ function fetch(bosco, team, repos, repoRegex, args, next) {
 
 
 function checkCanDelete(bosco, repoPath, next) {
-  var reducer = function(memo, cmd, cb) {
+  function reducer(memo, cmd, cb) {
     exec(cmd, {
       cwd: repoPath
     }, function(err, stdout) {

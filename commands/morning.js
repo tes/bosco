@@ -15,25 +15,25 @@ function cmd(bosco, args) {
 
   var lastMorningRunConfigKey = 'events:last-morning-run';
 
-  var executeClone = function(next) {
+  function executeClone(next) {
     clone.cmd(bosco, args, next);
   };
 
-  var executePull = function(next) {
+  function executePull(next) {
     pull.cmd(bosco, args, next);
   };
 
-  var executeInstall = function(next) {
+  function executeInstall(next) {
     install.cmd(bosco, args, next);
   };
 
-  var showActivitySummary = function(next) {
+  function showActivitySummary(next) {
     args.since = bosco.config.get(lastMorningRunConfigKey); // If it is not set it will default to some value on the activity command
 
     activity.cmd(bosco, args, next);
   };
 
-  var setConfigKeyForLastMorningRun = function(next) {
+  function setConfigKeyForLastMorningRun(next) {
     bosco.config.set(lastMorningRunConfigKey, moment().format());
     bosco.config.save(next);
   };

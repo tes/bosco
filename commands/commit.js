@@ -26,7 +26,7 @@ function cmd(bosco, args) {
   bosco.log('Running git commit -am across all repos that match ' + repoRegex + '...');
   bosco.log('Using message: ' + message.blue);
 
-  var commitRepos = function(cb) {
+  function commitRepos(cb) {
     async.mapSeries(repos, function repoPush(repo, repoCb) {
       var repoPath = bosco.getRepoPath(repo);
       if (repo.match(repoRegex)) {

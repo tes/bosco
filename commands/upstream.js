@@ -15,7 +15,7 @@ function cmd(bosco) {
   var repos = bosco.getRepos();
   if (!repos) return bosco.error('You are repo-less :( You need to initialise bosco first, try \'bosco clone\'.');
 
-  var changedRepos = function(cb) {
+  function changedRepos(cb) {
     async.mapLimit(repos, bosco.concurrency.network, function repoStash(repo, repoCb) {
       var repoPath = bosco.getRepoPath(repo);
       if (!repo.match(repoRegex)) return repoCb();

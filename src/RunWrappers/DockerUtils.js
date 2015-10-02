@@ -31,7 +31,7 @@ function createContainer(docker, fqn, options, next) {
   // Process any variables
   processCmdVars(optsCreate, options.name, options.cwd);
 
-  var doCreate = function(err) {
+  function doCreate(err) {
     if (err && err.statusCode !== 404) return next(err);
     docker.createContainer(optsCreate, next);
   };

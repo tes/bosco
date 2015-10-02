@@ -11,7 +11,7 @@ module.exports = {
 function cmd(bosco, args, next) {
   var commands;
 
-  var getCommands = function(next) {
+  function getCommands(next) {
     var workspacePath = bosco.getWorkspacePath();
     symlink(workspacePath, false, function(err, cmds) {
       commands = cmds;
@@ -19,11 +19,11 @@ function cmd(bosco, args, next) {
     });
   }
 
-  var executeCommands = function(next) {
+  function executeCommands(next) {
     async.mapSeries(commands, executeCommand, next);
   }
 
-  var executeCommand = function(command, next) {
+  function executeCommand(command, next) {
     execCmd(bosco, command, bosco.getWorkspacePath(), next);
   }
 

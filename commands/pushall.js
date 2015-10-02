@@ -20,7 +20,7 @@ function cmd(bosco) {
 
   bosco.log('Running git push across all repos that match ' + regex + '...');
 
-  var pushRepos = function(cb) {
+  function pushRepos(cb) {
     async.mapSeries(repos, function repoPush(repo, repoCb) {
       var repoPath = bosco.getRepoPath(repo);
       if (repo.match(regex)) {

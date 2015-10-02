@@ -19,21 +19,21 @@ function cmd(bosco, args, next) {
   var repos = bosco.getRepos();
   var repoTag = bosco.options.tag;
 
-  var initialiseRunners = function(cb) {
+  function initialiseRunners(cb) {
     var runners = [NodeRunner, DockerRunner, DockerComposeRunner];
     async.map(runners, function loadRunner(runner, lcb) {
       runner.init(bosco, lcb);
     }, cb);
   }
 
-  var disconnectRunners = function(next) {
+  function disconnectRunners(next) {
     var runners = [NodeRunner, DockerRunner];
     async.map(runners, function loadRunner(runner, cb) {
       runner.disconnect(cb);
     }, next);
   }
 
-  var stopService = function(repo, boscoService, runningServices, cb) {
+  function stopService(repo, boscoService, runningServices, cb) {
     if (boscoService.service.type === 'docker') {
       if (_.contains(runningServices, repo)) {
         return DockerRunner.stop(boscoService, cb);
@@ -51,7 +51,7 @@ function cmd(bosco, args, next) {
     return cb();
   }
 
-  var stopRunningServices = function(cb) {
+  function stopRunningServices(cb) {
     RunListHelper.getRunList(bosco, repos, repoRegex, null, repoTag, function(err, services) {
       async.mapSeries(services, function(boscoService, cb) {
         var repo = boscoService.name;
@@ -82,7 +82,7 @@ function cmd(bosco, args, next) {
     });
   }
 
-  var getRunningServices = function(cb) {
+  function getRunningServices(cb) {
     NodeRunner.listRunning(false, function(err, nodeRunning) {
       DockerRunner.list(false, function(err, dockerRunning) {
         dockerRunning = _.map(_.flatten(dockerRunning), function(item) { return item.replace('/', ''); });

@@ -26,7 +26,7 @@ function cmd(bosco, args) {
     });
   });
 
-  var confirm = function(message, next) {
+  function confirm(message, next) {
     bosco.prompt.start();
     bosco.prompt.get({
       properties: {

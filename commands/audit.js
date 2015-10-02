@@ -17,7 +17,7 @@ function cmd(bosco, args, next) {
   var repos = bosco.getRepos();
   if (!repos) return bosco.error('You are repo-less :( You need to initialise bosco first, try \'bosco fly\'.');
 
-  var auditRepos = function(done) {
+  function auditRepos(done) {
     async.mapLimit(repos, bosco.concurrency.cpu, function iterateRepos(repo, cb) {
       var repoPath = bosco.getRepoPath(repo);
       nsp(bosco, repo, repoPath, cb);
