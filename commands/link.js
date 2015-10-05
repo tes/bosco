@@ -5,10 +5,18 @@ var exec = require('child_process').exec;
 module.exports = {
   name: 'link',
   description: 'Automatically npm links any project in a workspace with any other project that depends on it',
-  cmd: cmd
 };
 
-function cmd(bosco, args, next) {
+function execCmd(bosco, command, repoPath, next) {
+  bosco.log(repoPath.blue + ': Running ' + command.green + ' ...');
+  exec(command, {
+    cwd: repoPath,
+  }, function(err, stdout) {
+    next(err, stdout);
+  });
+}
+
+function cmd(bosco, args, done) {
   var commands;
 
   function getCommands(next) {
@@ -19,30 +27,23 @@ function cmd(bosco, args, next) {
     });
   }
 
-  function executeCommands(next) {
-    async.mapSeries(commands, executeCommand, next);
-  }
-
   function executeCommand(command, next) {
     execCmd(bosco, command, bosco.getWorkspacePath(), next);
+  }
+
+  function executeCommands(next) {
+    async.mapSeries(commands, executeCommand, next);
   }
 
   bosco.log('Auto linking modules together and installing deps ...');
 
   async.series([
     getCommands,
-    executeCommands
+    executeCommands,
   ], function() {
     bosco.log('Completed linking modules.');
-    if (next) { next(); }
+    if (done) done();
   });
 }
 
-function execCmd(bosco, cmd, repoPath, next) {
-  bosco.log(repoPath.blue + ': Running ' + cmd.green + ' ...');
-  exec(cmd, {
-    cwd: repoPath
-  }, function(err, stdout) {
-    next(err, stdout);
-  });
-}
+module.exports.cmd = cmd;

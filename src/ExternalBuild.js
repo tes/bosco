@@ -1,5 +1,3 @@
-'use strict';
-
 var exec = require('child_process').exec;
 var execFile = require('child_process').execFile;
 var spawn = require('child_process').spawn;
@@ -8,14 +6,14 @@ module.exports = function(bosco) {
   function doBuild(service, options, next) {
     if (!service.build) return next();
 
-    var watchBuilds = options.watchBuilds,
-      command = service.build.command,
-      commandForLog = command,
-      cwd = {cwd: service.repoPath},
-      arrayCommand = Array.isArray(command),
-      args;
+    var watchBuilds = options.watchBuilds;
+    var command = service.build.command;
+    var commandForLog = command;
+    var cwd = {cwd: service.repoPath};
+    var arrayCommand = Array.isArray(command);
+    var args;
 
-    function buildFinished(err, stdout, stderr) {
+    var buildFinished = function(err, stdout, stderr) {
       // watch stderr output isn't considered fatal
       var realError = (err && err !== true) ? err : null;
       var log;
@@ -42,7 +40,7 @@ module.exports = function(bosco) {
       }
 
       next(realError);
-    }
+    };
 
     if (arrayCommand) {
       commandForLog = JSON.stringify(command);
@@ -89,18 +87,33 @@ module.exports = function(bosco) {
     bosco.log('Spawning ' + 'watch'.red + ' command for ' + service.name.blue + ': ' + commandForLog);
 
     var wc = spawn(command, args, cwd);
-    var output = '', childError = null, calledReady = false;
+    var output = '';
+    var childError = null;
+    var calledReady = false;
     var timeout = checkDelay * 100; // Seems reasonable for build cycle
     var timer = 0;
+    var watchBuildFinished;
 
-    buildFinished = (function(buildFinished) {
-      return function() {
-        clearTimeout(checkFinished);
-        calledReady = true;
-        output = '';
-        buildFinished.apply(this, arguments);
-      };
-    })(buildFinished);
+    function checkFinished() {
+      if (calledReady) return null;
+
+      if (childError && childError !== true) {
+        return watchBuildFinished(childError, '', output);
+      }
+
+      if (output.indexOf(readyText) >= 0) {
+        return watchBuildFinished(childError, output);
+      }
+
+      timer = timer + checkDelay;
+      if (timer < timeout) return setTimeout(checkFinished, checkDelay);
+
+      bosco.error('Build timed out beyond ' + timeout / 1000 + ' seconds, likely an issue with the project build - you may need to check locally. Was looking for: ' + readyText);
+
+      childError = new Error('build timed out beyond ' + timeout / 1000 + ' seconds');
+      wc.kill();
+      checkFinished();
+    }
 
     wc.on('exit', function(code, signal) {
       if (!childError || childError === true) {
@@ -121,6 +134,13 @@ module.exports = function(bosco) {
       }
     });
 
+    watchBuildFinished = function() {
+      clearTimeout(checkFinished);
+      calledReady = true;
+      output = '';
+      buildFinished.apply(this, arguments);
+    };
+
     wc.stderr.on('data', function(data) {
       childError = true;
       if (calledReady) {
@@ -130,31 +150,10 @@ module.exports = function(bosco) {
       }
     });
 
-    function checkFinished() {
-      if (calledReady) return;
-
-      if (childError && childError !== true) {
-        return buildFinished(childError, '', output);
-      }
-
-      if (output.indexOf(readyText) >= 0) {
-        return buildFinished(childError, output);
-      }
-
-      timer = timer + checkDelay;
-      if (timer < timeout) return setTimeout(checkFinished, checkDelay);
-
-      bosco.error('Build timed out beyond ' + timeout / 1000 + ' seconds, likely an issue with the project build - you may need to check locally. Was looking for: ' + readyText);
-
-      childError = new Error('build timed out beyond ' + timeout / 1000 + ' seconds');
-      wc.kill();
-      checkFinished();
-    }
-
     checkFinished();
   }
 
   return {
-    doBuild: doBuild
+    doBuild: doBuild,
   };
 };

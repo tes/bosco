@@ -7,16 +7,32 @@ module.exports = {
   description: 'Outputs a summary of activity on the repos',
   usage: '[-r <repoPattern>] [--since <ISO date>]',
   example: 'bosco activity -r <repoPattern> --since 2014-09-22T23:36:26-07:00',
-  cmd: cmd,
   options: [{
     name: 'since',
     alias: 's',
     type: 'string',
-    desc: 'Return all data after a ISO date'
-  }]
+    desc: 'Return all data after a ISO date',
+  }],
 };
 
 var FORMAT = '%C(auto)%h %s %C(yellow)(%Cgreen%aN%C(yellow) %ad)%Creset';
+
+function makeRepoActivityStdoutFn(bosco) {
+  return function repoActivityStdoutFn(stdout, path, next) {
+    var log = path.blue + ':\n' + stdout;
+    var commitCount = log.match(/\n/g).length;
+    var revOpts = ['--max-count=' + commitCount + 1, '--no-merges', '--count', 'HEAD'];
+    execFile('git', ['rev-list'].concat(revOpts), {cwd: path}, function(err, cmdStdout, stderr) {
+      if (err) {
+        bosco.error(path.blue + ' >> ' + stderr);
+        return next(err);
+      }
+      if (commitCount === +cmdStdout) log += '\n^^^^^^^ Repo was created'.green;
+      bosco.log(log);
+      next();
+    });
+  };
+}
 
 function cmd(bosco, args, next) {
   var since = bosco.options.since;
@@ -29,11 +45,11 @@ function cmd(bosco, args, next) {
   var options = ch.createOptions(bosco, {
     cmd: 'git',
     args: ['log', '--date=relative', '--pretty=format:' + FORMAT, '--no-merges', '--since=' + since],
-    guardFn: function(bosco, repoPath, options, next) {
-      if (bosco.exists([repoPath, '.git'].join('/'))) return next();
-      next(new Error('Doesn\'t seem to be a git repo: ' + repoPath.blue));
+    guardFn: function(innerBosco, repoPath, guardOptions, cb) {
+      if (innerBosco.exists([repoPath, '.git'].join('/'))) return cb();
+      cb(new Error('Doesn\'t seem to be a git repo: ' + repoPath.blue));
     },
-    stdoutFn: makeRepoActivityStdoutFn(bosco)
+    stdoutFn: makeRepoActivityStdoutFn(bosco),
   });
 
   ch.iterate(bosco, options, function() {
@@ -43,19 +59,4 @@ function cmd(bosco, args, next) {
   });
 }
 
-function makeRepoActivityStdoutFn(bosco) {
-  return function repoActivityStdoutFn(stdout, path, next) {
-    var log = path.blue + ':\n' + stdout;
-    var commitCount = log.match(/\n/g).length;
-    var revOpts = ['--max-count=' + commitCount + 1, '--no-merges', '--count', 'HEAD'];
-    execFile('git', ['rev-list'].concat(revOpts), {cwd: path}, function(err, stdout, stderr) {
-      if (err) {
-        bosco.error(path.blue + ' >> ' + stderr);
-        return next(err);
-      }
-      if (commitCount === +stdout) log += '\n^^^^^^^ Repo was created'.green;
-      bosco.log(log);
-      next();
-    });
-  };
-}
+module.exports.cmd = cmd;

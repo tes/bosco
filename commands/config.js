@@ -5,7 +5,6 @@ module.exports = {
   name: 'config',
   description: 'Lets you manage config from the command line instead of editing json files',
   usage: 'set <key> <value> | get <key>',
-  cmd: cmd
 };
 
 function cmd(bosco, args) {
@@ -17,25 +16,30 @@ function cmd(bosco, args) {
     bosco.error('The command needs to be of the format: ' + ('bosco config ' + module.exports.usage).blue);
   }
 
+  function logConfig(config) {
+    bosco.console.log(prettyjson.render(config, {noColor: false}));
+    bosco.console.log('');
+  }
+
   if (type === 'get') {
     // Get the key
     if (!key) {
-      console.log('');
+      bosco.console.log('');
 
-      console.log('Config for ' + 'github'.green + ':');
+      bosco.console.log('Config for ' + 'github'.green + ':');
       var github = _.clone(bosco.config.get('github'));
       delete github.repos;
       delete github.ignoredRepos;
       logConfig(github);
 
-      console.log('Config for ' + 'aws'.green + ':');
+      bosco.console.log('Config for ' + 'aws'.green + ':');
       var aws = bosco.config.get('aws');
       logConfig(aws ? aws : 'Not defined');
 
-      console.log('Config for ' + 'js'.green + ':');
+      bosco.console.log('Config for ' + 'js'.green + ':');
       logConfig(bosco.config.get('js'));
 
-      console.log('Config for ' + 'css'.green + ':');
+      bosco.console.log('Config for ' + 'css'.green + ':');
       logConfig(bosco.config.get('css'));
     } else {
       bosco.log('Config for ' + key.green + ':');
@@ -60,7 +64,4 @@ function cmd(bosco, args) {
   }
 }
 
-function logConfig(config) {
-  console.log(prettyjson.render(config, {noColor: false}));
-  console.log('');
-}
+module.exports.cmd = cmd;

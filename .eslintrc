@@ -1,8 +1,11 @@
 {
   "extends": "airbnb/legacy",
+  "plugins": ["shadow-exception"],
   "rules": {
     "vars-on-top": 0,
     "id-length": 0,
-    "func-names": 0
+    "func-names": 0,
+    "no-shadow": 0,
+    "shadow-exception/no-shadow": 2
   }
 }

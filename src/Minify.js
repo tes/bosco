@@ -6,22 +6,6 @@ var CleanCSS = require('clean-css');
 module.exports = function(bosco) {
   var createKey = require('./AssetHelper')(bosco).createKey;
 
-  function minify(staticAssets, next) {
-    var jsAssets = _.where(staticAssets, {type: 'js'});
-    var cssAssets = _.where(staticAssets, {type: 'css'});
-    var remainingAssets = _.filter(staticAssets, function(item) {
-      return item.type !== 'js' && item.type !== 'css';
-    });
-
-    compileJs(remainingAssets, jsAssets, function(err, minifiedStaticAssets) {
-      compileCss(minifiedStaticAssets, cssAssets, next);
-    });
-  }
-
-  return {
-    minify: minify
-  };
-
   function compileJs(staticAssets, jsAssets, next) {
     var bundleKeys = _.uniq(_.pluck(jsAssets, 'bundleKey'));
 
@@ -30,7 +14,10 @@ module.exports = function(bosco) {
 
       if (items.length === 0) { return; }
 
-      var compiled, serviceName, buildNumber, tag, externalBuild;
+      var compiled;
+      var serviceName;
+      var buildNumber;
+      var tag;
 
       bosco.log('Compiling ' + _.size(items) + ' ' + bundleKey.blue + ' JS assets ...');
 
@@ -41,7 +28,6 @@ module.exports = function(bosco) {
         serviceName = firstItem.serviceName;
         buildNumber = firstItem.buildNumber;
         tag = firstItem.tag;
-        externalBuild = firstItem.externalBuild;
       }
 
       var uglifyOptions = {
@@ -49,16 +35,16 @@ module.exports = function(bosco) {
         compressor: uglifyConfig ? uglifyConfig.compressorOptions : null,
         mangle: uglifyConfig ? uglifyConfig.mangle : null,
         outSourceMap: tag + '.js.map',
-        sourceMapIncludeSources: true
+        sourceMapIncludeSources: true,
       };
 
       try {
         compiled = UglifyJS.minify(_.values(_.pluck(items, 'path')), uglifyOptions);
       } catch (ex) {
         bosco.error('There was an error minifying files in ' + bundleKey.blue + ', error:');
-        console.log(ex.message + '\n');
+        bosco.console.log(ex.message + '\n');
         compiled = {
-          code: ''
+          code: '',
         };
       }
 
@@ -102,7 +88,10 @@ module.exports = function(bosco) {
 
     _.forEach(bundleKeys, function(bundleKey) {
       var items = _.where(cssAssets, {bundleKey: bundleKey});
-      var cssContent = '', serviceName, buildNumber, tag;
+      var cssContent = '';
+      var serviceName;
+      var buildNumber;
+      var tag;
 
       if (items.length === 0) { return; }
 
@@ -123,7 +112,10 @@ module.exports = function(bosco) {
       if (cleanCssConfig && cleanCssConfig.enabled) {
         cssContent = new CleanCSS(cleanCssConfig.options).minify(cssContent).styles;
       }
-      if (cssContent.length === 0) return next({message: 'No css for tag ' + tag});
+      if (cssContent.length === 0) {
+        next({message: 'No css for tag ' + tag});
+        return;
+      }
 
       var assetKey = createKey(serviceName, buildNumber, tag, null, 'css', 'css');
 
@@ -143,4 +135,20 @@ module.exports = function(bosco) {
 
     next(null, staticAssets);
   }
+
+  function minify(staticAssets, next) {
+    var jsAssets = _.where(staticAssets, {type: 'js'});
+    var cssAssets = _.where(staticAssets, {type: 'css'});
+    var remainingAssets = _.filter(staticAssets, function(item) {
+      return item.type !== 'js' && item.type !== 'css';
+    });
+
+    compileJs(remainingAssets, jsAssets, function(err, minifiedStaticAssets) {
+      compileCss(minifiedStaticAssets, cssAssets, next);
+    });
+  }
+
+  return {
+    minify: minify,
+  };
 };

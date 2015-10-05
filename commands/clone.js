@@ -11,60 +11,14 @@ module.exports = {
   name: 'clone',
   usage: '[-r <repoPattern>] [--clean]',
   description: 'Gets a list of all repos in your team and runs git clone for each',
-  cmd: cmd,
   options: [{
     name: 'clean',
     type: 'boolean',
-    desc: 'Remove any repositories in the workspace that are no longer in the github team'
-  }]
+    desc: 'Remove any repositories in the workspace that are no longer in the github team',
+  }],
 };
 
-function cmd(bosco, args, next) {
-  var repoPattern = bosco.options.repo;
-  var repoRegex = new RegExp(repoPattern);
-  var team = bosco.getTeam();
-  var teamConfig = bosco.config.get('teams:' + team);
-
-  var client = github.client(bosco.config.get('github:authToken'));
-
-  if (!teamConfig) {
-    // The user does not have a team, so just treat the repos config
-    // as manually edited
-    return bosco.error([
-      'Looks like you havent linked this workspace to a team?  Try: ',
-      'bosco team setup'.green,
-      '. If you can\'t see your team in the list, Try: ',
-      'bosco team sync'.green
-    ].join(''));
-  } else {
-    bosco.log('Fetching repository list from Github for ' + team.green + ' team ...');
-    var more = true, page = 1, repoList = [];
-    async.whilst(
-      function() { return more; },
-      function(callback) {
-        getRepos(client, teamConfig, page, function(err, repos, isMore) {
-          if (err) { return callback(err); }
-          repoList = _.union(repoList, repos);
-          if (isMore) {
-            page = page + 1;
-          } else {
-            more = false;
-          }
-          callback();
-        });
-      },
-      function(err) {
-        if (err) {
-          return bosco.error(err.message);
-        }
-        bosco.log('Cloning ' + (repoList.length + '').green + ' repositories from Github for ' + team.green + ' team ...');
-        fetch(bosco, team, repoList, repoRegex, args, next);
-      }
-    );
-  }
-}
-
-function getRepos(client, teamConfig, page, next) {
+function getRepoList(client, teamConfig, page, next) {
   if (teamConfig.isUser) {
     client.get('/user/repos', {per_page: 20, page: page}, function(err, status, body, headers) {
       next(err, _.pluck(body, 'name'), _.contains(headers.link, 'rel="next"'));
@@ -74,6 +28,40 @@ function getRepos(client, teamConfig, page, next) {
       next(err, _.pluck(body, 'name'), _.contains(headers.link, 'rel="next"'));
     });
   }
+}
+
+function checkCanDelete(bosco, repoPath, next) {
+  function reducer(memo, command, cb) {
+    exec(command, {
+      cwd: repoPath,
+    }, function(err, stdout) {
+      return cb(err, memo && !err && !stdout);
+    });
+  }
+
+  async.reduce([
+    'git stash list',
+    'git branch --no-merged origin/master',
+    'git status --porcelain',
+  ], true, reducer, function(err, result) {
+    next(err, result);
+  });
+}
+
+function clone(bosco, progressbar, bar, repoUrl, orgPath, next) {
+  if (!progressbar) bosco.log('Cloning ' + repoUrl.blue + ' into ' + orgPath.blue);
+  exec('git clone ' + repoUrl, {
+    cwd: orgPath,
+  }, function(err, stdout, stderr) {
+    if (progressbar) bar.tick();
+    if (err) {
+      if (progressbar) bosco.console.log('');
+      bosco.error(repoUrl.blue + ' >> ' + stderr);
+    } else {
+      if (!progressbar && stdout) bosco.log(repoUrl.blue + ' >> ' + stdout);
+    }
+    next();
+  });
 }
 
 function fetch(bosco, team, repos, repoRegex, args, next) {
@@ -121,15 +109,15 @@ function fetch(bosco, team, repos, repoRegex, args, next) {
   }
 
   function getRepos(cb) {
-    var progressbar = bosco.config.get('progress') === 'bar',
-      total = repos.length,
-      pullFlag = false;
+    var progressbar = bosco.config.get('progress') === 'bar';
+    var total = repos.length;
+    var pullFlag = false;
 
-    var bar = progressbar ? new bosco.progress('Getting repositories [:bar] :percent :etas', {
+    var bar = progressbar ? new bosco.Progress('Getting repositories [:bar] :percent :etas', {
       complete: green,
       incomplete: red,
       width: 50,
-      total: total
+      total: total,
     }) : null;
 
     async.mapLimit(repos, bosco.concurrency.network, function repoGet(repo, repoCb) {
@@ -157,9 +145,8 @@ function fetch(bosco, team, repos, repoRegex, args, next) {
     // Ensure repo folders are in workspace gitignore
     var gi = [bosco.getWorkspacePath(), '.gitignore'].join('/');
     fs.readFile(gi, function(err, contents) {
-      if (err) { cb(err); }
-      contents = contents || '';
-      var ignore = contents.toString().split('\n');
+      if (err) return cb(err);
+      var ignore = (contents || '').toString().split('\n');
       var newIgnore = _.union(ignore, repos, ['.DS_Store', 'node_modules', '.bosco/bosco.json', '']);
       fs.writeFile(gi, newIgnore.join('\n') + '\n', cb);
     });
@@ -171,39 +158,51 @@ function fetch(bosco, team, repos, repoRegex, args, next) {
   });
 }
 
+function cmd(bosco, args, next) {
+  var repoPattern = bosco.options.repo;
+  var repoRegex = new RegExp(repoPattern);
+  var team = bosco.getTeam();
+  var teamConfig = bosco.config.get('teams:' + team);
 
+  var client = github.client(bosco.config.get('github:authToken'));
 
-function checkCanDelete(bosco, repoPath, next) {
-  function reducer(memo, cmd, cb) {
-    exec(cmd, {
-      cwd: repoPath
-    }, function(err, stdout) {
-      return cb(err, memo && !err && !stdout);
-    });
+  if (!teamConfig) {
+    // The user does not have a team, so just treat the repos config
+    // as manually edited
+    return bosco.error([
+      'Looks like you havent linked this workspace to a team?  Try: ',
+      'bosco team setup'.green,
+      '. If you can\'t see your team in the list, Try: ',
+      'bosco team sync'.green,
+    ].join(''));
   }
 
-  async.reduce([
-    'git stash list',
-    'git branch --no-merged origin/master',
-    'git status --porcelain'
-  ], true, reducer, function(err, result) {
-    next(err, result);
-  });
-}
-
-function clone(bosco, progressbar, bar, repoUrl, orgPath, next) {
-  if (!progressbar) bosco.log('Cloning ' + repoUrl.blue + ' into ' + orgPath.blue);
-  exec('git clone ' + repoUrl, {
-    cwd: orgPath
-  }, function(err, stdout, stderr) {
-    if (progressbar) bar.tick();
-    if (err) {
-      if (progressbar) console.log('');
-      bosco.error(repoUrl.blue + ' >> ' + stderr);
-    } else {
-      if (!progressbar && stdout) bosco.log(repoUrl.blue + ' >> ' + stdout);
+  bosco.log('Fetching repository list from Github for ' + team.green + ' team ...');
+  var more = true;
+  var page = 1;
+  var repoList = [];
+  async.whilst(
+    function() { return more; },
+    function(callback) {
+      getRepoList(client, teamConfig, page, function(err, repos, isMore) {
+        if (err) { return callback(err); }
+        repoList = _.union(repoList, repos);
+        if (isMore) {
+          page = page + 1;
+        } else {
+          more = false;
+        }
+        callback();
+      });
+    },
+    function(err) {
+      if (err) {
+        return bosco.error(err.message);
+      }
+      bosco.log('Cloning ' + (repoList.length + '').green + ' repositories from Github for ' + team.green + ' team ...');
+      fetch(bosco, team, repoList, repoRegex, args, next);
     }
-    next();
-  });
+  );
 }
 
+module.exports.cmd = cmd;

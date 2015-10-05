@@ -4,20 +4,19 @@ var RunListHelper = require('../src/RunListHelper');
 var NodeRunner = require('../src/RunWrappers/Node');
 var DockerRunner = require('../src/RunWrappers/Docker');
 var DockerComposeRunner = require('../src/RunWrappers/DockerCompose');
-var runningServices = [];
 
 module.exports = {
   name: 'stop',
   description: 'Stops all of the microservices (or subset based on regex pattern)',
   usage: '[-r <repoPattern>]',
-  cmd: cmd
 };
 
-function cmd(bosco, args, next) {
+function cmd(bosco, args, done) {
   var repoPattern = bosco.options.repo;
   var repoRegex = new RegExp(repoPattern);
   var repos = bosco.getRepos();
   var repoTag = bosco.options.tag;
+  var runningServices = [];
 
   function initialiseRunners(cb) {
     var runners = [NodeRunner, DockerRunner, DockerComposeRunner];
@@ -33,17 +32,17 @@ function cmd(bosco, args, next) {
     }, next);
   }
 
-  function stopService(repo, boscoService, runningServices, cb) {
+  function stopService(repo, boscoService, services, cb) {
     if (boscoService.service.type === 'docker') {
-      if (_.contains(runningServices, repo)) {
+      if (_.contains(services, repo)) {
         return DockerRunner.stop(boscoService, cb);
       }
     } else if (boscoService.service.type === 'docker-compose') {
-      if (_.contains(runningServices, 'docker-compose')) {
+      if (_.contains(services, 'docker-compose')) {
         return DockerComposeRunner.stop(boscoService, cb);
       }
     } else {
-      if (_.contains(runningServices, repo)) {
+      if (_.contains(services, repo)) {
         return NodeRunner.stop({name: repo}, cb);
       }
     }
@@ -53,31 +52,24 @@ function cmd(bosco, args, next) {
 
   function stopRunningServices(cb) {
     RunListHelper.getRunList(bosco, repos, repoRegex, null, repoTag, function(err, services) {
-      async.mapSeries(services, function(boscoService, cb) {
+      async.mapSeries(services, function(boscoService, next) {
         var repo = boscoService.name;
 
-        if (repo.match(repoRegex)) {
-          if (!boscoService.service.type) {
-            RunListHelper.getServiceConfigFromGithub(bosco, boscoService.name, function(err, svcConfig) {
-              if (!svcConfig.name) {
-                svcConfig.name = boscoService.name;
-              }
-              stopService(repo, svcConfig, runningServices, cb);
-            });
-          } else {
-            stopService(repo, boscoService, runningServices, cb);
-          }
-        } else {
-          return cb();
+        if (!repo.match(repoRegex)) return next();
+
+        if (boscoService.service.type) {
+          return stopService(repo, boscoService, runningServices, next);
         }
+
+        RunListHelper.getServiceConfigFromGithub(bosco, boscoService.name, function(err, svcConfig) {
+          if (!svcConfig.name) svcConfig.name = boscoService.name;
+          stopService(repo, svcConfig, runningServices, next);
+        });
       }, function() {
         // Special case for bosco-cdn, room for improvement to make this
         // generic for all custom bosco services.
-        if (_.contains(runningServices, 'bosco-cdn')) {
-          return NodeRunner.stop({name: 'bosco-cdn'}, cb);
-        } else {
-          cb();
-        }
+        if (!_.contains(runningServices, 'bosco-cdn')) return cb();
+        NodeRunner.stop({name: 'bosco-cdn'}, cb);
       });
     });
   }
@@ -85,9 +77,9 @@ function cmd(bosco, args, next) {
   function getRunningServices(cb) {
     NodeRunner.listRunning(false, function(err, nodeRunning) {
       DockerRunner.list(false, function(err, dockerRunning) {
-        dockerRunning = _.map(_.flatten(dockerRunning), function(item) { return item.replace('/', ''); });
+        var flatDockerRunning = _.map(_.flatten(dockerRunning), function(item) { return item.replace('/', ''); });
         DockerComposeRunner.list(false, function(err, dockerComposeRunning) {
-          runningServices = _.union(nodeRunning, dockerRunning, dockerComposeRunning);
+          runningServices = _.union(nodeRunning, flatDockerRunning, dockerComposeRunning);
           cb();
         });
       });
@@ -97,6 +89,8 @@ function cmd(bosco, args, next) {
   bosco.log('Stop each microservice ' + args);
 
   async.series([initialiseRunners, getRunningServices, stopRunningServices, disconnectRunners], function() {
-    if (next) return next(null, runningServices);
+    if (done) return done(null, runningServices);
   });
 }
+
+module.exports.cmd = cmd;

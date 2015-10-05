@@ -6,6 +6,27 @@ var mime = require('mime');
 var sf = require('sf');
 
 module.exports = function(bosco) {
+  function checksum(str, algorithm, encoding) {
+    return crypto
+      .createHash(algorithm || 'md5')
+      .update(str, 'utf8')
+      .digest(encoding || 'hex');
+  }
+
+  function resolve(boscoRepo, basePath, asset, assetKey) {
+    var resolvedPath = path.join(boscoRepo.path, basePath, asset);
+
+    if (!fs.existsSync(resolvedPath)) {
+      return bosco.warn(sf('Asset {asset} not found at path {path}, declared in {repo}', {
+        asset: assetKey,
+        path: resolvedPath,
+        repo: boscoRepo.name,
+      }));
+    }
+
+    return resolvedPath;
+  }
+
   function getAssetHelper(boscoRepo, tagFilter) {
     return {
       addAsset: function(staticAssets, buildNumber, assetKey, asset, tag, type, basePath, externalBuild) {
@@ -38,7 +59,7 @@ module.exports = function(bosco) {
           newAsset.uniqueKey = newAsset.bundleKey + ':' + assetKey;
           staticAssets.push(newAsset);
         }
-      }
+      },
     };
   }
 
@@ -46,30 +67,9 @@ module.exports = function(bosco) {
     return path.join(name, buildNumber, type, tag + (hash ? '.' + hash : '') + (extension ? '.' + extension : ''));
   }
 
-  function checksum(str, algorithm, encoding) {
-    return crypto
-      .createHash(algorithm || 'md5')
-      .update(str, 'utf8')
-      .digest(encoding || 'hex');
-  }
-
-  function resolve(boscoRepo, basePath, asset, assetKey) {
-    var resolvedPath = path.join(boscoRepo.path, basePath, asset);
-
-    if (!fs.existsSync(resolvedPath)) {
-      return bosco.warn(sf('Asset {asset} not found at path {path}, declared in {repo}', {
-        asset: assetKey,
-        path: resolvedPath,
-        repo: boscoRepo.name
-      }));
-    }
-
-    return resolvedPath;
-  }
-
   return {
     getAssetHelper: getAssetHelper,
     createKey: createKey,
-    checksum: checksum
+    checksum: checksum,
   };
 };

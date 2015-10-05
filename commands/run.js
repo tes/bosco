@@ -14,28 +14,28 @@ module.exports = {
   name: 'run',
   description: 'Runs all of the microservices (or subset based on regex pattern)',
   usage: '[-r <repoPattern>] [-t <tag>]',
-  cmd: cmd,
   options: [{
     name: 'tag',
     alias: 't',
     type: 'string',
-    desc: 'Filter by a tag defined within bosco-service.json'
+    desc: 'Filter by a tag defined within bosco-service.json',
   },
   {
     name: 'watch',
     alias: 'w',
     type: 'string',
-    desc: 'Watch the applications started with run for changes that match this regular expression'
+    desc: 'Watch the applications started with run for changes that match this regular expression',
   },
   {
     name: 'list',
     alias: 'l',
     type: 'string',
-    desc: 'Start a list of repos (comma separated)'
-  }]
+    desc: 'Start a list of repos (comma separated)',
+  }],
 };
 
-function cmd(bosco, args, cb) {
+function cmd(bosco, args, allDone) {
+  var done = allDone ? allDone : function() {};
   var repoPattern = bosco.options.repo;
   var repoRegex = new RegExp(repoPattern);
   var watchPattern = bosco.options.watch || '$a';
@@ -127,8 +127,8 @@ function cmd(bosco, args, cb) {
   function getRunningServices(next) {
     NodeRunner.listRunning(false, function(err, nodeRunning) {
       DockerRunner.list(false, function(err, dockerRunning) {
-        dockerRunning = _.map(_.flatten(dockerRunning), function(item) { return item.replace('/', ''); });
-        runningServices = _.union(nodeRunning, dockerRunning);
+        var flatDockerRunning = _.map(_.flatten(dockerRunning), function(item) { return item.replace('/', ''); });
+        runningServices = _.union(nodeRunning, flatDockerRunning);
         next();
       });
     });
@@ -145,7 +145,7 @@ function cmd(bosco, args, cb) {
     // Ensure that the ~/.pm2 folders exist
     var folders = [
       process.env.HOME + '/.pm2/logs',
-      process.env.HOME + '/.pm2/pids'
+      process.env.HOME + '/.pm2/pids',
     ];
 
     async.map(folders, function(folder, cb) {
@@ -160,18 +160,15 @@ function cmd(bosco, args, cb) {
   async.series([ensurePM2, initialiseRunners, getRunningServices, getStoppedServices, stopNotRunningServices, startRunnableServices, disconnectRunners], function(err) {
     if (err) {
       bosco.error(err);
-      if (cb) cb();
-
-      return;
+      return done();
     }
 
     bosco.log('All services started.');
-    if (_.contains(args, 'cdn')) {
-      var cdn = require('./cdn');
-      cdn.cmd(bosco, [], function() {});
-    } else {
-      if (cb) return cb();
-    }
+    if (!_.contains(args, 'cdn')) return done();
+
+    var cdn = require('./cdn');
+    cdn.cmd(bosco, [], function() {});
   });
 }
 
+module.exports.cmd = cmd;

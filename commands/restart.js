@@ -4,7 +4,6 @@ module.exports = {
   name: 'restart',
   description: 'Runs stop and then run with the same parameters - aka restart ;)',
   usage: '[-r <repoPattern>] [-t <tag>]',
-  cmd: cmd
 };
 
 function cmd(bosco, args) {
@@ -26,3 +25,4 @@ function cmd(bosco, args) {
   });
 }
 
+module.exports.cmd = cmd;

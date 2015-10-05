@@ -4,12 +4,29 @@ module.exports = {
   name: 's3delete',
   description: 'Deletes a published asset set from S3',
   usage: '[-e <environmment>] <build>',
-  cmd: cmd
 };
 
 function cmd(bosco, args) {
   if (!bosco.knox) bosco.error('You don\'t appear to have any S3 config for this environment?');
   var toDelete = args[0] || 'Not specified';
+
+  function confirm(message, next) {
+    bosco.prompt.start();
+    bosco.prompt.get({
+      properties: {
+        confirm: {
+          description: message,
+        },
+      },
+    }, function(err, result) {
+      if (!result) return next({message: 'Did not confirm'});
+      if (result.confirm === 'Y' || result.confirm === 'y') {
+        next(null, true);
+      } else {
+        next(null, false);
+      }
+    });
+  }
 
   bosco.knox.list({ prefix: bosco.options.environment + '/' + toDelete }, function(err, data) {
     var files = _.pluck(data.Contents, 'Key');
@@ -25,22 +42,6 @@ function cmd(bosco, args) {
       });
     });
   });
-
-  function confirm(message, next) {
-    bosco.prompt.start();
-    bosco.prompt.get({
-      properties: {
-        confirm: {
-          description: message
-        }
-      }
-    }, function(err, result) {
-      if (!result) return next({message: 'Did not confirm'});
-      if (result.confirm === 'Y' || result.confirm === 'y') {
-        next(null, true);
-      } else {
-        next(null, false);
-      }
-    });
-  }
 }
+
+module.exports.cmd = cmd;

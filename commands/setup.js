@@ -2,7 +2,6 @@
 module.exports = {
   name: 'setup',
   description: 'Runs clone and then install to get your environment ready for action.',
-  cmd: cmd
 };
 
 function cmd(bosco, args) {
@@ -21,3 +20,5 @@ function cmd(bosco, args) {
     });
   });
 }
+
+module.exports.cmd = cmd;

@@ -5,16 +5,7 @@ module.exports = {
   name: 'help',
   description: 'Shows help about a Bosco command',
   usage: '<command>',
-  cmd: cmd
 };
-
-function cmd(bosco, args) {
-  var cmdName = args.shift();
-  if (!cmdName) return bosco.error('You need to provide a command name. e.g: bosco help ' + module.exports.usage);
-
-  var man = 'bosco-' + cmdName + '.3';
-  viewMan(man, function() {});
-}
 
 // Shamelessly stolen from npm
 function viewMan(man, cb) {
@@ -23,7 +14,9 @@ function viewMan(man, cb) {
   var section = path.basename(man, '.' + num);
 
   // at this point, we know that the specified man page exists
-  var manpath = path.join(__dirname, '..', 'man'), env = {};
+  var manpath = path.join(__dirname, '..', 'man');
+  var env = {};
+
   Object.keys(process.env).forEach(function(i) {
     env[i] = process.env[i];
   });
@@ -33,3 +26,13 @@ function viewMan(man, cb) {
   var manProcess = spawn('man', [num, section], conf);
   manProcess.on('close', cb);
 }
+
+function cmd(bosco, args) {
+  var cmdName = args.shift();
+  if (!cmdName) return bosco.error('You need to provide a command name. e.g: bosco help ' + module.exports.usage);
+
+  var man = 'bosco-' + cmdName + '.3';
+  viewMan(man, function() {});
+}
+
+module.exports.cmd = cmd;

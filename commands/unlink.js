@@ -13,164 +13,162 @@ module.exports = {
     {
       name: 'dry-run',
       type: 'boolean',
-      desc: 'Print commands without unlinking'
-    }
+      desc: 'Print commands without unlinking',
+    },
   ],
-  cmd: function(bosco, args, next) {
-    var repoPattern = bosco.options.repo;
-    var repoRegex = repoPattern && new RegExp(repoPattern);
+};
 
-    var repos = bosco.getRepos();
-    var packageRepos = {};
-    var dependencyMap = {};
-    var dependentsMap = {};
+function cmd(bosco, args, done) {
+  var repoPattern = bosco.options.repo;
+  var repoRegex = repoPattern && new RegExp(repoPattern);
 
-    var addDependency = function addDependency(dependency, dependent) {
-      if (!(dependency in dependencyMap)) {
-        dependencyMap[dependency] = [];
-      }
+  var repos = bosco.getRepos();
+  var packageRepos = {};
+  var dependencyMap = {};
+  var dependentsMap = {};
+  var next = done ? done : function(err) { throw err; };
 
-      if (!(dependent in dependentsMap)) {
-        dependentsMap[dependent] = [];
-      }
+  function addDependency(dependency, dependent) {
+    if (!(dependency in dependencyMap)) {
+      dependencyMap[dependency] = [];
+    }
 
-      dependencyMap[dependency].push(dependent);
-      dependentsMap[dependent].push(dependency);
-    };
+    if (!(dependent in dependentsMap)) {
+      dependentsMap[dependent] = [];
+    }
 
-    async.map(repos, function(repo, next) {
-      var repoPath = bosco.getRepoPath(repo);
-      var repoPackage = path.join(repoPath, 'package.json');
+    dependencyMap[dependency].push(dependent);
+    dependentsMap[dependent].push(dependency);
+  }
 
-      fs.readFile(path.join(repoPath, 'package.json'), function(err, data) {
-        if (err) {
-          bosco.log(util.format('skipping %s', repo));
-          return next();
-        }
+  function runCommands(commands) {
+    async.mapSeries(commands, function(commandArgs, cb) {
+      var packageName = commandArgs[0];
+      var command = commandArgs[1];
+      var options = commandArgs[2];
 
-        var packageJson;
-        try {
-          packageJson = JSON.parse(data.toString());
-        } catch (err) {
-          bosco.log('failed to parse json from %s', repoPackage);
-          return next();
-        }
+      bosco.log(util.format('%s %s', packageName.blue, command));
 
-        packageRepos[packageJson.name] = repo;
+      if (bosco.options.program.dryRun) return cb();
 
-        for (var dependency in packageJson.dependencies) {
-          addDependency(dependency, packageJson.name);
-        }
+      exec(command, options, function(err, stdout, stderr) {
+        if (err) return cb(err);
 
-        for (var devDependency in packageJson.devDependencies) {
-          addDependency(devDependency, packageJson.name);
-        }
+        process.stdout.write(stdout);
+        process.stderr.write(stderr);
 
-        return next();
+        return cb();
       });
     }, function(err) {
+      if (err) return next(err);
+
+      bosco.log('Complete');
+      next();
+    });
+  }
+
+  async.map(repos, function(repo, cb) {
+    var repoPath = bosco.getRepoPath(repo);
+    var repoPackage = path.join(repoPath, 'package.json');
+
+    fs.readFile(path.join(repoPath, 'package.json'), function(err, data) {
       if (err) {
-        return next(err);
+        bosco.log(util.format('skipping %s', repo));
+        return cb();
       }
 
-      var packageCount = Object.keys(packageRepos).length;
-      var packageDiff = packageCount;
-      var commands = [];
-
-      function isSelected(packageName) {
-        if (!(packageName in packageRepos)) {
-          return false;
-        }
-
-        var repo = packageRepos[packageName];
-
-        if (!repoRegex) {
-          return true;
-        }
-
-        return repoRegex.test(repo);
+      var packageJson;
+      try {
+        packageJson = JSON.parse(data.toString());
+      } catch (err) {
+        bosco.log('failed to parse json from %s', repoPackage);
+        return cb();
       }
+
+      packageRepos[packageJson.name] = repo;
+
+      _.forOwn(packageJson.dependencies, function(version, dependency) {
+        addDependency(dependency, packageJson.name);
+      });
+
+      _.forOwn(packageJson.devDependencies, function(version, devDependency) {
+        addDependency(devDependency, packageJson.name);
+      });
+
+      return cb();
+    });
+  }, function(err) {
+    if (err) return next(err);
+
+    var packageCount = Object.keys(packageRepos).length;
+    var packageDiff = packageCount;
+    var commands = [];
+
+    function isSelected(name) {
+      if (!(name in packageRepos)) return false;
+
+      var repo = packageRepos[name];
+
+      if (!repoRegex) return true;
+
+      return repoRegex.test(repo);
+    }
+
+    function processPackage(name) {
+      var repo = packageRepos[name];
+      var repoPath = bosco.getRepoPath(repo);
 
       function removeDependents(install, dependency) {
-        var index = dependencyMap[dependency].indexOf(packageName);
+        var index = dependencyMap[dependency].indexOf(name);
 
-        if (index === -1) {
-          return install;
-        }
+        if (index === -1) return install;
 
         dependencyMap[dependency].splice(index, 1);
 
         if (isSelected(dependency)) {
-          commands.push([packageName, util.format('npm unlink %s', dependency), {cwd: repoPath}]);
+          commands.push([name, util.format('npm unlink %s', dependency), {cwd: repoPath}]);
           return true;
         }
 
         return install;
       }
 
-      while (packageDiff !== 0 && packageCount > 0) {
-        bosco.log(util.format('%s packages remain', packageCount));
-
-        for (var packageName in packageRepos) {
-          var repo = packageRepos[packageName];
-          var repoPath = bosco.getRepoPath(repo);
-
-          if (packageName in dependencyMap && dependencyMap[packageName].length > 0) {
-            continue;
-          }
-
-          delete packageRepos[packageName];
-
-          if (isSelected(packageName)) {
-            commands.push([packageName, 'npm unlink', {cwd: repoPath}]);
-          }
-
-          if (packageName in dependentsMap) {
-            var isInstallRequired = _.reduce(dependentsMap[packageName], removeDependents, false);
-
-            if (isInstallRequired) {
-              commands.push([packageName, 'npm install', {cwd: repoPath}]);
-            }
-          }
-        }
-
-        packageDiff = Object.keys(packageRepos).length - packageCount;
-        packageCount = Object.keys(packageRepos).length;
+      if (name in dependencyMap && dependencyMap[name].length > 0) {
+        return;
       }
 
-      async.mapSeries(commands, function(cmd, next) {
-        var packageName = cmd[0];
-        var command = cmd[1];
-        var options = cmd[2];
+      delete packageRepos[name];
 
-        bosco.log(util.format('%s %s', packageName.blue, command));
+      if (isSelected(name)) {
+        commands.push([name, 'npm unlink', {cwd: repoPath}]);
+      }
 
-        if (bosco.options.program.dryRun) {
-          return next();
+      if (name in dependentsMap) {
+        var isInstallRequired = _.reduce(dependentsMap[name], removeDependents, false);
+
+        if (isInstallRequired) {
+          commands.push([name, 'npm install', {cwd: repoPath}]);
         }
+      }
+    }
 
-        exec(command, options, function(err, stdout, stderr) {
-          if (err) {
-            return next(err);
-          }
-
-          process.stdout.write(stdout);
-          process.stderr.write(stderr);
-
-          return next();
-        });
-      }, function(err) {
-        if (err) {
-          if (next) {
-            return next(err);
-          }
-
-          throw err;
-        }
-
-        bosco.log('Complete');
-        return next && next();
+    function processRepos(repoMap) {
+      _.forOwn(repoMap, function(repo, name) {
+        processPackage(name);
       });
-    });
-  }
-};
+    }
+
+    while (packageDiff !== 0 && packageCount > 0) {
+      bosco.log(util.format('%s packages remain', packageCount));
+
+      processRepos(packageRepos);
+
+      packageDiff = Object.keys(packageRepos).length - packageCount;
+      packageCount = Object.keys(packageRepos).length;
+    }
+
+    runCommands(commands);
+  });
+}
+
+module.exports.cmd = cmd;

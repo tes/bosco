@@ -2,24 +2,20 @@
 var _ = require('lodash');
 var github = require('octonode');
 
-module.exports = {
-  getRunList: getRunList,
-  getServiceConfigFromGithub: getServiceConfigFromGithub
-};
-
 function getRunConfig(bosco, repo, repoRegex, watchRegex) {
-  var pkg, svc,
-    repoPath = bosco.getRepoPath(repo),
-    watch = repo.match(watchRegex) ? true : false,
-    packageJson = [repoPath, 'package.json'].join('/'),
-    boscoService = [repoPath, 'bosco-service.json'].join('/'),
-    svcConfig = {
-      name: repo,
-      cwd: repoPath,
-      watch: watch,
-      order: 50,
-      service: {}
-    };
+  var repoPath = bosco.getRepoPath(repo);
+  var watch = repo.match(watchRegex) ? true : false;
+  var packageJson = [repoPath, 'package.json'].join('/');
+  var boscoService = [repoPath, 'bosco-service.json'].join('/');
+  var svcConfig = {
+    name: repo,
+    cwd: repoPath,
+    watch: watch,
+    order: 50,
+    service: {},
+  };
+  var pkg;
+  var svc;
 
   if (bosco.exists(packageJson)) {
     pkg = require(packageJson);
@@ -38,7 +34,7 @@ function getRunConfig(bosco, repo, repoRegex, watchRegex) {
     svc = require(boscoService);
     svcConfig = _.extend(svcConfig, {
       tags: svc.tags,
-      order: svc.order
+      order: svc.order,
     });
     if (svc.service) {
       svcConfig.service = _.extend(svcConfig.service, svc.service);
@@ -126,3 +122,8 @@ function getServiceConfigFromGithub(bosco, repo, next) {
     });
   }
 }
+
+module.exports = {
+  getRunList: getRunList,
+  getServiceConfigFromGithub: getServiceConfigFromGithub,
+};

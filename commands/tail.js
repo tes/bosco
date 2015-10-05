@@ -7,7 +7,6 @@ module.exports = {
   name: 'tail',
   description: 'Tails the logs from pm2',
   usage: '[out|err] [-r <repoPattern>]',
-  cmd: cmd
 };
 
 function cmd(bosco, args) {
@@ -37,7 +36,7 @@ function cmd(bosco, args) {
             var tail = new Tail(file);
 
             tail.on('line', function(data) {
-              console.log(repo + ' ' + data);
+              bosco.console.log(repo + ' ' + data);
             });
 
             tail.on('error', function(error) {
@@ -68,3 +67,4 @@ function cmd(bosco, args) {
   });
 }
 
+module.exports.cmd = cmd;

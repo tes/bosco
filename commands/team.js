@@ -10,21 +10,11 @@ module.exports = {
   name: 'team',
   description: 'A command to keep your Github organisation and team setup in sync with Bosco',
   usage: 'sync|ls|ln <team> <directory>',
-  cmd: cmd
 };
 
-function cmd(bosco, args, next) {
-  var action = args.shift();
-  if (action === 'sync') { return syncTeams(bosco, next); }
-  if (action === 'ls') { return showTeams(bosco); }
-  if (action === 'ln') { return linkTeam(bosco, args.shift(), args.shift(), next); }
-  if (action === 'setup') { return setupInitialLink(bosco, next); }
-  bosco.log('You are in team: ' + (bosco.getTeam() ? bosco.getTeam().cyan : 'Not in a workspace!'.red));
-}
-
 function showTeams(bosco) {
-  var teamConfig = bosco.config.get('teams'),
-    teams = _.keys(teamConfig);
+  var teamConfig = bosco.config.get('teams');
+  var teams = _.keys(teamConfig);
 
   bosco.log('Your current github organisations and teams:');
   _.each(teams, function(team) {
@@ -34,37 +24,15 @@ function showTeams(bosco) {
   bosco.log('Use the command: ' + 'bosco team sync'.green + ' to update your team list.');
 }
 
-function syncTeams(bosco, next) {
-  var client = github.client(bosco.config.get('github:authToken')),
-    currentTeams = bosco.config.get('teams') || {},
-    added = 0;
-
-  getTeams(client, function(err, teams) {
-    if (err) { return bosco.error('Unable to access github with given authKey: ' + err.message); }
-
-    _.each(teams, function(team) {
-      var teamKey = team.organization.login + '/' + team.slug;
-      if (!currentTeams || !currentTeams[teamKey]) {
-        bosco.config.set('teams:' + teamKey, {id:team.id});
-        bosco.log('Added ' + teamKey.green + ' team ...');
-        added++;
-      }
-    });
-
-    // Add personal repo
-    var user = bosco.config.get('github:user');
-    if (!currentTeams[user]) {
-      bosco.config.set('teams:' + user, {id:user, isUser: true});
-    }
-
-    bosco.config.save(function() {
-      bosco.log('Synchronisation with Github complete, added ' + (added ? added : 'no new') + ' teams.');
-      if (next) { next(); }
-    });
-  });
-}
-
 function getTeams(client, cb) {
+  function createTeamPageRequestTask(page) {
+    return function(next) {
+      client.get('/user/teams', {page: page}, function(err, status, body) {
+        next(err, body);
+      });
+    };
+  }
+
   client.get('/user/teams', {}, function(err, status, teams, headers) {
     if (err) { return cb(err); }
 
@@ -72,7 +40,7 @@ function getTeams(client, cb) {
 
     if (!links) { return cb(null, teams); }
 
-    var lastPage = parseInt(links.last.page);
+    var lastPage = parseInt(links.last.page, 10);
 
     // If the last page is this first page, we're done
     if (lastPage === 1) { return cb(null, teams); }
@@ -85,36 +53,34 @@ function getTeams(client, cb) {
       cb(null, teams.concat(_.flatten(results)));
     });
   });
-
-  function createTeamPageRequestTask(page) {
-    return function(cb) {
-      client.get('/user/teams', {page: page}, function(err, status, body) {
-        cb(err, body);
-      });
-    };
-  }
 }
 
-function setupInitialLink(bosco, next) {
-  var teams = _.keys(bosco.config.get('teams'));
+function syncTeams(bosco, next) {
+  var client = github.client(bosco.config.get('github:authToken'));
+  var currentTeams = bosco.config.get('teams') || {};
+  var added = 0;
 
-  inquirer.prompt([
-    {
-      type: 'list',
-      message: 'Select a team to map to a workspace directory:',
-      name: 'repo',
-      choices: teams
-    }
-  ], function( answer1 ) {
-    inquirer.prompt([
-      {
-        type: 'input',
-        message: 'Enter the path to map team to (defaults to current folder):',
-        name: 'folder',
-        default: '.'
+  getTeams(client, function(err, teams) {
+    if (err) { return bosco.error('Unable to access github with given authKey: ' + err.message); }
+
+    _.each(teams, function(team) {
+      var teamKey = team.organization.login + '/' + team.slug;
+      if (!currentTeams || !currentTeams[teamKey]) {
+        bosco.config.set('teams:' + teamKey, {id: team.id});
+        bosco.log('Added ' + teamKey.green + ' team ...');
+        added++;
       }
-    ], function( answer2 ) {
-      linkTeam(bosco, answer1.repo, answer2.folder, next);
+    });
+
+    // Add personal repo
+    var user = bosco.config.get('github:user');
+    if (!currentTeams[user]) {
+      bosco.config.set('teams:' + user, {id: user, isUser: true});
+    }
+
+    bosco.config.save(function() {
+      bosco.log('Synchronisation with Github complete, added ' + (added ? added : 'no new') + ' teams.');
+      if (next) { next(); }
     });
   });
 }
@@ -136,3 +102,34 @@ function linkTeam(bosco, team, folder, next) {
     if (next) { next(); }
   });
 }
+
+function setupInitialLink(bosco, next) {
+  var teams = _.keys(bosco.config.get('teams'));
+
+  inquirer.prompt([{
+    type: 'list',
+    message: 'Select a team to map to a workspace directory:',
+    name: 'repo',
+    choices: teams,
+  }], function( answer1 ) {
+    inquirer.prompt([{
+      type: 'input',
+      message: 'Enter the path to map team to (defaults to current folder):',
+      name: 'folder',
+      default: '.',
+    }], function( answer2 ) {
+      linkTeam(bosco, answer1.repo, answer2.folder, next);
+    });
+  });
+}
+
+function cmd(bosco, args, next) {
+  var action = args.shift();
+  if (action === 'sync') { return syncTeams(bosco, next); }
+  if (action === 'ls') { return showTeams(bosco); }
+  if (action === 'ln') { return linkTeam(bosco, args.shift(), args.shift(), next); }
+  if (action === 'setup') { return setupInitialLink(bosco, next); }
+  bosco.log('You are in team: ' + (bosco.getTeam() ? bosco.getTeam().cyan : 'Not in a workspace!'.red));
+}
+
+module.exports.cmd = cmd;

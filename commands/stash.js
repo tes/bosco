@@ -7,8 +7,37 @@ module.exports = {
   name: 'stash',
   description: 'Stashes any local changes across all repos',
   usage: '[-r <repoPattern>]',
-  cmd: cmd
 };
+
+function stash(bosco, args, progressbar, bar, orgPath, next) {
+  if (!progressbar) bosco.log('Stashing ' + orgPath.blue);
+  if (!bosco.exists([orgPath, '.git'].join('/'))) {
+    bosco.warn('Doesn\'t seem to be a git repo: ' + orgPath.blue);
+    return next();
+  }
+
+  var cmdString = 'git stash ' + args.join(' ');
+
+  var ignoreMissingStashCommands = ['pop', 'apply'];
+  var ignoreMissingStash = (ignoreMissingStashCommands.indexOf(args[0]) !== -1);
+  exec(cmdString, {
+    cwd: orgPath,
+  }, function(error, stdout, stderr) {
+    if (progressbar) bar.tick();
+    var err = error;
+
+    if (err && ignoreMissingStash && err.code === 1) {
+      err = null;
+    }
+    if (err) {
+      if (progressbar) bosco.console.log('');
+      bosco.error(orgPath.blue + ' >> ' + stderr);
+    } else {
+      if (!progressbar && stdout) bosco.log(orgPath.blue + ' >> ' + stdout);
+    }
+    next(err);
+  });
+}
 
 function cmd(bosco, args) {
   var repoPattern = bosco.options.repo;
@@ -20,14 +49,14 @@ function cmd(bosco, args) {
   bosco.log('Running git stash across all repos ...');
 
   function stashRepos(cb) {
-    var progressbar = bosco.config.get('progress') === 'bar',
-      total = repos.length;
+    var progressbar = bosco.config.get('progress') === 'bar';
+    var total = repos.length;
 
-    var bar = progressbar ? new bosco.progress('Doing git stash [:bar] :percent :etas', {
+    var bar = progressbar ? new bosco.Progress('Doing git stash [:bar] :percent :etas', {
       complete: green,
       incomplete: red,
       width: 50,
-      total: total
+      total: total,
     }) : null;
 
     async.mapSeries(repos, function repoStash(repo, repoCb) {
@@ -45,31 +74,4 @@ function cmd(bosco, args) {
   });
 }
 
-function stash(bosco, args, progressbar, bar, orgPath, next) {
-  if (!progressbar) bosco.log('Stashing ' + orgPath.blue);
-  if (!bosco.exists([orgPath, '.git'].join('/'))) {
-    bosco.warn('Doesn\'t seem to be a git repo: ' + orgPath.blue);
-    return next();
-  }
-
-  var cmd = 'git stash ' + args.join(' ');
-
-  var ignoreMissingStashCommands = ['pop', 'apply'];
-  var ignoreMissingStash = (ignoreMissingStashCommands.indexOf(args[0]) !== -1);
-  exec(cmd, {
-    cwd: orgPath
-  }, function(err, stdout, stderr) {
-    if (progressbar) bar.tick();
-
-    if (err && ignoreMissingStash && err.code === 1) {
-      err = null;
-    }
-    if (err) {
-      if (progressbar) console.log('');
-      bosco.error(orgPath.blue + ' >> ' + stderr);
-    } else {
-      if (!progressbar && stdout) bosco.log(orgPath.blue + ' >> ' + stdout);
-    }
-    next(err);
-  });
-}
+module.exports.cmd = cmd;

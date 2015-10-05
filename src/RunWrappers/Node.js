@@ -43,6 +43,24 @@ Runner.prototype.listNotRunning = function(detailed, next) {
   });
 };
 
+function getInterpreter(bosco, service) {
+  var version = semver.parse(service.nodeVersion);
+
+  if (!version) {
+    return '';
+  }
+
+  var homeFolder = bosco.findHomeFolder();
+  var nvmBase = '.nvm';
+  var runtime = (version.major >= 1) ? 'io.js' : 'node';
+
+  if (runtime === 'io.js' || version.minor >= 12) {
+    nvmBase = path.join(nvmBase, 'versions', runtime);
+  }
+
+  return path.join(homeFolder, nvmBase, 'v' + version, 'bin', 'node');
+}
+
 /**
  * Start a specific service
  * options = {cmd, cwd, name}
@@ -51,21 +69,16 @@ Runner.prototype.start = function(options, next) {
   var self = this;
 
   // Remove node from the start script as not req'd for PM2
-  var startCmd = options.service.start, startArr, start, ext;
+  var startCmd = options.service.start;
+  var start = startCmd;
+  var startArr;
 
   if (startCmd.split(' ')[0] === 'node') {
     startArr = startCmd.split(' ');
     startArr.shift();
     start = startArr.join(' ');
 
-    ext = path.extname(startCmd);
-
-    if (!path.extname(start)) {
-      ext = '.js';
-      start = start + '.js';
-    }
-  } else {
-    start = startCmd;
+    if (!path.extname(start)) start = start + '.js';
   }
 
   // Always execute as a forked process to allow node version selection
@@ -116,23 +129,5 @@ Runner.prototype.stop = function(options, next) {
     });
   });
 };
-
-function getInterpreter(bosco, service) {
-  var version = semver.parse(service.nodeVersion);
-
-  if (!version) {
-    return '';
-  }
-
-  var homeFolder = bosco.findHomeFolder();
-  var nvmBase = '.nvm';
-  var runtime = (version.major >= 1) ? 'io.js' : 'node';
-
-  if (runtime === 'io.js' || version.minor >= 12) {
-    nvmBase = path.join(nvmBase, 'versions', runtime);
-  }
-
-  return path.join(homeFolder, nvmBase, 'v' + version, 'bin', 'node');
-}
 
 module.exports = new Runner();

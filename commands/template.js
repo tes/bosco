@@ -9,16 +9,7 @@ module.exports = {
   name: 'template',
   description: 'A command to allow generic, template driven creation of new services and apps',
   usage: '[add <githubRepo>|remove <githubRepo>|new <templateName> <serviceName>]',
-  cmd: cmd
 };
-
-function cmd(bosco, args, next) {
-  var action = args.shift();
-  if (action === 'create') { return newServiceFromTemplate(bosco, args, next); }
-  if (action === 'add') { return addTemplate(bosco, args, next); }
-  if (action === 'remove') { return removeTemplate(bosco, args, next); }
-  listTemplates(bosco, next);
-}
 
 function listTemplates(bosco, next) {
   var templates = bosco.config.get('templates');
@@ -30,6 +21,50 @@ function listTemplates(bosco, next) {
 
   bosco.log('Use the command: ' + 'bosco template add <githubRepo>'.green + ' to add to your template list.');
   if (next) { next(); }
+}
+
+function execCmd(bosco, command, params, cwd, next) {
+  execFile(command, params, {
+    cwd: cwd,
+  }, function(err, stdout, stderr) {
+    next(err, stdout + stderr);
+  });
+}
+
+function getShortName(service) {
+  var shortName = service.replace(/^app\-/, '');
+  shortName = shortName.replace(/^service\-/, '');
+  return shortName;
+}
+
+function copyTemplateFiles(bosco, serviceName, port, serviceDirectory, next) {
+  var templateFiles = require(path.join(serviceDirectory, 'bosco-templates.json'));
+  var variables = {
+    serviceName: serviceName,
+    serviceShortName: getShortName(serviceName),
+    user: bosco.config.get('github:user'),
+    port: port,
+  };
+  async.map(templateFiles, function(template, cb) {
+    if (!template.source || !template.destination) {
+      return cb(new Error('You must specify both a source and destination'));
+    }
+
+    bosco.log('Applying template for file: ' + template.destination.green);
+
+    try {
+      var destination = hb.compile(template.destination)(variables);
+      var source = hb.compile(template.source)(variables);
+      var templateContent = fs.readFileSync(path.join(serviceDirectory, source));
+      var outputContent = hb.compile(templateContent.toString())(variables);
+      fs.writeFileSync(path.join(serviceDirectory, destination), outputContent);
+    } catch (ex) {
+      bosco.error('There has been an error applying the templates, check the configuration of the template project.');
+      return cb(ex);
+    }
+
+    cb();
+  }, next);
 }
 
 function newServiceFromTemplate(bosco, args, next) {
@@ -69,49 +104,13 @@ function newServiceFromTemplate(bosco, args, next) {
     async.apply(execCmd, bosco, 'rm', ['-rf', 'templates'], serviceDirectory),
     async.apply(execCmd, bosco, 'rm', ['-f', 'bosco-templates.json'], serviceDirectory),
     async.apply(execCmd, bosco, 'git', ['add', '--all', '.'], serviceDirectory),
-    async.apply(execCmd, bosco, 'git', ['commit', '-m', 'First commit'], serviceDirectory)
+    async.apply(execCmd, bosco, 'git', ['commit', '-m', 'First commit'], serviceDirectory),
   ], function(err) {
     if (err) {
       return bosco.error(err.message);
     }
     bosco.log('Complete!');
   });
-}
-
-function copyTemplateFiles(bosco, serviceName, port, serviceDirectory, next) {
-  var templateFiles = require(path.join(serviceDirectory, 'bosco-templates.json'));
-  var variables = {
-    serviceName: serviceName,
-    serviceShortName: getShortName(serviceName),
-    user: bosco.config.get('github:user'),
-    port: port
-  };
-  async.map(templateFiles, function(template, cb) {
-    if (!template.source || !template.destination) {
-      return cb(new Error('You must specify both a source and destination'));
-    }
-
-    bosco.log('Applying template for file: ' + template.destination.green);
-
-    try {
-      var destination = hb.compile(template.destination)(variables);
-      var source = hb.compile(template.source)(variables);
-      var templateContent = fs.readFileSync(path.join(serviceDirectory, source));
-      var outputContent = hb.compile(templateContent.toString())(variables);
-      fs.writeFileSync(path.join(serviceDirectory, destination), outputContent);
-    } catch (ex) {
-      bosco.error('There has been an error applying the templates, check the configuration of the template project.');
-      return cb(ex);
-    }
-
-    cb();
-  }, next);
-}
-
-function getShortName(service) {
-  service = service.replace(/^app\-/, '');
-  service = service.replace(/^service\-/, '');
-  return service;
 }
 
 function addTemplate(bosco, args, next) {
@@ -141,11 +140,12 @@ function removeTemplate(bosco, args, next) {
   });
 }
 
-function execCmd(bosco, cmd, params, cwd, next) {
-  execFile(cmd, params, {
-    cwd: cwd
-  }, function(err, stdout, stderr) {
-    next(err, stdout + stderr);
-  });
+function cmd(bosco, args, next) {
+  var action = args.shift();
+  if (action === 'create') { return newServiceFromTemplate(bosco, args, next); }
+  if (action === 'add') { return addTemplate(bosco, args, next); }
+  if (action === 'remove') { return removeTemplate(bosco, args, next); }
+  listTemplates(bosco, next);
 }
 
+module.exports.cmd = cmd;

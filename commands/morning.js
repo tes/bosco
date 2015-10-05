@@ -4,7 +4,6 @@ var moment = require('moment');
 module.exports = {
   name: 'morning',
   description: 'Runs clone, pull, installs and provides a summary of changes since your last morning command to get you ready for action for the day',
-  cmd: cmd
 };
 
 function cmd(bosco, args) {
@@ -43,3 +42,4 @@ function cmd(bosco, args) {
   });
 }
 
+module.exports.cmd = cmd;

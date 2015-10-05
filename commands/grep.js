@@ -5,8 +5,29 @@ module.exports = {
   name: 'grep',
   description: 'runs git grep across your repos, use -- to separate bosco options from git grep options',
   usage: '<git grep args>',
-  cmd: cmd
 };
+
+function grepRepo(bosco, args, repo, repoPath, callback) {
+  var gitArgs = ['grep', '--color=always', '-n'].concat(args);
+
+  execFile('git', gitArgs, {
+    cwd: repoPath,
+  }, function(err, stdout) {
+    if (err) return callback(err);
+
+    var result = null;
+
+    if (stdout) {
+      bosco.log(repo.blue + ':\n' + stdout);
+      result = {
+        repo: repo,
+        grep: stdout,
+      };
+    }
+
+    callback(null, result);
+  });
+}
 
 function cmd(bosco, args, next) {
   var repoPattern = bosco.options.repo;
@@ -37,24 +58,4 @@ function cmd(bosco, args, next) {
   });
 }
 
-function grepRepo(bosco, args, repo, repoPath, callback) {
-  var gitArgs = ['grep', '--color=always', '-n'].concat(args);
-
-  execFile('git', gitArgs, {
-    cwd: repoPath
-  }, function(err, stdout) {
-    if (err) return callback(err);
-
-    var result = null;
-
-    if (stdout) {
-      bosco.log(repo.blue + ':\n' + stdout);
-      result = {
-        repo: repo,
-        grep: stdout
-      };
-    }
-
-    callback(null, result);
-  });
-}
+module.exports.cmd = cmd;

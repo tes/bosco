@@ -1,4 +1,3 @@
-'use strict';
 var async = require('async');
 var audit = require('nsp/lib/auditPackage');
 var join = require('path').join;
@@ -7,7 +6,6 @@ module.exports = {
   name: 'audit',
   description: 'Audit npm packages across repos',
   usage: '[-r <repoPattern>]',
-  cmd: cmd
 };
 
 function cmd(bosco, args, next) {
@@ -17,19 +15,10 @@ function cmd(bosco, args, next) {
   var repos = bosco.getRepos();
   if (!repos) return bosco.error('You are repo-less :( You need to initialise bosco first, try \'bosco fly\'.');
 
-  function auditRepos(done) {
-    async.mapLimit(repos, bosco.concurrency.cpu, function iterateRepos(repo, cb) {
-      var repoPath = bosco.getRepoPath(repo);
-      nsp(bosco, repo, repoPath, cb);
-    }, function() {
-      return done();
-    });
-  }
-
-  function nsp(bosco, repo, repoPath, next) {
+  function nsp(repo, repoPath, cb) {
     if (!repo.match(repoRegex) || !bosco.exists([repoPath, 'package.json'].join('/'))) {
       bosco.log(repo.blue + ': ' + 'No package.json'.green);
-      return next();
+      return cb();
     }
 
     audit(join(repoPath, 'package.json'), function(err, d) {
@@ -43,13 +32,24 @@ function cmd(bosco, args, next) {
         });
         bosco.log(repoPath.blue + ': \n' + JSON.stringify(d, false, 2).red);
       }
-      next();
+      cb();
     });
   }
 
-  console.warn = function() { };
+  function auditRepos(done) {
+    async.mapLimit(repos, bosco.concurrency.cpu, function iterateRepos(repo, cb) {
+      var repoPath = bosco.getRepoPath(repo);
+      nsp(repo, repoPath, cb);
+    }, function() {
+      return done();
+    });
+  }
+
+  bosco.console.warn = function() { };
   auditRepos(function() {
     bosco.log('Complete');
     if (next) next();
   });
 }
+
+module.exports.cmd = cmd;
