@@ -99,6 +99,7 @@ function linkTeam(bosco, team, folder, next) {
 
   bosco.config.save(function() {
     bosco.log('Team ' + team.green + ' path updated to: ' + teamPath.cyan);
+    bosco.options.workspace = bosco.findWorkspace();
     if (next) { next(); }
   });
 }
