@@ -12,7 +12,7 @@
     "coveralls": "npm run coverage && npm run coveralls-after-test",
     "coveralls-after-test": "cat ./coverage/lcov.info | ./node_modules/coveralls/bin/coveralls.js"
   },
-  "precommit": [
+  "pre-commit": [
     "lint",
     "test"
   ],
@@ -84,7 +84,7 @@
     "gulp-marked-man": "^0.3.1",
     "istanbul": "^0.3.2",
     "mocha": "^2.2.1",
-    "precommit-hook": "^1.0.7",
+    "pre-commit": "^1.1.1",
     "sinon": "^1.17.1"
   },
   "config": {
