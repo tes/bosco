@@ -1,6 +1,8 @@
 var async = require('async');
+var _ = require('lodash');
 var exec = require('child_process').exec;
 var DockerRunner = require('../src/RunWrappers/Docker');
+var RunListHelper = require('../src/RunListHelper');
 var green = '\u001b[42m \u001b[0m';
 var red = '\u001b[41m \u001b[0m';
 
@@ -8,18 +10,27 @@ module.exports = {
     name:'pull',
     description:'Pulls any changes across all repos',
     usage:'[-r <repoPattern>]',
-    cmd:cmd
+    cmd:cmd,
+    options: [{
+        name: 'noremote',
+        alias: 'nr',
+        type: 'boolean',
+        desc: 'Do not pull docker images for remote repositories (dependencies)'
+    }]
 }
 
 function cmd(bosco, args, next) {
 
     var repoPattern = bosco.options.repo;
     var repoRegex = new RegExp(repoPattern);
+    var watchNothing = '$a';
+    var noRemote = bosco.options.noremote;
 
     var repos = bosco.getRepos();
     if(!repos) return bosco.error('You are repo-less :( You need to initialise bosco first, try \'bosco clone\'.');
 
     bosco.log('Running ' + 'git pull --rebase'.blue + ' across all repos ...');
+
 
     var pullRepos = function(cb) {
 
@@ -50,7 +61,7 @@ function cmd(bosco, args, next) {
 
     var pullDockerImages = function(cb) {
 
-        bosco.log('Checking for docker images to pull ...');
+        bosco.log('Checking for local docker images to pull ...');
 
         var progressbar = bosco.config.get('progress') == 'bar',
             total = repos.length;
@@ -62,6 +73,7 @@ function cmd(bosco, args, next) {
             total: total
         }) : null;
 
+        // Get the dependencies
         async.mapSeries(repos, function doDockerPull(repo, repoCb) {
           if(!repo.match(repoRegex)) return repoCb();
           var repoPath = bosco.getRepoPath(repo);
@@ -70,6 +82,20 @@ function cmd(bosco, args, next) {
             cb();
         });
 
+    }
+
+    var pullDependentDockerImages = function(cb) {
+      if (noRemote) {
+        bosco.log('Skipping check and pull of remote images ...'.cyan);
+        return cb();
+      }
+      bosco.log('Checking for remote docker images to pull ...');
+      RunListHelper.getRunList(bosco, repos, repoRegex, watchNothing, null, function(err, services) {
+          if (err) { return next(err); }
+          async.mapSeries(services, function doDockerPullRemote(runConfig, pullCb) {
+            dockerPullRemote(bosco, repos, runConfig, pullCb);
+          }, cb);
+      });
     }
 
     var clearGithubCache = function(cb) {
@@ -90,6 +116,7 @@ function cmd(bosco, args, next) {
         initialiseRunners,
         pullRepos,
         pullDockerImages,
+        pullDependentDockerImages,
         clearGithubCache,
         disconnectRunners
     ], function() {
@@ -98,7 +125,6 @@ function cmd(bosco, args, next) {
     });
 
 }
-
 
 
 function checkCurrentBranch(bosco, repoPath, next) {
@@ -152,22 +178,39 @@ function pull(bosco, progressbar, bar, repoPath, next) {
     });
 }
 
+function dockerPullRemote(bosco, repos, runConfig, next) {
+   var isLocalService = !!(runConfig.service && runConfig.service.type);
+   var isLocalRepo = _.contains(repos, runConfig.name);
+   if (isLocalService || isLocalRepo) { return next(); }
+   RunListHelper.getServiceConfigFromGithub(bosco, runConfig.name, function(err, svcConfig) {
+      if(err) { return next(); }
+      if(!svcConfig.name) {
+        svcConfig.name = runConfig.name;
+      }
+      dockerPullService(bosco, svcConfig, next);
+   });
+}
+
+function dockerPullService(bosco, definition, next) {
+  if(definition.service && definition.service.type === 'docker') {
+    DockerRunner.update(definition, function(err) {
+      if(err) {
+          var errMessage = err.reason ? err.reason : err;
+          bosco.error('Error pulling ' + definition.name + ', reason: ' + errMessage);
+      }
+      next();
+    });
+  } else {
+    return next();
+  }
+}
+
 function dockerPull(bosco, progressbar, bar, repoPath, repo, next) {
 
     var boscoService = [repoPath, 'bosco-service.json'].join('/');
     if (bosco.exists(boscoService)) {
         var definition = require(boscoService);
-        if(definition.service && definition.service.type === 'docker') {
-            DockerRunner.update(definition, function(err) {
-                if(err) {
-                    var errMessage = err.reason ? err.reason : err;
-                    bosco.error('Error pulling ' + repo.green + ', reason: ' + errMessage.red);
-                }
-                next()
-            });
-        } else {
-            return next();
-        }
+        dockerPullService(bosco, definition, next);
     } else {
         return next();
     }
