@@ -38,7 +38,9 @@ function cmd(bosco, args, next) {
           if(!repo.match(repoRegex)) return repoCb();
 
           var repoPath = bosco.getRepoPath(repo);
-          pull(bosco, progressbar, bar, repoPath, repoCb);
+          checkCurrentBranch(bosco, repoPath, function() {
+            pull(bosco, progressbar, bar, repoPath, repoCb);
+          });
 
         }, function() {
             cb();
@@ -95,6 +97,32 @@ function cmd(bosco, args, next) {
         if(next) next();
     });
 
+}
+
+
+
+function checkCurrentBranch(bosco, repoPath, next) {
+
+    if(!bosco.exists([repoPath,'.git'].join('/'))) {
+        bosco.warn('Doesn\'t seem to be a git repo: '+ repoPath.blue);
+        return next();
+    }
+
+    exec('git rev-parse --abbrev-ref HEAD', {
+      cwd: repoPath
+    }, function(err, stdout, stderr) {
+        if(err) {
+            bosco.error(repoPath.blue + ' >> ' + stderr);
+        } else {
+            if(stdout) {
+                stdout = stdout.replace(/(\r\n|\n|\r)/gm,'');
+                if (stdout !== 'master') {
+                    bosco.warn(repoPath.yellow + ': ' + 'Is not on master, it is on ' +  stdout.cyan);
+                }
+            }
+        }
+        next();
+    });
 }
 
 function pull(bosco, progressbar, bar, repoPath, next) {
