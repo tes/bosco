@@ -6,22 +6,12 @@ var execFile = require('child_process').execFile;
 var hb = require('handlebars');
 
 module.exports = {
-    name:'template',
-    description:'A command to allow generic, template driven creation of new services and apps',
-    usage: '[add <githubRepo>|remove <githubRepo>|new <templateName> <serviceName>]',
-    cmd:cmd
-}
-
-function cmd(bosco, args, next) {
-  var action = args.shift();
-  if(action == 'create') { return newServiceFromTemplate(bosco, args, next); }
-  if(action == 'add') { return addTemplate(bosco, args, next); }
-  if(action == 'remove') { return removeTemplate(bosco, args, next); }
-  listTemplates(bosco, next);
-}
+  name: 'template',
+  description: 'A command to allow generic, template driven creation of new services and apps',
+  usage: '[add <githubRepo>|remove <githubRepo>|new <templateName> <serviceName>]',
+};
 
 function listTemplates(bosco, next) {
-
   var templates = bosco.config.get('templates');
 
   bosco.log('Your current templates are:');
@@ -29,70 +19,34 @@ function listTemplates(bosco, next) {
     bosco.log(' - ' + template.green);
   });
 
-  bosco.log('Use the command: ' + 'bosco template add <githubRepo>'.green + ' to add to your template list.')
-  if(next) { next(); }
-
+  bosco.log('Use the command: ' + 'bosco template add <githubRepo>'.green + ' to add to your template list.');
+  if (next) { next(); }
 }
 
-function newServiceFromTemplate(bosco, args, next) {
+function execCmd(bosco, command, params, cwd, next) {
+  execFile(command, params, {
+    cwd: cwd,
+  }, function(err, stdout, stderr) {
+    next(err, stdout + stderr);
+  });
+}
 
-    var templates = bosco.config.get('templates') || [];
-
-    var templateRepoName = args.shift();
-    var targetServiceName = args.shift();
-    var targetServicePort = args.shift();
-
-    if(!templateRepoName || !targetServiceName || !targetServicePort) {
-        return bosco.log('You need to specify a template, a target service name and a port: ' + 'bosco template create <githubRepo> <serviceName> <port>'.green);
-    }
-
-    var template = _.filter(templates, function(item) { return item.match(new RegExp(templateRepoName)); })[0];
-
-    if(!template) {
-      bosco.log('Couldnt find a service that matched: ' + templateRepoName.red);
-      return listTemplates(bosco, next);
-    }
-
-    bosco.log('Creating new service: ' + targetServiceName.green + ' from template: ' + template.green);
-
-    var gitCmd = 'git';
-    var host     = bosco.config.get('github:hostname') || 'github.com';
-    var hostUser = bosco.config.get('github:hostUser') || 'git';
-    host         = hostUser + '@' + host + ':';
-
-    var gitOptions = ['clone','--depth=1', host + template, targetServiceName];
-
-    var serviceDirectory = path.resolve('.', targetServiceName);
-
-    async.series([
-      async.apply(execCmd, bosco, gitCmd, gitOptions, path.resolve('.')),
-      async.apply(execCmd, bosco, 'rm',['-rf','.git'], serviceDirectory),
-      async.apply(execCmd, bosco, 'git',['init'], serviceDirectory),
-      async.apply(copyTemplateFiles, bosco, targetServiceName, targetServicePort, serviceDirectory),
-      async.apply(execCmd, bosco, 'rm',['-rf','templates'], serviceDirectory),
-      async.apply(execCmd, bosco, 'rm',['-f','bosco-templates.json'], serviceDirectory),
-      async.apply(execCmd, bosco, 'git',['add','--all','.'], serviceDirectory),
-      async.apply(execCmd, bosco, 'git',['commit','-m','First commit'], serviceDirectory)
-    ], function(err) {
-      if(err) {
-        return bosco.error(err.message);
-      }
-      bosco.log('Complete!');
-    });
-
+function getShortName(service) {
+  var shortName = service.replace(/^app\-/, '');
+  shortName = shortName.replace(/^service\-/, '');
+  return shortName;
 }
 
 function copyTemplateFiles(bosco, serviceName, port, serviceDirectory, next) {
-
   var templateFiles = require(path.join(serviceDirectory, 'bosco-templates.json'));
   var variables = {
     serviceName: serviceName,
     serviceShortName: getShortName(serviceName),
     user: bosco.config.get('github:user'),
-    port: port
-  }
+    port: port,
+  };
   async.map(templateFiles, function(template, cb) {
-    if(!template.source || !template.destination) {
+    if (!template.source || !template.destination) {
       return cb(new Error('You must specify both a source and destination'));
     }
 
@@ -104,59 +58,94 @@ function copyTemplateFiles(bosco, serviceName, port, serviceDirectory, next) {
       var templateContent = fs.readFileSync(path.join(serviceDirectory, source));
       var outputContent = hb.compile(templateContent.toString())(variables);
       fs.writeFileSync(path.join(serviceDirectory, destination), outputContent);
-    } catch(ex) {
+    } catch (ex) {
       bosco.error('There has been an error applying the templates, check the configuration of the template project.');
       return cb(ex);
     }
 
     cb();
-
   }, next);
-
 }
 
-function getShortName(service) {
-  service = service.replace(/^app\-/,'');
-  service = service.replace(/^service\-/,'');
-  return service;
-}
+function newServiceFromTemplate(bosco, args, next) {
+  var templates = bosco.config.get('templates') || [];
 
-function addTemplate(bosco, args, next) {
+  var templateRepoName = args.shift();
+  var targetServiceName = args.shift();
+  var targetServicePort = args.shift();
 
-    var templates = bosco.config.get('templates') || [];
-    var templateRepo = args.shift();
+  if (!templateRepoName || !targetServiceName || !targetServicePort) {
+    return bosco.log('You need to specify a template, a target service name and a port: ' + 'bosco template create <githubRepo> <serviceName> <port>'.green);
+  }
 
-    templates.push(templateRepo);
-    bosco.config.set('templates', _.uniq(templates));
+  var template = _.filter(templates, function(item) { return item.match(new RegExp(templateRepoName)); })[0];
 
-    bosco.config.save(function() {
-      bosco.log('Added new template.');
-      if(next) { next(); }
-    });
+  if (!template) {
+    bosco.log('Couldnt find a service that matched: ' + templateRepoName.red);
+    return listTemplates(bosco, next);
+  }
 
-}
+  bosco.log('Creating new service: ' + targetServiceName.green + ' from template: ' + template.green);
 
-function removeTemplate(bosco, args, next) {
+  var gitCmd = 'git';
+  var host = bosco.config.get('github:hostname') || 'github.com';
+  var hostUser = bosco.config.get('github:hostUser') || 'git';
+  host = hostUser + '@' + host + ':';
 
-    var templates = bosco.config.get('templates') || [];
-    var templateRepo = args.shift();
+  var gitOptions = ['clone', '--depth=1', host + template, targetServiceName];
 
-    _.pull(templates, templateRepo);
+  var serviceDirectory = path.resolve('.', targetServiceName);
 
-    bosco.config.set('templates', templates);
-
-    bosco.config.save(function() {
-      bosco.log('Removed any matching templates.');
-      if(next) { next(); }
-    });
-
-}
-
-function execCmd(bosco, cmd, params, cwd, next) {
-  execFile(cmd, params, {
-    cwd: cwd
-  }, function(err, stdout, stderr) {
-      next(err, stdout + stderr);
+  async.series([
+    async.apply(execCmd, bosco, gitCmd, gitOptions, path.resolve('.')),
+    async.apply(execCmd, bosco, 'rm', ['-rf', '.git'], serviceDirectory),
+    async.apply(execCmd, bosco, 'git', ['init'], serviceDirectory),
+    async.apply(copyTemplateFiles, bosco, targetServiceName, targetServicePort, serviceDirectory),
+    async.apply(execCmd, bosco, 'rm', ['-rf', 'templates'], serviceDirectory),
+    async.apply(execCmd, bosco, 'rm', ['-f', 'bosco-templates.json'], serviceDirectory),
+    async.apply(execCmd, bosco, 'git', ['add', '--all', '.'], serviceDirectory),
+    async.apply(execCmd, bosco, 'git', ['commit', '-m', 'First commit'], serviceDirectory),
+  ], function(err) {
+    if (err) {
+      return bosco.error(err.message);
+    }
+    bosco.log('Complete!');
   });
 }
 
+function addTemplate(bosco, args, next) {
+  var templates = bosco.config.get('templates') || [];
+  var templateRepo = args.shift();
+
+  templates.push(templateRepo);
+  bosco.config.set('templates', _.uniq(templates));
+
+  bosco.config.save(function() {
+    bosco.log('Added new template.');
+    if (next) { next(); }
+  });
+}
+
+function removeTemplate(bosco, args, next) {
+  var templates = bosco.config.get('templates') || [];
+  var templateRepo = args.shift();
+
+  _.pull(templates, templateRepo);
+
+  bosco.config.set('templates', templates);
+
+  bosco.config.save(function() {
+    bosco.log('Removed any matching templates.');
+    if (next) { next(); }
+  });
+}
+
+function cmd(bosco, args, next) {
+  var action = args.shift();
+  if (action === 'create') { return newServiceFromTemplate(bosco, args, next); }
+  if (action === 'add') { return addTemplate(bosco, args, next); }
+  if (action === 'remove') { return removeTemplate(bosco, args, next); }
+  listTemplates(bosco, next);
+}
+
+module.exports.cmd = cmd;

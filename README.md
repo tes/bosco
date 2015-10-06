@@ -143,11 +143,11 @@ e.g.
     "service": {
         "name": "app-resource",
         "dependsOn": [
-          "infra-nginx-gateway",
-          "service-page-composer",
-          "service-site-assets",
-          "service-resource-reviews",
-          "service-refdata-api"
+            "infra-nginx-gateway",
+            "service-page-composer",
+            "service-site-assets",
+            "service-resource-reviews",
+            "service-refdata-api"
         ]
     },
     "tags": ["upload", "resource"],
@@ -178,19 +178,19 @@ If you add a bosco-service.json at the base of your docker projects, you can tak
 ```
 {
     "service": {
-        "type":"docker",
-        "name":"infra-redis",
-        "registry":"docker-registry.tescloud.com",
+        "type": "docker",
+        "name": "infra-redis",
+        "registry": "docker-registry.tescloud.com",
         "username": "tescloud",
         "version": "latest",
         "alwaysPull": true,
-        "docker":{
+        "docker": {
             "HostConfig": {
                 "PortBindings": {
                     "6379/tcp": [{
                         "HostIp": "0.0.0.0",
                         "HostPort": "6379"
-                     }]
+                    }]
                 }
             }
         }
@@ -209,9 +209,9 @@ You can define a dependency:
     "service": {
         "name": "app-resource",
         "dependsOn": [
-          "infra-nginx-gateway",
-          "service-page-composer",
-          "infra-redis"
+            "infra-nginx-gateway",
+            "service-page-composer",
+            "infra-redis"
         ]
     }
 }
@@ -243,27 +243,27 @@ For example, a project that uses Gulp to create assets as well as watch for chan
 
 ```json
 {
-    "build":{
-        "command":"gulp build",
-        "watch":{
-            "command":"gulp build --watch",
-            "ready":"Finished 'build'"
+    "build": {
+        "command": "gulp build",
+        "watch": {
+            "command": "gulp build --watch",
+            "ready": "Finished 'build'"
         }
     },
     "assets": {
-        "basePath":"/dist",
+        "basePath": "/dist",
         "js": {
             "upload": [
                 "js/tsl-uploader.js"
             ]
         },
         "css": {
-             "upload": [
+            "upload": [
                 "css/tsl-uploader.css"
             ]
         },
         "images": {
-            "upload" :[
+            "upload": [
                 "img"
             ]
         }
@@ -325,12 +325,12 @@ This command requires that you have configured your AWS details for S3.  Best to
 
 ```json
 {
-    "aws":{
-      "key": "XXXXXX",
-          "secret": "XXXXXX",
-          "bucket": "bucket-name",
-          "region": "eu-west-1",
-          "cdn":"https://dudu89lpwit3y.cloudfront.net"
+    "aws": {
+        "key": "XXXXXX",
+        "secret": "XXXXXX",
+        "bucket": "bucket-name",
+        "region": "eu-west-1",
+        "cdn": "https://dudu89lpwit3y.cloudfront.net"
     }
 }
 
@@ -428,7 +428,7 @@ In the above command, the command is cdn, the args are: ["minify"]
 To use in a command, you typically scan the array for their presence and set a variable (as in most instances they actually represent a Boolean vs a string).
 
 ```
-var minify = _.contains(args,'minify');
+var minify = _.contains(args, 'minify');
 ```
 
 ## Troubleshooting

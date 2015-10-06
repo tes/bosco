@@ -3,101 +3,101 @@
 <script src="//cdnjs.cloudflare.com/ajax/libs/list.js/1.1.1/list.min.js"></script>
 <style>
 h1 {
-    font-size: 28px;
+  font-size: 28px;
 }
 h2 {
-    font-size: 15px;
-    color: #008855;
+  font-size: 15px;
+  color: #008855;
 }
 html {
-    margin: 10px;
-    font-family: 'Open Sans', cursive;
-    color: #006633;
+  margin: 10px;
+  font-family: 'Open Sans', cursive;
+  color: #006633;
 }
 ul
 {
-    list-style-type: none;
-    padding-left: 5px;
+  list-style-type: none;
+  padding-left: 5px;
 }
 .repo
 {
-    float: left;
-    width: 400px;
-    min-height: 100px;
-    border: 1px solid #eee;
-    margin: 0 10px 10px 0;
-    padding: 5px;
-    position: relative;
+  float: left;
+  width: 400px;
+  min-height: 100px;
+  border: 1px solid #eee;
+  margin: 0 10px 10px 0;
+  padding: 5px;
+  position: relative;
 }
 
 .repo > .title
 {
-    color: #357CC2;
-    font-weight: bold;
-    text-decoration: none;
-    font-size: 22px;
-    margin-bottom: 10px;
+  color: #357CC2;
+  font-weight: bold;
+  text-decoration: none;
+  font-size: 22px;
+  margin-bottom: 10px;
 }
 
 .repo > .description
 {
-    font-size: 14px;
-    color: #666;
+  font-size: 14px;
+  color: #666;
 }
 
 .repo > .tag
 {
-    font-size: 13px;
-    color: #888;
+  font-size: 13px;
+  color: #888;
 }
 
 .search
 {
-    border-color: #d5d5d5;
-    color: #777;
-    border: 1px solid #ccc;
-    min-height: 34px;
-    font-size: 13px;
-    vertical-align: middle;
-    border-radius: 3px;
-    outline: none;
-    box-shadow: inset 0 1px 2px rgba(0,0,0,0.075);
-    padding-left: 10px;
+  border-color: #d5d5d5;
+  color: #777;
+  border: 1px solid #ccc;
+  min-height: 34px;
+  font-size: 13px;
+  vertical-align: middle;
+  border-radius: 3px;
+  outline: none;
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.075);
+  padding-left: 10px;
 }
 .location-icon
 {
-    position: absolute;
-    bottom: 5px;
-    right: 5px;
-    cursor: pointer;
+  position: absolute;
+  bottom: 5px;
+  right: 5px;
+  cursor: pointer;
 }
 
 </style>
 <h1>List of repos under this bosco project</h1>
 <div id='repoList'>
-    <input class="search" placeholder="Search Repos" />
-    <ul class='list'>
-        {{#each repos}}
-          <li class='repo'>
-              <a class='title' href="{{this.info.repository.url}}">{{this.name}}</a>
-              <div class='description'>
-                  {{this.info.description}}
-              </div>
-              <div class='tag'>
-                  <span class='header'>Tags:&nbsp;</span>
-                  {{this.info.tags}}
-              </div>
-          </li>
-        {{/each}}
-    </ul>
+  <input class="search" placeholder="Search Repos" />
+  <ul class='list'>
+    {{#each repos}}
+      <li class='repo'>
+        <a class='title' href="{{this.info.repository.url}}">{{this.name}}</a>
+        <div class='description'>
+          {{this.info.description}}
+        </div>
+        <div class='tag'>
+          <span class='header'>Tags:&nbsp;</span>
+          {{this.info.tags}}
+        </div>
+      </li>
+    {{/each}}
+  </ul>
 </div>
 <div style='clear: both;'>
-    Created by: {{user}} on {{date}}
+  Created by: {{user}} on {{date}}
 </div>
 <script type='text/javascript'>
-    // Configure List.js
-    var options = {
-        valueNames: ['title', 'description', 'tag']
-    }
-    var userList = new List('repoList', options);
+  // Configure List.js
+  var options = {
+    valueNames: ['title', 'description', 'tag']
+  }
+  var userList = new List('repoList', options);
 </script>

@@ -8,81 +8,76 @@ var nodeList = [];
 var dockerList = [];
 
 module.exports = {
-    name:'ps',
-    description:'Lists all running services',
-    cmd:cmd
-}
+  name: 'ps',
+  description: 'Lists all running services',
+};
 
 function cmd(bosco) {
+  function initialiseRunners(next) {
+    var runners = [NodeRunner, DockerRunner];
+    async.map(runners, function loadRunner(runner, cb) {
+      runner.init(bosco, cb);
+    }, next);
+  }
 
-    var initialiseRunners = function(next) {
-        var runners = [NodeRunner, DockerRunner];
-        async.map(runners, function loadRunner(runner, cb) {
-            runner.init(bosco, cb);
-        }, next);
-    }
+  function getRunningServices(next) {
+    NodeRunner.listRunning(true, function(err, nodeRunning) {
+      if (err) return next(err);
+      nodeList = nodeRunning;
+      DockerRunner.list(true, function(err, dockerRunning) {
+        if (err) return next(err);
+        dockerList = dockerRunning;
+        next();
+      });
+    });
+  }
 
-    var getRunningServices = function(next) {
-        NodeRunner.listRunning(true, function(err, nodeRunning) {
-            if (err) return next(err);
-            nodeList = nodeRunning;
-            DockerRunner.list(true, function(err, dockerRunning) {
-                if (err) return next(err);
-                dockerList = dockerRunning;
-                next();
-            })
-        })
-    }
+  function printNodeServices(name, list) {
+    var table = new Table({
+      chars: {'mid': '', 'left-mid': '', 'mid-mid': '', 'right-mid': ''},
+      head: [name + ' Service', 'PID', 'Status', 'Mode', 'Watch'],
+      colWidths: [60, 10, 10, 12, 10],
+    });
 
-    var printNodeServices = function(name, list) {
+    list.forEach(function(item) {
+      table.push([item.name, item.pid, item.pm2_env.status, item.pm2_env.exec_mode, item.pm2_env.watch || '']);
+    });
 
-        var table = new Table({
-            chars: {'mid': '', 'left-mid': '', 'mid-mid': '', 'right-mid': ''},
-            head: [name + ' Service', 'PID', 'Status', 'Mode', 'Watch'], colWidths: [60,10,10,12,10]
-        });
+    bosco.console.log(table.toString());
+    bosco.console.log('\r');
+  }
 
-        list.forEach(function(item) {
-            table.push([item.name, item.pid, item.pm2_env.status, item.pm2_env.exec_mode, item.pm2_env.watch || '']);
-        });
+  function printDockerServices(name, list) {
+    var table = new Table({
+      chars: {'mid': '', 'left-mid': '', 'mid-mid': '', 'right-mid': ''},
+      head: [name + ' Service', 'Status', 'FQN'],
+      colWidths: [25, 20, 60],
+    });
 
-        console.log(table.toString());
-        console.log('\r');
+    list.forEach(function(item) {
+      table.push([
+        _.map(item.Names, function(i) { return i.replace('/', ''); }).join(', '),
+        item.Status,
+        item.Image,
+      ]);
+    });
 
-    }
+    bosco.console.log(table.toString());
+    bosco.console.log('\r');
+  }
 
-    var printDockerServices = function(name, list) {
+  bosco.log('Getting running microservices ...');
 
-        var table = new Table({
-            chars: {'mid': '', 'left-mid': '', 'mid-mid': '', 'right-mid': ''},
-            head: [name + ' Service', 'Status', 'FQN'], colWidths: [25,20,60]
-        });
+  async.series([initialiseRunners, getRunningServices], function() {
+    bosco.console.log('');
+    bosco.log('Running NodeJS Services (via PM2):');
+    printNodeServices('Node', nodeList);
 
-        list.forEach(function(item) {
-            table.push([
-                       _.map(item.Names, function(item) { return item.replace('/',''); }).join(', '),
-                       item.Status,
-                       item.Image
-                    ]);
-        });
+    bosco.log('Running Docker Images:');
+    printDockerServices('Docker', dockerList);
 
-        console.log(table.toString());
-        console.log('\r');
-
-    }
-
-    bosco.log('Getting running microservices ...');
-
-    async.series([initialiseRunners, getRunningServices], function() {
-
-        console.log('');
-        bosco.log('Running NodeJS Services (via PM2):');
-        printNodeServices('Node', nodeList);
-
-        bosco.log('Running Docker Images:');
-        printDockerServices('Docker', dockerList);
-
-        process.exit(0);
-    })
-
+    process.exit(0);
+  });
 }
 
+module.exports.cmd = cmd;

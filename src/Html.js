@@ -3,119 +3,107 @@ var hb = require('handlebars');
 var fs = require('fs');
 
 module.exports = function(bosco) {
+  var createKey = require('./AssetHelper')(bosco).createKey;
 
-    var createKey = require('./AssetHelper')(bosco).createKey;
+  function isJavascript(asset) {
+    if (asset.type !== 'js') return false;
+    if (asset.extname !== '.js') return false;
 
-    function createAssetHtmlFiles(staticAssets, next) {
+    return true;
+  }
 
-        var htmlAssets = {};
+  function isStylesheet(asset) {
+    return asset.type === 'css';
+  }
 
-        _.forEach(staticAssets, function(asset) {
+  function formattedAssets(staticAssets) {
+    var assets = {services: []};
+    var templateContent = fs.readFileSync(__dirname + '/../templates/assetList.html');
+    var template = hb.compile(templateContent.toString());
 
-            var htmlFile = createKey(asset.serviceName, asset.buildNumber, asset.tag, asset.type, 'html', 'html');
+    var assetsByService = _.groupBy(staticAssets, 'serviceName');
 
-            if (!isJavascript(asset) && !isStylesheet(asset)) return;
-
-            htmlAssets[htmlFile] = htmlAssets[htmlFile] || {
-                content: '',
-                type: 'html',
-                asset: htmlFile,
-                repo: asset.serviceName,
-                serviceName: asset.serviceName,
-                buildNumber: asset.buildNumber,
-                tag: asset.tag,
-                assetType: asset.type,
-                assetKey: htmlFile,
-                relativePath: 'cx-html-fragment',
-                isMinifiedFragment: true,
-                mimeType: 'text/html',
-                extname: '.html'
-            };
-
-            if (isJavascript(asset)) {
-                htmlAssets[htmlFile].content += _.template('<script src="<%= url %>"></script>\n')({
-                    'url': bosco.getAssetCdnUrl(asset.assetKey)
-                });
-            }
-
-            if (isStylesheet(asset)) {
-                htmlAssets[htmlFile].content += _.template('<link rel="stylesheet" href="<%=url %>" type="text/css" media="all" />\n')({
-                    'url': bosco.getAssetCdnUrl(asset.assetKey)
-                });
-            }
-
+    _.forOwn(assetsByService, function(serviceAssets, serviceName) {
+      var service = {serviceName: serviceName, bundles: []};
+      var bundlesByTag = _.groupBy(serviceAssets, 'tag');
+      _.forOwn(bundlesByTag, function(bundleAssets, bundleTag) {
+        _.forEach(bundleAssets, function(asset) {
+          asset.url = bosco.getAssetCdnUrl(asset.assetKey);
         });
+        var bundle = {bundle: bundleTag, assets: bundleAssets};
+        service.bundles.push(bundle);
+      });
+      assets.services.push(service);
+    });
 
-        staticAssets = _.union(_.values(htmlAssets), staticAssets);
+    assets.user = bosco.config.get('github:user');
+    assets.date = (new Date()).toString();
 
-        staticAssets.formattedAssets = formattedAssets(staticAssets);
+    return template(assets);
+  }
 
-        next(null, staticAssets);
+  function formattedRepos(repos) {
+    var templateContent = fs.readFileSync(__dirname + '/../templates/repoList.html');
+    var template = hb.compile(templateContent.toString());
+    var templateData = { repos: repos };
 
-    }
+    templateData.user = bosco.config.get('github:user');
+    templateData.date = (new Date()).toString();
 
-    function isJavascript(asset) {
-        if (asset.type !== 'js') return false;
-        if (asset.extname !== '.js') return false;
+    return template(templateData);
+  }
 
-        return true;
-    }
+  function attachFormattedRepos(repos, next) {
+    repos.formattedRepos = formattedRepos(repos);
+    next(null, repos);
+  }
 
-    function isStylesheet(asset) {
-        return asset.type === 'css';
-    }
+  function createAssetHtmlFiles(staticAssets, next) {
+    var htmlAssets = {};
 
-    function attachFormattedRepos(repos, next) {
-        repos.formattedRepos = formattedRepos(repos);
-        next(null, repos);
-    }
+    _.forEach(staticAssets, function(asset) {
+      var htmlFile = createKey(asset.serviceName, asset.buildNumber, asset.tag, asset.type, 'html', 'html');
 
+      if (!isJavascript(asset) && !isStylesheet(asset)) return;
 
-    function formattedAssets(staticAssets) {
+      htmlAssets[htmlFile] = htmlAssets[htmlFile] || {
+        content: '',
+        type: 'html',
+        asset: htmlFile,
+        repo: asset.serviceName,
+        serviceName: asset.serviceName,
+        buildNumber: asset.buildNumber,
+        tag: asset.tag,
+        assetType: asset.type,
+        assetKey: htmlFile,
+        relativePath: 'cx-html-fragment',
+        isMinifiedFragment: true,
+        mimeType: 'text/html',
+        extname: '.html',
+      };
 
-        var assets = {services:[]};
-        var templateContent = fs.readFileSync(__dirname + '/../templates/assetList.html');
-        var template = hb.compile(templateContent.toString());
-
-        var assetsByService = _.groupBy(staticAssets,'serviceName');
-
-        _.forOwn(assetsByService, function(serviceAssets, serviceName) {
-            var service = {serviceName: serviceName, bundles: []};
-            var bundlesByTag = _.groupBy(serviceAssets, 'tag');
-            _.forOwn(bundlesByTag, function(bundleAssets, bundleTag) {
-                bundleAssets = _.map(bundleAssets, function(asset) {
-                    asset.url = bosco.getAssetCdnUrl(asset.assetKey);
-                    return asset;
-                })
-                var bundle = {bundle:bundleTag, assets:bundleAssets};
-                service.bundles.push(bundle);
-            });
-            assets.services.push(service);
+      if (isJavascript(asset)) {
+        htmlAssets[htmlFile].content += _.template('<script src="<%= url %>"></script>\n')({
+          'url': bosco.getAssetCdnUrl(asset.assetKey),
         });
+      }
 
-        assets.user = bosco.config.get('github:user');
-        assets.date = (new Date()).toString();
+      if (isStylesheet(asset)) {
+        htmlAssets[htmlFile].content += _.template('<link rel="stylesheet" href="<%=url %>" type="text/css" media="all" />\n')({
+          'url': bosco.getAssetCdnUrl(asset.assetKey),
+        });
+      }
+    });
 
-        return template(assets);
+    var allStaticAssets = _.union(_.values(htmlAssets), staticAssets);
 
-    }
+    allStaticAssets.formattedAssets = formattedAssets(staticAssets);
 
-    function formattedRepos(repos) {
+    next(null, allStaticAssets);
+  }
 
-        var templateContent = fs.readFileSync(__dirname + '/../templates/repoList.html'),
-            template = hb.compile(templateContent.toString()),
-            templateData = { repos: repos };
-
-        templateData.user = bosco.config.get('github:user');
-        templateData.date = (new Date()).toString();
-
-        return template(templateData);
-
-    }
-
-    return {
-        createAssetHtmlFiles:createAssetHtmlFiles,
-        attachFormattedRepos: attachFormattedRepos
-    }
-
-}
+  return {
+    createAssetHtmlFiles: createAssetHtmlFiles,
+    attachFormattedRepos: attachFormattedRepos,
+  };
+};

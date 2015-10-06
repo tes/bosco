@@ -4,7 +4,7 @@
   "description": "Bosco will take care of your microservices, just don't try and use him on a plane.",
   "main": "index.js",
   "scripts": {
-    "lint": "jshint .",
+    "lint": "eslint .",
     "test": "f(){ if [ \"$#\" -gt 0 ]; then npm run testonly -- \"$@\"; else npm run check-coverage; fi; };f",
     "testonly": "mocha",
     "coverage": "istanbul cover --include-all-sources true _mocha",
@@ -12,7 +12,7 @@
     "coveralls": "npm run coverage && npm run coveralls-after-test",
     "coveralls-after-test": "cat ./coverage/lcov.info | ./node_modules/coveralls/bin/coveralls.js"
   },
-  "precommit": [
+  "pre-commit": [
     "lint",
     "test"
   ],
@@ -76,13 +76,15 @@
   },
   "devDependencies": {
     "coveralls": "^2.11.1",
+    "eslint": "^1.6.0",
+    "eslint-config-airbnb": "^0.1.0",
+    "eslint-plugin-shadow-exception": "^1.1.2",
     "expect.js": "^0.3.1",
     "gulp": "^3.8.7",
     "gulp-marked-man": "^0.3.1",
     "istanbul": "^0.3.2",
-    "jshint": "2.8",
     "mocha": "^2.2.1",
-    "precommit-hook": "^1.0.7",
+    "pre-commit": "^1.1.1",
     "sinon": "^1.17.1"
   },
   "config": {

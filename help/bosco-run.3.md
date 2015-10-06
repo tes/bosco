@@ -29,7 +29,7 @@ For example, in `package.json`:
 In `bosco-service.json`:
 
     {
-        "tags":["review","summary"],
+        "tags": ["review", "summary"],
         "service": {
             "type": "node",
             "start": "node cluster"
@@ -43,11 +43,11 @@ Docker services are launched via Docker, and need the Docker configuration to be
 For example, in `bosco-service.json`:
 
     {
-        "tags":["review"],
+        "tags": ["review"],
         "service": {
-            "type":"docker",
-            "name":"infra-mongodb",
-            "registry":"docker-registry.tescloud.com",
+            "type": "docker",
+            "name": "infra-mongodb",
+            "registry": "docker-registry.tescloud.com",
             "username": "tescloud",
             "version": "latest",
             "ports": {
