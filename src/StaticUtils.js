@@ -88,6 +88,8 @@ module.exports = function(bosco) {
 
   function getStaticAssets(options, next) {
     var repoTag = options.repoTag;
+    var ignoreFailure = options.ignoreFailure;
+    var failedBuilds = [];
 
     async.map(options.repos, loadService, function(err, services) {
       if (err) return next(err);
@@ -101,17 +103,38 @@ module.exports = function(bosco) {
 
       async.mapLimit(assetServices, bosco.concurrency.cpu, function(service, cb) {
         doBuild(service, options, function(err) {
-          if (err) return cb(err);
-          createAssetList(service, options.buildNumber, options.minify, options.tagFilter, cb);
+          if (err) {
+            if (!ignoreFailure) return cb(err);
+            failedBuilds.push({name: service.name, err: err});
+          }
+          createAssetList(service, options.buildNumber, options.minify, options.tagFilter, function(err, assets) {
+            if (err) {
+              if (!ignoreFailure) return cb(err);
+              failedBuilds.push({name: service.name, err: err});
+            }
+            cb(null, assets);
+          });
         });
       }, function(err, assetList) {
-        if (err) return next(err);
+        if (err && !ignoreFailure) return next(err);
 
-        var staticAssets = _.flatten(assetList);
+        var buildCount = assetList.length;
+        var failedBuildCount = failedBuilds.length;
+        var succeededBuildCount = buildCount - failedBuilds.length;
 
-        if (!options.minify) {
-          return createAssetHtmlFiles(staticAssets, next);
+        bosco.console.log();
+        bosco.log(succeededBuildCount + ' out of ' + buildCount + ' succeeded.');
+        if (failedBuildCount) {
+          bosco.error(failedBuildCount + ' out of ' + buildCount + ' failed:');
+          _.forEach(failedBuilds, function(data) {
+            var message = data.err.message.replace(/^\s+|\s+$/g, '');
+            bosco.error(data.name.red + ': ' + message);
+          });
         }
+
+        var staticAssets = _.compact(_.flatten(assetList));
+
+        if (!options.minify) return createAssetHtmlFiles(staticAssets, next);
 
         // Now go and minify
         minify(staticAssets, function(err, minifiedAssets) {
