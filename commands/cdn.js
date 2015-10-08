@@ -173,6 +173,7 @@ function cmd(bosco, args) {
     tagFilter: null,
     watchBuilds: true,
     reloadOnly: false,
+    ignoreFailure: true,
     watchRegex: watchRegex,
     repoRegex: repoRegex,
     repoTag: repoTag,
