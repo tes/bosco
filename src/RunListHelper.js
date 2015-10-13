@@ -53,6 +53,10 @@ function getRunList(bosco, repos, repoRegex, watchRegex, repoTag, next) {
 
   function addDependencies(dependent, dependsOn) {
     dependsOn.forEach(function(dependency) {
+      if (!dependency) {
+        return;
+      }
+
       if (!_.contains(repoList, dependency)) {
         repoList.push(dependency);
       }
