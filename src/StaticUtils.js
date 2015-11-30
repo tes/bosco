@@ -58,6 +58,9 @@ module.exports = function(bosco) {
           if (!value) return;
           _.forEach(value, function(potentialAsset) {
             var globbedAssets = globAsset(potentialAsset, path.join(boscoRepo.path, assetBasePath));
+            if (globbedAssets.length === 0) {
+              bosco.warn(path.join(assetBasePath, potentialAsset) + ': No matching files found.');
+            }
             _.forEach(globbedAssets, function(asset) {
               assetKey = path.join(boscoRepo.serviceName, buildNumber, asset);
               assetHelper.addAsset(staticAssets, buildNumber, assetKey, asset, tag, type, assetBasePath, true);
