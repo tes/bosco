@@ -60,6 +60,23 @@ module.exports = function(bosco) {
           staticAssets.push(newAsset);
         }
       },
+      addError: function(staticAssets, tag, message) {
+        var newAsset = {};
+        newAsset.serviceName = boscoRepo.serviceName;
+        newAsset.assetKey = 'formattedAssets';
+        newAsset.bundleKey = boscoRepo.serviceName + '/' + tag;
+        newAsset.buildNumber = '';
+        newAsset.tag = tag;
+        newAsset.repo = boscoRepo.name;
+        newAsset.type = 'error';
+        newAsset.repoPath = boscoRepo.repoPath;
+        newAsset.basePath = boscoRepo.repoPath;
+        newAsset.relativePath = boscoRepo.repoPath;
+        newAsset.path = boscoRepo.repoPath;
+        newAsset.message = message;
+        newAsset.content = '';
+        staticAssets.push(newAsset);
+      },
     };
   }
 

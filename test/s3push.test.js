@@ -99,6 +99,7 @@ describe('s3push', function() {
       repos: ['project3'],
       noprompt: true,
       environment: 'test',
+      service: true,
       knox: {putBuffer: putBuffer}
     };
     options.options = options;
@@ -108,10 +109,10 @@ describe('s3push', function() {
     localBosco.staticUtils.oldGetStaticAssets = localBosco.staticUtils.getStaticAssets;
     localBosco.staticUtils.getStaticAssets = function(options, next) {
       return localBosco.staticUtils.oldGetStaticAssets(options, function(err, staticAssets) {
-        staticData = _.map(staticAssets, function(val) {
+        staticData = _.filter(_.map(staticAssets, function(val) {
+          if(val.assetKey === 'formattedAssets') { return; }
           return {path: 'test/' + val.assetKey, content: val.content};
-        });
-        staticData.push({path: 'test/index.html', content: staticAssets.formattedAssets});
+        }));
         next(err, staticAssets);
       });
     };
