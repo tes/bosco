@@ -1,5 +1,5 @@
 var async = require('async');
-var audit = require('nsp/lib/auditPackage');
+var audit = require('nsp/lib/check');
 var join = require('path').join;
 
 module.exports = {
