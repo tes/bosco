@@ -452,3 +452,15 @@ then restart with
 ```
 boot2docker start
 ```
+
+### You switch Node versions
+
+To remove all the node_modules folders in your team's repos:
+```
+bosco clean-modules
+```
+
+Then run npm install across them all again:
+```
+bosco install
+```
