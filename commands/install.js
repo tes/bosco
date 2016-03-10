@@ -7,6 +7,7 @@ module.exports = {
   name: 'install',
   description: 'Runs npm install against all repos',
   usage: '[-r <repoPattern>]',
+  requiresNvm: true,
 };
 
 function install(bosco, progressbar, bar, repoPath, next) {

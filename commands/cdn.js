@@ -9,6 +9,7 @@ module.exports = {
   name: 'cdn',
   usage: '[-r <repoPattern>] [-w <repoPattern>] [<minify>]',
   description: 'Aggregates all the static assets across all microservices and serves them via a pseudo local CDN url',
+  requiresNvm: true,
   options: [{
     name: 'tag',
     alias: 't',

@@ -39,8 +39,9 @@ Bosco.prototype.init = function(options) {
   self.options.defaultsConfigFile = [self.options.configPath, 'defaults.json'].join('/');
 
   // NVM presets
-  self.options.nvmUse = 'source $HOME/.nvm/nvm.sh ; nvm use ; ';
-  self.options.nvmWhich = 'source $HOME/.nvm/nvm.sh ; nvm which';
+  self.options.nvmSh = 'source $NVM_DIR/nvm.sh ; ';
+  self.options.nvmUse = self.options.nvmSh + 'nvm use;';
+  self.options.nvmWhich = self.options.nvmSh + 'nvm which';
 
   self.options.cpus = require('os').cpus().length;
   self.options.inService = false;
@@ -234,6 +235,11 @@ Bosco.prototype._cmd = function() {
   }
 
   if (module) {
+    if (module.requiresNvm && !self.hasNvm()) {
+      self.error('You must have nvm installed to use this command, https://github.com/creationix/nvm');
+      return process.exit(1);
+    }
+
     return module.cmd(self, args, function(err) {
       var code = 0;
       if (err) {
@@ -509,4 +515,8 @@ Bosco.prototype.console = global.console;
 
 Bosco.prototype.exists = function(checkPath) {
   return fs.existsSync(checkPath);
+};
+
+Bosco.prototype.hasNvm = function() {
+  return !!process.env.NVM_DIR;
 };
