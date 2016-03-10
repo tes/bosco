@@ -38,6 +38,11 @@ Bosco.prototype.init = function(options) {
   self.options.configFile = options.configFile ? path.resolve(options.configFile) : [self.options.configPath, 'bosco.json'].join('/');
   self.options.defaultsConfigFile = [self.options.configPath, 'defaults.json'].join('/');
 
+  // NVM presets
+  self.options.nvmSh = 'source ${NVM_DIR:-$HOME/.nvm}/nvm.sh ; ';
+  self.options.nvmUse = self.options.nvmSh + 'nvm use;';
+  self.options.nvmWhich = self.options.nvmSh + 'nvm which';
+
   self.options.cpus = require('os').cpus().length;
   self.options.inService = false;
 
@@ -230,6 +235,11 @@ Bosco.prototype._cmd = function() {
   }
 
   if (module) {
+    if (module.requiresNvm && !self.hasNvm()) {
+      self.error('You must have nvm >= 0.21.0 installed to use this command, https://github.com/creationix/nvm');
+      return process.exit(1);
+    }
+
     return module.cmd(self, args, function(err) {
       var code = 0;
       if (err) {
@@ -505,4 +515,24 @@ Bosco.prototype.console = global.console;
 
 Bosco.prototype.exists = function(checkPath) {
   return fs.existsSync(checkPath);
+};
+
+Bosco.prototype.hasNvm = function() {
+  var nvmDirNvmSh = path.join(process.env.NVM_DIR || '', 'nvm.sh');
+  var homeDirNvmSh = path.join(process.env.HOME_DIR || '', '.nvm', 'nvm.sh');
+  var inNvmDir = this.exists(nvmDirNvmSh);
+  var inHomeDir = this.exists(homeDirNvmSh);
+  var hasValidNvm = false;
+  if (inNvmDir || inHomeDir) {
+    var nvmDirPackage = path.join(process.env.NVM_DIR || '', 'package.json');
+    var homeDirPackage = path.join(process.env.HOME_DIR || '', '.nvm', 'package.json');
+    var nvmVersion = '0.0.0';
+    if (inNvmDir) {
+      nvmVersion = require(nvmDirPackage).version;
+    } else if (inHomeDir) {
+      nvmVersion = require(homeDirPackage).version;
+    }
+    hasValidNvm = semver.satisfies(nvmVersion, '>=0.21.0');  // First version with nvm which
+  }
+  return hasValidNvm;
 };

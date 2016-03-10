@@ -48,6 +48,8 @@ module.exports = function(bosco) {
       command = args.shift();
     }
 
+    command = bosco.options.nvmUse + command;
+
     if (!watchBuilds || !service.name.match(options.watchRegex)) {
       bosco.log('Running build command for ' + service.name.blue + ': ' + commandForLog);
       if (arrayCommand) {

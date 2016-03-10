@@ -11,6 +11,8 @@ Docs: https://bosco.readme.io/v0.4.0/docs/what-is-bosco
 
 ## Get Started
 
+Ensure that you have Node installed using nvm (https://github.com/creationix/nvm), Bosco uses this to support services running across multiple node versions, then install bosco:
+
 ```
 npm install bosco -g
 bosco setup

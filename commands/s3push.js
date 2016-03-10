@@ -9,6 +9,7 @@ module.exports = {
   name: 's3push',
   description: 'Builds all of the front end assets for each microservice and pushes them to S3 for the current environment',
   usage: '[-e <environment>] [-b <build>] [<tag>]',
+  requiresNvm: true,
 };
 
 var tag = '';

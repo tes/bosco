@@ -14,6 +14,7 @@ module.exports = {
   name: 'run',
   description: 'Runs all of the microservices (or subset based on regex pattern)',
   usage: '[-r <repoPattern>] [-t <tag>]',
+  requiresNvm: true,
   options: [{
     name: 'tag',
     alias: 't',

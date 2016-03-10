@@ -33,11 +33,11 @@ function cmd(bosco, args, done) {
   }
 
   function stopService(repo, boscoService, services, cb) {
-    if (boscoService.service.type === 'docker') {
+    if (boscoService.service && boscoService.service.type === 'docker') {
       if (_.contains(services, repo)) {
         return DockerRunner.stop(boscoService, cb);
       }
-    } else if (boscoService.service.type === 'docker-compose') {
+    } else if (boscoService.service && boscoService.service.type === 'docker-compose') {
       if (_.contains(services, 'docker-compose')) {
         return DockerComposeRunner.stop(boscoService, cb);
       }
@@ -57,7 +57,7 @@ function cmd(bosco, args, done) {
 
         if (!repo.match(repoRegex)) return next();
 
-        if (boscoService.service.type) {
+        if (boscoService.service && boscoService.service.type) {
           return stopService(repo, boscoService, runningServices, next);
         }
 
