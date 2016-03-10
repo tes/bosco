@@ -4,7 +4,7 @@
 var _ = require('lodash');
 var path = require('path');
 var pm2 = require('pm2');
-var semver = require('semver');
+
 require('colors');
 
 function Runner() {
@@ -43,23 +43,29 @@ Runner.prototype.listNotRunning = function(detailed, next) {
   });
 };
 
-function getInterpreter(bosco, service) {
-  var version = semver.parse(service.nodeVersion);
+Runner.prototype.getInterpreter = function(bosco, options, next) {
+  var exec = require('child_process').exec;
+  var interpreter;
+  var found = false;
 
-  if (!version) {
-    return '';
-  }
+  var e = exec(bosco.options.nvmWhich, options.cwd);
 
-  var homeFolder = bosco.findHomeFolder();
-  var nvmBase = '.nvm';
-  var runtime = (version.major >= 1) ? 'io.js' : 'node';
+  e.stdout.on('data', function(data) {
+    if (data.startsWith('Found')) {
+      found = true;
+    } else {
+      if (found) {
+        interpreter = data.replace('\n', '');
+      }
+    }
+  });
 
-  if (runtime === 'io.js' || version.minor >= 12) {
-    nvmBase = path.join(nvmBase, 'versions', runtime);
-  }
+  e.on('exit', function() {
+    return next(null, interpreter);
+  });
 
-  return path.join(homeFolder, nvmBase, 'v' + version, 'bin', 'node');
-}
+  e.on('error', next);
+};
 
 /**
  * Start a specific service
@@ -101,19 +107,22 @@ Runner.prototype.start = function(options, next) {
 
   var startOptions = { name: options.name, cwd: options.cwd, watch: options.watch, executeCommand: executeCommand, force: true, scriptArgs: scriptArgs };
 
-  var interpreter = getInterpreter(this.bosco, options.service);
-  if (interpreter) {
-    if (!self.bosco.exists(interpreter)) {
-      self.bosco.warn('Unable to locate node version requested: ' + interpreter.cyan + '.  Reverting to default.');
-    } else {
-      startOptions.interpreter = interpreter;
-      self.bosco.log('Starting ' + options.name.cyan + ' via ' + interpreter + ' ...');
-    }
-  } else {
-    self.bosco.log('Starting ' + options.name.cyan + ' via ...');
-  }
+  self.getInterpreter(this.bosco, options, function(err, interpreter) {
+    if (err) { return next(err); }
 
-  pm2.start(location, startOptions, next);
+    if (interpreter) {
+      if (!self.bosco.exists(interpreter)) {
+        self.bosco.warn('Unable to locate node version requested: ' + interpreter.cyan + '.  Reverting to default.');
+      } else {
+        startOptions.interpreter = interpreter;
+        self.bosco.log('Starting ' + options.name.cyan + ' via ' + interpreter + ' ...');
+      }
+    } else {
+      self.bosco.log('Starting ' + options.name.cyan + ' via ...');
+    }
+
+    pm2.start(location, startOptions, next);
+  });
 };
 
 /**

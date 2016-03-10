@@ -38,6 +38,10 @@ Bosco.prototype.init = function(options) {
   self.options.configFile = options.configFile ? path.resolve(options.configFile) : [self.options.configPath, 'bosco.json'].join('/');
   self.options.defaultsConfigFile = [self.options.configPath, 'defaults.json'].join('/');
 
+  // NVM presets
+  self.options.nvmUse = 'source $HOME/.nvm/nvm.sh ; nvm use ; ';
+  self.options.nvmWhich = 'source $HOME/.nvm/nvm.sh ; nvm which';
+
   self.options.cpus = require('os').cpus().length;
   self.options.inService = false;
 

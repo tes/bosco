@@ -15,6 +15,8 @@ describe('s3push', function() {
 
   it('should fail if the build fails', function(done) {
     var options = {
+      nvmUse: '',
+      nvmWhich: '',
       repos: ['projectFail'],
       noprompt: true
     };
@@ -35,6 +37,8 @@ describe('s3push', function() {
       next(new Error(message));
     }
     var options = {
+      nvmUse: '',
+      nvmWhich: '',
       repos: ['project3'],
       noprompt: true,
       knox: {putBuffer: putBuffer}
@@ -57,6 +61,8 @@ describe('s3push', function() {
       next(null, {statusCode: statusCode});
     }
     var options = {
+      nvmUse: '',
+      nvmWhich: '',
       repos: ['project3'],
       noprompt: true,
       knox: {putBuffer: putBuffer}
@@ -96,6 +102,8 @@ describe('s3push', function() {
       });
     }
     var options = {
+      nvmUse: '',
+      nvmWhich: '',
       repos: ['project3'],
       noprompt: true,
       environment: 'test',

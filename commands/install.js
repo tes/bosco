@@ -16,7 +16,7 @@ function install(bosco, progressbar, bar, repoPath, next) {
     return next();
   }
 
-  var npmCommand = 'npm';
+  var npmCommand = bosco.options.nvmUse + 'npm';
   if (bosco.config.get('npm:registry')) {
     npmCommand += ' --registry ' + bosco.config.get('npm:registry');
   }

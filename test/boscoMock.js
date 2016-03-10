@@ -15,7 +15,9 @@ module.exports = function boscoMock(extra) {
     console: getLogger(),
     repos: [],
     options: {
-      environment: 'test'
+      environment: 'test',
+      nvmUse: '',
+      nvmWhich: ''
     },
     getRepos: function() {
       return this.repos;
