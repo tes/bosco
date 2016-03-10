@@ -236,7 +236,7 @@ Bosco.prototype._cmd = function() {
 
   if (module) {
     if (module.requiresNvm && !self.hasNvm()) {
-      self.error('You must have nvm installed to use this command, https://github.com/creationix/nvm');
+      self.error('You must have nvm >= 0.21.0 installed to use this command, https://github.com/creationix/nvm');
       return process.exit(1);
     }
 
@@ -518,7 +518,21 @@ Bosco.prototype.exists = function(checkPath) {
 };
 
 Bosco.prototype.hasNvm = function() {
-  var inNvmDir = this.exists(path.join(process.env.NVM_DIR, 'nvm.sh'));
-  var inHomeDir = this.exists(path.join(process.env.HOME_DIR, '.nvm', 'nvm.sh'));
-  return inNvmDir || inHomeDir;
+  var nvmDirNvmSh = path.join(process.env.NVM_DIR || '', 'nvm.sh');
+  var homeDirNvmSh = path.join(process.env.HOME_DIR || '', '.nvm', 'nvm.sh');
+  var inNvmDir = this.exists(nvmDirNvmSh);
+  var inHomeDir = this.exists(homeDirNvmSh);
+  var hasValidNvm = false;
+  if (inNvmDir || inHomeDir) {
+    var nvmDirPackage = path.join(process.env.NVM_DIR || '', 'package.json');
+    var homeDirPackage = path.join(process.env.HOME_DIR || '', '.nvm', 'package.json');
+    var nvmVersion = '0.0.0';
+    if (inNvmDir) {
+      nvmVersion = require(nvmDirPackage).version;
+    } else if (inHomeDir) {
+      nvmVersion = require(homeDirPackage).version;
+    }
+    hasValidNvm = semver.satisfies(nvmVersion, '>=0.21.0');  // First version with nvm which
+  }
+  return hasValidNvm;
 };
