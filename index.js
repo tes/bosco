@@ -39,7 +39,7 @@ Bosco.prototype.init = function(options) {
   self.options.defaultsConfigFile = [self.options.configPath, 'defaults.json'].join('/');
 
   // NVM presets
-  self.options.nvmSh = 'source $NVM_DIR/nvm.sh ; ';
+  self.options.nvmSh = 'source ${NVM_DIR:-$HOME/.nvm}/nvm.sh ; ';
   self.options.nvmUse = self.options.nvmSh + 'nvm use;';
   self.options.nvmWhich = self.options.nvmSh + 'nvm which';
 
@@ -518,5 +518,7 @@ Bosco.prototype.exists = function(checkPath) {
 };
 
 Bosco.prototype.hasNvm = function() {
-  return !!process.env.NVM_DIR;
+  var inNvmDir = this.exists(path.join(process.env.NVM_DIR, 'nvm.sh'));
+  var inHomeDir = this.exists(path.join(process.env.HOME_DIR, '.nvm', 'nvm.sh'));
+  return inNvmDir || inHomeDir;
 };
