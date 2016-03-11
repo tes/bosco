@@ -41,6 +41,7 @@ Bosco.prototype.init = function(options) {
   // NVM presets
   self.options.nvmSh = '. ${NVM_DIR:-$HOME/.nvm}/nvm.sh && ';
   self.options.nvmUse = self.options.nvmSh + 'nvm use;';
+  self.options.nvmUseDefault = self.options.nvmSh + 'nvm use default;';
   self.options.nvmWhich = self.options.nvmSh + 'nvm which';
 
   self.options.cpus = require('os').cpus().length;

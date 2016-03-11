@@ -4,7 +4,7 @@ var spawn = require('child_process').spawn;
 var NodeRunner = require('./RunWrappers/Node');
 
 module.exports = function(bosco) {
-  function doBuild(service, options, next) {
+  function doBuild(service, options, interpreter, next) {
     if (!service.build) return next();
 
     var watchBuilds = options.watchBuilds;
@@ -49,7 +49,11 @@ module.exports = function(bosco) {
       command = args.shift();
     }
 
-    command = bosco.options.nvmUse + command;
+    if (!interpreter) {
+      command = bosco.options.nvmUseDefault + command;
+    } else {
+      command = bosco.options.nvmUse + command;
+    }
 
     if (!watchBuilds || !service.name.match(options.watchRegex)) {
       bosco.log('Running build command for ' + service.name.blue + ': ' + commandForLog);
@@ -157,13 +161,14 @@ module.exports = function(bosco) {
   }
 
   function doBuildWithInterpreter(service, options, next) {
-    NodeRunner.getInterpreter(bosco, service, function(err) {
+    NodeRunner.getInterpreter(bosco, service, function(err, interpreter) {
       if (err) return next({message: err});
-      doBuild(service, options, next);
+      doBuild(service, options, interpreter, next);
     });
   }
 
   return {
-    doBuild: doBuildWithInterpreter,
+    doBuildWithInterpreter: doBuildWithInterpreter,
+    doBuild: doBuild,
   };
 };

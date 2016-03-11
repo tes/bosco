@@ -16,6 +16,7 @@ describe('s3push', function() {
   it('should fail if the build fails', function(done) {
     var options = {
       nvmUse: '',
+      nvmUseDefault: '',
       nvmWhich: '',
       repos: ['projectFail'],
       noprompt: true
@@ -38,6 +39,7 @@ describe('s3push', function() {
     }
     var options = {
       nvmUse: '',
+      nvmUseDefault: '',
       nvmWhich: '',
       repos: ['project3'],
       noprompt: true,
@@ -62,6 +64,7 @@ describe('s3push', function() {
     }
     var options = {
       nvmUse: '',
+      nvmUseDefault: '',
       nvmWhich: '',
       repos: ['project3'],
       noprompt: true,
@@ -103,6 +106,7 @@ describe('s3push', function() {
     }
     var options = {
       nvmUse: '',
+      nvmUseDefault: '',
       nvmWhich: '',
       repos: ['project3'],
       noprompt: true,

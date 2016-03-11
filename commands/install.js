@@ -1,5 +1,6 @@
 var async = require('async');
 var exec = require('child_process').exec;
+var NodeRunner = require('../src/RunWrappers/Node');
 var green = '\u001b[42m \u001b[0m';
 var red = '\u001b[41m \u001b[0m';
 
@@ -17,30 +18,38 @@ function install(bosco, progressbar, bar, repoPath, next) {
     return next();
   }
 
-  var npmCommand = bosco.options.nvmUse + 'npm';
-  if (bosco.config.get('npm:registry')) {
-    npmCommand += ' --registry ' + bosco.config.get('npm:registry');
-  }
-  npmCommand += ' install';
-
-  exec(npmCommand, {
-    cwd: repoPath,
-  }, function(err, stdout, stderr) {
-    if (progressbar) bar.tick();
-    if (err) {
-      if (progressbar) bosco.console.log('');
-      bosco.error(repoPath.blue + ' >> ' + stderr);
+  NodeRunner.getInterpreter(bosco, {cwd: repoPath}, function(err, interpreter) {
+    if (err) return bosco.error(err);
+    var npmCommand;
+    if (interpreter) {
+      npmCommand = bosco.options.nvmUse + 'npm';
     } else {
-      if (!progressbar) {
-        if (!stdout) {
-          bosco.log('NPM install for ' + repoPath.blue + ': ' + 'No changes'.green);
-        } else {
-          bosco.log('NPM install for ' + repoPath.blue);
-          bosco.console.log(stdout);
+      npmCommand = bosco.options.nvmUseDefault + 'npm';
+    }
+    if (bosco.config.get('npm:registry')) {
+      npmCommand += ' --registry ' + bosco.config.get('npm:registry');
+    }
+    npmCommand += ' install';
+
+    exec(npmCommand, {
+      cwd: repoPath,
+    }, function(err, stdout, stderr) {
+      if (progressbar) bar.tick();
+      if (err) {
+        if (progressbar) bosco.console.log('');
+        bosco.error(repoPath.blue + ' >> ' + stderr);
+      } else {
+        if (!progressbar) {
+          if (!stdout) {
+            bosco.log('NPM install for ' + repoPath.blue + ': ' + 'No changes'.green);
+          } else {
+            bosco.log('NPM install for ' + repoPath.blue);
+            bosco.console.log(stdout);
+          }
         }
       }
-    }
-    next();
+      next();
+    });
   });
 }
 
@@ -68,7 +77,7 @@ function cmd(bosco, args, next) {
       if (!repo.match(repoRegex)) return repoCb();
 
       var repoPath = bosco.getRepoPath(repo);
-      install(bosco, progressbar, bar, repoPath, repoCb);
+      install(bosco, progressbar, bar, repoPath, repo, repoCb);
     }, function() {
       cb();
     });

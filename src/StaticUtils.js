@@ -7,7 +7,7 @@ var glob = require('glob');
 module.exports = function(bosco) {
   var AssetHelper = require('./AssetHelper')(bosco);
   var minify = require('./Minify')(bosco).minify;
-  var doBuild = require('./ExternalBuild')(bosco).doBuild;
+  var doBuildWithInterpreter = require('./ExternalBuild')(bosco).doBuildWithInterpreter;
   var html = require('./Html')(bosco);
   var createAssetHtmlFiles = html.createAssetHtmlFiles;
   var attachFormattedRepos = html.attachFormattedRepos;
@@ -112,7 +112,7 @@ module.exports = function(bosco) {
       });
 
       async.mapLimit(assetServices, bosco.concurrency.cpu, function(service, cb) {
-        doBuild(service, options, function(err) {
+        doBuildWithInterpreter(service, options, function(err) {
           if (err) {
             if (!ignoreFailure) return cb(err);
             failedBuilds.push({name: service.name, err: err});

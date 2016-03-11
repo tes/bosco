@@ -46,30 +46,48 @@ Runner.prototype.listNotRunning = function(detailed, next) {
 Runner.prototype.getInterpreter = function(bosco, options, next) {
   var exec = require('child_process').exec;
   var interpreter;
-  var notFound;
+  var hadError;
+  var error;
   var found = false;
+  var hasNvmRc = bosco.exists(path.join(options.repoPath || options.cwd, '.nvmrc'));
+  if (hasNvmRc) {
+    var e = exec(bosco.options.nvmWhich, options.cwd);
 
-  var e = exec(bosco.options.nvmWhich, options.cwd);
-
-  e.stdout.on('data', function(data) {
-    if (data.startsWith('Found')) {
-      found = true;
-    } else {
-      if (found) {
-        interpreter = data.replace('\n', '');
+    e.stdout.on('data', function(data) {
+      if (data.startsWith('Found')) {
+        found = true;
+      } else {
+        if (found) {
+          interpreter = data.replace('\n', '');
+        }
       }
-    }
-  });
+    });
 
-  e.stderr.on('data', function(data) {
-    notFound = options.name + ' nvm failed with: ' + data;
-  });
+    e.stderr.on('data', function(data) {
+      if (!hadError) {
+        hadError = true;
+        if (data.startsWith('No .nvmrc file found')) {
+          // Use default
+        } else {
+          error = options.name + ' nvm failed with: ' + data;
+        }
+      }
+    });
 
-  e.on('exit', function() {
-    return next(notFound, interpreter);
-  });
+    e.on('exit', function() {
+      if (interpreter) {
+        bosco.log('Using .nvmrc: ' + interpreter.cyan);
+      } else {
+        bosco.log('Using system node ...');
+      }
+      return next(error, interpreter);
+    });
 
-  e.on('error', next);
+    e.on('error', next);
+  } else {
+    bosco.log('No .nvmrc found, using system node ...');
+    next();
+  }
 };
 
 /**
