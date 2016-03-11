@@ -49,9 +49,9 @@ Runner.prototype.getInterpreter = function(bosco, options, next) {
   var hadError;
   var error;
   var found = false;
-  var hasNvmRc = bosco.exists(path.join(options.repoPath || options.cwd, '.nvmrc'));
+  var hasNvmRc = bosco.exists(path.join(options.cwd, '.nvmrc'));
   if (hasNvmRc) {
-    var e = exec(bosco.options.nvmWhich, options.cwd);
+    var e = exec(bosco.options.nvmWhich, {cwd: options.cwd});
 
     e.stdout.on('data', function(data) {
       if (data.startsWith('Found')) {
@@ -76,16 +76,14 @@ Runner.prototype.getInterpreter = function(bosco, options, next) {
 
     e.on('exit', function() {
       if (interpreter) {
-        bosco.log('Using .nvmrc: ' + interpreter.cyan);
-      } else {
-        bosco.log('Using system node ...');
+        bosco.log(options.name + ' using .nvmrc: ' + interpreter.cyan);
       }
       return next(error, interpreter);
     });
 
     e.on('error', next);
   } else {
-    bosco.log('No .nvmrc found, using system node ...');
+    bosco.log(options.name + ' no .nvmrc found, using system node ...');
     next();
   }
 };

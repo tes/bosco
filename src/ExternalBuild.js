@@ -161,7 +161,7 @@ module.exports = function(bosco) {
   }
 
   function doBuildWithInterpreter(service, options, next) {
-    NodeRunner.getInterpreter(bosco, service, function(err, interpreter) {
+    NodeRunner.getInterpreter(bosco, {name: service.name, cwd: service.repoPath}, function(err, interpreter) {
       if (err) return next({message: err});
       doBuild(service, options, interpreter, next);
     });

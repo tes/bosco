@@ -11,15 +11,18 @@ module.exports = {
   requiresNvm: true,
 };
 
-function install(bosco, progressbar, bar, repoPath, next) {
+function install(bosco, progressbar, bar, repoPath, repo, next) {
   var packageJson = [repoPath, 'package.json'].join('/');
   if (!bosco.exists(packageJson)) {
     if (progressbar) bar.tick();
     return next();
   }
 
-  NodeRunner.getInterpreter(bosco, {cwd: repoPath}, function(err, interpreter) {
-    if (err) return bosco.error(err);
+  NodeRunner.getInterpreter(bosco, {name: repo, cwd: repoPath}, function(err, interpreter) {
+    if (err) {
+      bosco.error(err);
+      return next();
+    }
     var npmCommand;
     if (interpreter) {
       npmCommand = bosco.options.nvmUse + 'npm';
@@ -45,6 +48,9 @@ function install(bosco, progressbar, bar, repoPath, next) {
           } else {
             bosco.log('NPM install for ' + repoPath.blue);
             bosco.console.log(stdout);
+            if (stderr) {
+              bosco.error(stderr);
+            }
           }
         }
       }
