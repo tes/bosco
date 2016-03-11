@@ -46,6 +46,7 @@ Runner.prototype.listNotRunning = function(detailed, next) {
 Runner.prototype.getInterpreter = function(bosco, options, next) {
   var exec = require('child_process').exec;
   var interpreter;
+  var notFound;
   var found = false;
 
   var e = exec(bosco.options.nvmWhich, options.cwd);
@@ -60,8 +61,12 @@ Runner.prototype.getInterpreter = function(bosco, options, next) {
     }
   });
 
+  e.stderr.on('data', function(data) {
+    notFound = options.name + ' nvm failed with: ' + data;
+  });
+
   e.on('exit', function() {
-    return next(null, interpreter);
+    return next(notFound, interpreter);
   });
 
   e.on('error', next);

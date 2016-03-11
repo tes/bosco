@@ -1,6 +1,7 @@
 var exec = require('child_process').exec;
 var execFile = require('child_process').execFile;
 var spawn = require('child_process').spawn;
+var NodeRunner = require('./RunWrappers/Node');
 
 module.exports = function(bosco) {
   function doBuild(service, options, next) {
@@ -155,7 +156,14 @@ module.exports = function(bosco) {
     checkFinished();
   }
 
+  function doBuildWithInterpreter(service, options, next) {
+    NodeRunner.getInterpreter(bosco, service, function(err) {
+      if (err) return next({message: err});
+      doBuild(service, options, next);
+    });
+  }
+
   return {
-    doBuild: doBuild,
+    doBuild: doBuildWithInterpreter,
   };
 };
