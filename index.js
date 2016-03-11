@@ -39,7 +39,7 @@ Bosco.prototype.init = function(options) {
   self.options.defaultsConfigFile = [self.options.configPath, 'defaults.json'].join('/');
 
   // NVM presets
-  self.options.nvmSh = 'source ${NVM_DIR:-$HOME/.nvm}/nvm.sh ; ';
+  self.options.nvmSh = '. ${NVM_DIR:-$HOME/.nvm}/nvm.sh && ';
   self.options.nvmUse = self.options.nvmSh + 'nvm use;';
   self.options.nvmWhich = self.options.nvmSh + 'nvm which';
 
@@ -518,21 +518,18 @@ Bosco.prototype.exists = function(checkPath) {
 };
 
 Bosco.prototype.hasNvm = function() {
-  var nvmDirNvmSh = path.join(process.env.NVM_DIR || '', 'nvm.sh');
-  var homeDirNvmSh = path.join(process.env.HOME_DIR || '', '.nvm', 'nvm.sh');
-  var inNvmDir = this.exists(nvmDirNvmSh);
-  var inHomeDir = this.exists(homeDirNvmSh);
-  var hasValidNvm = false;
-  if (inNvmDir || inHomeDir) {
-    var nvmDirPackage = path.join(process.env.NVM_DIR || '', 'package.json');
-    var homeDirPackage = path.join(process.env.HOME_DIR || '', '.nvm', 'package.json');
-    var nvmVersion = '0.0.0';
-    if (inNvmDir) {
-      nvmVersion = require(nvmDirPackage).version;
-    } else if (inHomeDir) {
-      nvmVersion = require(homeDirPackage).version;
-    }
-    hasValidNvm = semver.satisfies(nvmVersion, '>=0.21.0');  // First version with nvm which
+  var nvmDir = process.env.NVM_DIR || '';
+  var homeNvmDir = process.env.HOME ? path.join(process.env.HOME, '.nvm') : '';
+
+  var nvmVersion = '0.0.0';
+  if (nvmDir && this.exists(path.join(nvmDir, 'nvm.sh'))) {
+    nvmVersion = require(path.join(nvmDir, 'package.json')).version;
+  } else if (homeNvmDir && this.exists(path.join(homeNvmDir, 'nvm.sh'))) {
+    nvmVersion = require(path.join(homeNvmDir, 'package.json')).version;
+  } else {
+    this.error('Could not find nvm');
+    return false;
   }
-  return hasValidNvm;
+
+  return semver.satisfies(nvmVersion, '>=0.21.0');  // First version with nvm which
 };
