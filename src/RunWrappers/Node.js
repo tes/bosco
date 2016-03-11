@@ -83,7 +83,7 @@ Runner.prototype.getInterpreter = function(bosco, options, next) {
 
     e.on('error', next);
   } else {
-    bosco.log(options.name + ' no .nvmrc found, using system node ...');
+    bosco.log(options.name + ' no .nvmrc found, using nvm default ...');
     next();
   }
 };
