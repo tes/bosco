@@ -66,6 +66,12 @@ var globalOptions = [
     type: 'boolean',
     desc: 'Force over ride on publish even if no changes',
   },
+  {
+    name: 'install-missing',
+    alias: 'i',
+    type: 'boolean',
+    desc: 'Install missing node versions via nvm',
+  },
 ];
 
 function addCommandOptions(args, command) {

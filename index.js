@@ -43,6 +43,7 @@ Bosco.prototype.init = function(options) {
   self.options.nvmUse = self.options.nvmSh + 'nvm use;';
   self.options.nvmUseDefault = self.options.nvmSh + 'nvm use default;';
   self.options.nvmWhich = self.options.nvmSh + 'nvm which';
+  self.options.nvmInstall = self.options.nvmSh + 'nvm install';
 
   self.options.cpus = require('os').cpus().length;
   self.options.inService = false;

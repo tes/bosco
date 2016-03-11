@@ -44,10 +44,12 @@ Runner.prototype.listNotRunning = function(detailed, next) {
 };
 
 Runner.prototype.getInterpreter = function(bosco, options, next) {
+  var self = this;
   var exec = require('child_process').exec;
   var interpreter;
   var hadError;
   var error;
+  var installing;
   var found = false;
   var hasNvmRc = bosco.exists(path.join(options.cwd, '.nvmrc'));
   if (hasNvmRc) {
@@ -70,6 +72,13 @@ Runner.prototype.getInterpreter = function(bosco, options, next) {
           // Use default
         } else {
           error = options.name + ' nvm failed with: ' + data;
+          if (bosco.options['install-missing']) {
+            installing = true;
+            self.installNode(bosco, options, function(err) {
+              if (err) return next(err);
+              self.getInterpreter(bosco, options, next);
+            });
+          }
         }
       }
     });
@@ -78,13 +87,26 @@ Runner.prototype.getInterpreter = function(bosco, options, next) {
       if (interpreter) {
         bosco.log(options.name + ' using .nvmrc: ' + interpreter.cyan);
       }
-      return next(error, interpreter);
+      if (!installing) {
+        return next(error, interpreter);
+      }
     });
-
-    e.on('error', next);
   } else {
     bosco.log(options.name + ' no .nvmrc found, using nvm default ...');
     next();
+  }
+};
+
+Runner.prototype.installNode = function(bosco, options, next) {
+  var exec = require('child_process').exec;
+  bosco.log(options.name + ' installing required node version ...');
+  var hasNvmRc = bosco.exists(path.join(options.cwd, '.nvmrc'));
+  if (hasNvmRc) {
+    exec(bosco.options.nvmInstall, {cwd: options.cwd}, function(err, stdout, stderr) {
+      next(stderr);
+    });
+  } else {
+    next('You cant install node without an .nvmrc');
   }
 };
 
