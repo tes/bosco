@@ -3,6 +3,7 @@ var _ = require('lodash');
 var exec = require('child_process').exec;
 var DockerRunner = require('../src/RunWrappers/Docker');
 var RunListHelper = require('../src/RunListHelper');
+var NodeRunner = require('../src/RunWrappers/Node');
 var green = '\u001b[42m \u001b[0m';
 var red = '\u001b[41m \u001b[0m';
 
@@ -138,6 +139,21 @@ function cmd(bosco, args, next) {
     });
   }
 
+  function ensureNodeVersions(cb) {
+    bosco.log('Ensuring required node version is installed as per .nvmrc ...');
+    async.mapSeries(repos, function doDockerPull(repo, repoCb) {
+      var repoPath = bosco.getRepoPath(repo);
+      NodeRunner.getInterpreter(bosco, {name: repo, cwd: repoPath}, function(err) {
+        if (err) {
+          bosco.error(err);
+        }
+        return repoCb();
+      });
+    }, function() {
+      cb();
+    });
+  }
+
   function pullDockerImages(cb) {
     bosco.log('Checking for local docker images to pull ...');
 
@@ -192,6 +208,7 @@ function cmd(bosco, args, next) {
   async.series([
     initialiseRunners,
     pullRepos,
+    ensureNodeVersions,
     pullDockerImages,
     pullDependentDockerImages,
     clearGithubCache,
