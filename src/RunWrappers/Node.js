@@ -56,7 +56,7 @@ Runner.prototype.getInterpreter = function(bosco, options, next) {
     var e = exec(bosco.options.nvmWhich, {cwd: options.cwd});
 
     e.stdout.on('data', function(data) {
-      if (data.startsWith('Found')) {
+      if (data.indexOf('Found') === 0) {
         found = true;
       } else {
         if (found) {
