@@ -1,0 +1,51 @@
+[
+  {
+    "name": "configFile",
+    "alias": "c",
+    "type": "string",
+    "desc": "Path to bosco config file"
+  }, {
+    "name": "configDir",
+    "alias": ["p", "configPath"],
+    "type": "string",
+    "desc": "Path to bosco config directory"
+  }, {
+    "name": "environment",
+    "alias": "e",
+    "type": "string",
+    "default": "local",
+    "desc": "Set environment to use"
+  }, {
+    "name": "service",
+    "alias": "s",
+    "type": "boolean",
+    "desc": "Run only with service in cwd (if bosco-service.json file exists in cwd)"
+  }, {
+    "name": "build",
+    "alias": "b",
+    "type": "string",
+    "default": "default",
+    "desc": "Set build identifier to use"
+  }, {
+    "name": "repo",
+    "alias": "r",
+    "type": "string",
+    "default": ".*",
+    "desc": "Use a specific repository (parsed as regexp)"
+  }, {
+    "name": "noprompt",
+    "alias": "n",
+    "type": "boolean",
+    "desc": "Do not prompt for confirmation"
+  }, {
+    "name": "force",
+    "alias": "f",
+    "type": "boolean",
+    "desc": "Force over ride on publish even if no changes"
+  }, {
+    "name": "install-missing",
+    "alias": "i",
+    "type": "boolean",
+    "desc": "Install missing node versions via nvm"
+  }
+]

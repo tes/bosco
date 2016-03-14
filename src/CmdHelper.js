@@ -2,6 +2,7 @@ var async = require('async');
 var _ = require('lodash');
 var spawn = require('child_process').spawn;
 var hl = require('highland');
+var globalRunOptions = require('../config/options');
 
 function guardFn(bosco, repoPath, options, next) {
   next();
@@ -140,8 +141,15 @@ function iterate(bosco, options, next) {
   });
 }
 
+function isDefaulOption(option, value) {
+  var configOption = _.find(globalRunOptions, { name: option });
+
+  return configOption && configOption.default === value;
+}
+
 module.exports = {
   createOptions: createOptions,
   iterate: iterate,
   execute: execute,
+  isDefaulOption: isDefaulOption,
 };
