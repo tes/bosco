@@ -4,6 +4,8 @@ var fs = require('fs');
 var http = require('http');
 var watch = require('watch');
 var url = require('url');
+var RunListHelper = require('../src/RunListHelper');
+var CmdHelper = require('../src/CmdHelper');
 
 module.exports = {
   name: 'cdn',
@@ -32,11 +34,31 @@ function cmd(bosco, args) {
   var watchPattern = bosco.options.watch || '$a';
   var watchRegex = new RegExp(watchPattern);
   var repoTag = bosco.options.tag;
+  var repos;
 
   bosco.log('Starting pseudo CDN on port: ' + (port + '').blue);
 
-  var repos = bosco.getRepos();
+  if (bosco.options.list) {
+    repos = bosco.options.list.split(',');
+  } else {
+    var onWorkspaceFolder = bosco.options.workspace === process.cwd();
+    var hasDefaultRepoOption = !bosco.options.repo || CmdHelper.isDefaulOption('repo', bosco.options.repo);
+    var hasDefaultTagOption = !bosco.options.tag || CmdHelper.isDefaulOption('tag', bosco.options.tag);
+
+    // Tag and repo options take precendence over cwd
+    if (!onWorkspaceFolder && hasDefaultRepoOption && hasDefaultTagOption) {
+      bosco.options.service = true;
+      bosco.checkInService();
+    }
+
+    repos = bosco.getRepos();
+  }
+
   if (!repos) return bosco.error('You are repo-less :( You need to initialise bosco first, try \'bosco clone\'.');
+
+  function getRunList(next) {
+    RunListHelper.getRunList(bosco, repos, repoRegex, watchRegex, repoTag, next);
+  }
 
   function startServer(staticAssets, staticRepos, serverPort) {
     function getAsset(assetUrl) {
@@ -167,27 +189,30 @@ function cmd(bosco, args) {
 
   if (minify) bosco.log('Minifying front end assets, this can take some time ...');
 
-  var options = {
-    repos: repos,
-    buildNumber: 'local',
-    minify: minify,
-    tagFilter: null,
-    watchBuilds: true,
-    reloadOnly: false,
-    ignoreFailure: true,
-    watchRegex: watchRegex,
-    repoRegex: repoRegex,
-    repoTag: repoTag,
-  };
+  getRunList(function(err, repoList) {
+    var repoNames = _.map(repoList, 'name');
+    var options = {
+      repos: repoNames,
+      buildNumber: 'local',
+      minify: minify,
+      tagFilter: null,
+      watchBuilds: true,
+      reloadOnly: false,
+      ignoreFailure: true,
+      watchRegex: watchRegex,
+      repoRegex: repoRegex,
+      repoTag: repoTag,
+    };
 
-  var executeAsync = {
-    staticAssets: bosco.staticUtils.getStaticAssets.bind(null, options),
-    staticRepos: bosco.staticUtils.getStaticRepos.bind(null, options),
-  };
+    var executeAsync = {
+      staticAssets: bosco.staticUtils.getStaticAssets.bind(null, options),
+      staticRepos: bosco.staticUtils.getStaticRepos.bind(null, options),
+    };
 
-  async.parallel(executeAsync, function(err, results) {
-    startServer(results.staticAssets, results.staticRepos, port);
-    startMonitor(results.staticAssets);
+    async.parallel(executeAsync, function(err, results) {
+      startServer(results.staticAssets, results.staticRepos, port);
+      startMonitor(results.staticAssets);
+    });
   });
 }
 
