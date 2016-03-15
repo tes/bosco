@@ -68,7 +68,7 @@ Runner.prototype.getInterpreter = function(bosco, options, next) {
     e.stderr.on('data', function(data) {
       if (!hadError) {
         hadError = true;
-        if (data.startsWith('No .nvmrc file found')) {
+        if (data.indexOf('No .nvmrc file found') === 0) {
           // Use default
         } else {
           error = options.name + ' nvm failed with: ' + data.replace('\n', '') + ', use -i option to install missing node versions!';
