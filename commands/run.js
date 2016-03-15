@@ -6,6 +6,7 @@ var RunListHelper = require('../src/RunListHelper');
 var NodeRunner = require('../src/RunWrappers/Node');
 var DockerRunner = require('../src/RunWrappers/Docker');
 var DockerComposeRunner = require('../src/RunWrappers/DockerCompose');
+var CmdHelper = require('../src/CmdHelper');
 
 var runningServices = [];
 var notRunningServices = [];
@@ -47,6 +48,16 @@ function cmd(bosco, args, allDone) {
   if (bosco.options.list) {
     repos = bosco.options.list.split(',');
   } else {
+    var onWorkspaceFolder = bosco.options.workspace === process.cwd();
+    var hasDefaultRepoOption = !bosco.options.repo || CmdHelper.isDefaulOption('repo', bosco.options.repo);
+    var hasDefaultTagOption = !bosco.options.tag || CmdHelper.isDefaulOption('tag', bosco.options.tag);
+
+    // Tag and repo options take precendence over cwd
+    if (!onWorkspaceFolder && hasDefaultRepoOption && hasDefaultTagOption) {
+      bosco.options.service = true;
+      bosco.checkInService();
+    }
+
     repos = bosco.getRepos();
   }
 
