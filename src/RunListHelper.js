@@ -70,7 +70,7 @@ function getRunList(bosco, repos, repoRegex, watchRegex, repoTag, next) {
     svcConfig = getRunConfig(bosco, repo, repoRegex, watchRegex);
     depTree[svcConfig.name] = svcConfig;
     var matchesRegexOrTag = (!repoTag && repo.match(repoRegex)) || (repoTag && _.contains(svcConfig.tags, repoTag));
-    if (svcConfig.service.type && matchesRegexOrTag) {
+    if (matchesRegexOrTag) {
       repoList.push(repo);
     }
   });
