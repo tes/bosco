@@ -4,6 +4,7 @@ var RunListHelper = require('../src/RunListHelper');
 var NodeRunner = require('../src/RunWrappers/Node');
 var DockerRunner = require('../src/RunWrappers/Docker');
 var DockerComposeRunner = require('../src/RunWrappers/DockerCompose');
+var CmdHelper = require('../src/CmdHelper');
 
 module.exports = {
   name: 'stop',
@@ -14,9 +15,25 @@ module.exports = {
 function cmd(bosco, args, done) {
   var repoPattern = bosco.options.repo;
   var repoRegex = new RegExp(repoPattern);
-  var repos = bosco.getRepos();
   var repoTag = bosco.options.tag;
   var runningServices = [];
+
+  var repos;
+  if (bosco.options.list) {
+    repos = bosco.options.list.split(',');
+  } else {
+    var onWorkspaceFolder = bosco.options.workspace === process.cwd();
+    var hasDefaultRepoOption = !bosco.options.repo || CmdHelper.isDefaulOption('repo', bosco.options.repo);
+    var hasDefaultTagOption = !bosco.options.tag || CmdHelper.isDefaulOption('tag', bosco.options.tag);
+
+    // Tag and repo options take precendence over cwd
+    if (!onWorkspaceFolder && hasDefaultRepoOption && hasDefaultTagOption) {
+      bosco.options.service = true;
+      bosco.checkInService();
+    }
+
+    repos = bosco.getRepos();
+  }
 
   function initialiseRunners(cb) {
     var runners = [NodeRunner, DockerRunner, DockerComposeRunner];
@@ -62,6 +79,10 @@ function cmd(bosco, args, done) {
         }
 
         RunListHelper.getServiceConfigFromGithub(bosco, boscoService.name, function(err, svcConfig) {
+          if (err || !svcConfig) {
+            bosco.warn('Unable to retrieve config for ' + boscoService.name.cyan + ' in github, continuing ...');
+            return next();
+          }
           if (!svcConfig.name) svcConfig.name = boscoService.name;
           stopService(repo, svcConfig, runningServices, next);
         });
