@@ -177,13 +177,16 @@ function cmd(bosco, args) {
     watch.createMonitor(bosco.getOrgPath(), {filter: filterFn, ignoreDotFiles: true, ignoreUnreadableDir: true, ignoreDirectoryPattern: /node_modules|\.git|coverage/, interval: 1000}, function(monitor) {
       bosco.log('Watching ' + _.keys(monitor.files).length + ' files ...');
 
-      monitor.on('changed', function(f) {
+      function onChange(f) {
         var fileKey = watchSet[f];
 
         if (reloading[fileKey]) return;
         reloading[fileKey] = true;
         reloadFile(fileKey);
-      });
+      }
+
+      monitor.on('changed', onChange);
+      monitor.on('created', onChange);
     });
   }
 
