@@ -106,7 +106,7 @@ function cmd(bosco, args) {
 
       if (isAsset(asset.path)) {
         fs.readFile(asset.path, function(err, content) {
-          response.end(content.toString());
+          response.end(content);
         });
       } else {
         response.end(asset.content || asset.data);
