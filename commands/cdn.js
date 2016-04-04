@@ -125,7 +125,7 @@ function cmd(bosco, args) {
       bs.init({
         proxy: bosco.options['browser-sync-proxy'] || 'http://local.tescloud.com:5000',
         files: assetsToWatch,
-        reloadDelay: bosco.options['browser-sync-delay'],
+        reloadDelay: bosco.options['browser-sync-delay']
       });
     }
 

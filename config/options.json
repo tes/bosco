@@ -62,5 +62,5 @@
     "type": "number",
     "default": 0,
     "desc": "Delay on browser refresh - useful to increase if refresh requires server restarts"
-  },
+  }
 ]
