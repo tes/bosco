@@ -55,7 +55,7 @@
   }, {
     "name": "browser-sync-proxy",
     "type": "string",
-    "default": "http://local.tescloud.com:5000",
+    "default": "http://local.tescloud.com:8080",
     "desc": "Change the url browser-sync proxies to"
   }, {
     "name": "browser-sync-delay",
