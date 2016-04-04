@@ -1,7 +1,6 @@
 var _ = require('lodash');
 var async = require('async');
 var fs = require('fs-extra');
-var path = require('path');
 
 var RunListHelper = require('../src/RunListHelper');
 var NodeRunner = require('../src/RunWrappers/Node');
@@ -56,8 +55,6 @@ function cmd(bosco, args, allDone) {
     // Tag and repo options take precendence over cwd
     if (!onWorkspaceFolder && hasDefaultRepoOption && hasDefaultTagOption) {
       bosco.options.service = true;
-      bosco.options.watch = bosco.options.watch || new RegExp(path.basename(process.cwd()));
-      watchRegex = new RegExp(bosco.options.watch);
       bosco.checkInService();
     }
 
