@@ -120,9 +120,12 @@ function cmd(bosco, args) {
 
     if (bosco.options['browser-sync']) {
       var assets = _.filter(_.map(staticAssets, 'path'), isWatchedAsset);
+      var extraFiles = _.filter(_.uniq(_.flattenDeep(_.map(staticAssets, 'extraFiles'))));
+      var assetsToWatch = _.union(assets, extraFiles);
       bs.init({
         proxy: bosco.options['browser-sync-proxy'] || 'http://local.tescloud.com:5000',
-        files: assets,
+        files: assetsToWatch,
+        reloadDelay: bosco.options['browser-sync-delay'],
       });
     }
 

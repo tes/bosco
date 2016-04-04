@@ -57,5 +57,10 @@
     "type": "string",
     "default": "http://local.tescloud.com:5000",
     "desc": "Change the url browser-sync proxies to"
-  }
+  }, {
+    "name": "browser-sync-delay",
+    "type": "number",
+    "default": 0,
+    "desc": "Delay on browser refresh - useful to increase if refresh requires server restarts"
+  },
 ]

@@ -80,6 +80,7 @@ module.exports = function(bosco) {
         isMinifiedFragment: true,
         mimeType: 'text/html',
         extname: '.html',
+        extraFiles: asset.extraFiles,
       };
 
       if (isJavascript(asset)) {
