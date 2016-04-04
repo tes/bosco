@@ -63,8 +63,8 @@ function cmd(bosco, args) {
   }
 
   function startServer(staticAssets, staticRepos, serverPort) {
-    var isAsset = function(path) {
-      return path && !fs.lstatSync(path).isDirectory();
+    var isWatchedAsset = function(path) {
+      return path && !fs.lstatSync(path).isDirectory() && path.match(watchRegex);
     };
 
     function getAsset(assetUrl) {
@@ -104,7 +104,7 @@ function cmd(bosco, args) {
         'Access-Control-Allow-Origin': '*',
       });
 
-      if (isAsset(asset.path)) {
+      if (isWatchedAsset(asset.path)) {
         fs.readFile(asset.path, function(err, content) {
           response.end(content);
         });
@@ -116,7 +116,7 @@ function cmd(bosco, args) {
     server.listen(serverPort);
 
     if (bosco.options['browser-sync']) {
-      var assets = _.filter(_.map(staticAssets, 'path'), isAsset);
+      var assets = _.filter(_.map(staticAssets, 'path'), isWatchedAsset);
       bs.init({
         proxy: bosco.options['browser-sync-proxy'] || 'http://local.tescloud.com:5000',
         files: assets,
