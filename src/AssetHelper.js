@@ -29,7 +29,7 @@ module.exports = function(bosco) {
   }
 
   function getExtraFiles(repoPath, build) {
-    var extraFiles = build.watch && build.watch.extraFiles || [];
+    var extraFiles = build.watch && build.watch.extraBrowserSyncFiles || [];
     return _.map(extraFiles, function(glob) {
       return path.join(repoPath, glob);
     });
@@ -65,7 +65,7 @@ module.exports = function(bosco) {
           newAsset.content = newAsset.data.toString();
           newAsset.checksum = checksum(newAsset.content, 'sha1', 'hex');
           newAsset.uniqueKey = newAsset.bundleKey + ':' + assetKey;
-          newAsset.extraFiles = getExtraFiles(newAsset.repoPath, boscoRepo.build);
+          newAsset.extraBrowserSyncFiles = getExtraFiles(newAsset.repoPath, boscoRepo.build);
           staticAssets.push(newAsset);
         }
       },
