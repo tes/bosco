@@ -1,6 +1,7 @@
 var _ = require('lodash');
 var async = require('async');
 var fs = require('fs');
+var path = require('path');
 var http = require('http');
 var watch = require('watch');
 var url = require('url');
@@ -50,6 +51,8 @@ function cmd(bosco, args) {
     // Tag and repo options take precendence over cwd
     if (!onWorkspaceFolder && hasDefaultRepoOption && hasDefaultTagOption) {
       bosco.options.service = true;
+      bosco.options.watch = bosco.options.watch || new RegExp(path.basename(process.cwd()));
+      watchRegex = new RegExp(bosco.options.watch);
       bosco.checkInService();
     }
 
@@ -63,8 +66,8 @@ function cmd(bosco, args) {
   }
 
   function startServer(staticAssets, staticRepos, serverPort) {
-    var isWatchedAsset = function(path) {
-      return path && !fs.lstatSync(path).isDirectory() && path.match(watchRegex);
+    var isWatchedAsset = function(assetPath) {
+      return assetPath && !fs.lstatSync(assetPath).isDirectory() && assetPath.match(watchRegex);
     };
 
     function getAsset(assetUrl) {
