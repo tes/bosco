@@ -29,7 +29,7 @@ module.exports = function(bosco) {
   }
 
   function getExtraFiles(repoPath, build) {
-    var extraFiles = build.watch && build.watch.extraBrowserSyncFiles || [];
+    var extraFiles = build && build.watch && build.watch.extraBrowserSyncFiles || [];
     return _.map(extraFiles, function(glob) {
       return path.join(repoPath, glob);
     });
