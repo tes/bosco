@@ -42,6 +42,7 @@
     "appdirectory": "^0.1.0",
     "asciify": "^1.3.5",
     "async": "^1.4.2",
+    "browser-sync": "^2.11.2",
     "clean-css": "^3.1.9",
     "cli-table": "^0.3.0",
     "colors": "^1.0.3",
