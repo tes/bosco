@@ -4,6 +4,7 @@ var fs = require('fs');
 var http = require('http');
 var watch = require('watch');
 var url = require('url');
+var browserSync = require('browser-sync');
 var RunListHelper = require('../src/RunListHelper');
 var CmdHelper = require('../src/CmdHelper');
 
@@ -34,6 +35,7 @@ function cmd(bosco, args) {
   var watchPattern = bosco.options.watch || '$a';
   var watchRegex = new RegExp(watchPattern);
   var repoTag = bosco.options.tag;
+  var bs = browserSync.create();
   var repos;
 
   bosco.log('Starting pseudo CDN on port: ' + (port + '').blue);
@@ -61,6 +63,10 @@ function cmd(bosco, args) {
   }
 
   function startServer(staticAssets, staticRepos, serverPort) {
+    var isAsset = function(path) {
+      return path && !fs.lstatSync(path).isDirectory();
+    };
+
     function getAsset(assetUrl) {
       var key = assetUrl.replace('/', '');
       return _.find(staticAssets, 'assetKey', key);
@@ -98,10 +104,25 @@ function cmd(bosco, args) {
         'Access-Control-Allow-Origin': '*',
       });
 
-      response.end(asset.data || asset.content);
+      if (isAsset(asset.path)) {
+        fs.readFile(asset.path, function(err, content) {
+          response.end(content.toString());
+        });
+      } else {
+        response.end(asset.content || asset.data);
+      }
     });
 
     server.listen(serverPort);
+
+    if (bosco.options['browser-sync']) {
+      var assets = _.filter(_.map(staticAssets, 'path'), isAsset);
+      bs.init({
+        proxy: bosco.options['browser-sync-proxy'] || 'http://local.tescloud.com:5000',
+        files: assets,
+      });
+    }
+
     bosco.log('Server is listening on ' + serverPort);
   }
 
@@ -128,7 +149,6 @@ function cmd(bosco, args) {
 
     function getIndexForKey(assetList, fileKey) {
       var find = (_.isObject(assetList)) ? _.findKey : _.findIndex;
-
       return find(assetList, 'assetKey', fileKey);
     }
 
