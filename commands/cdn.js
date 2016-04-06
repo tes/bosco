@@ -112,7 +112,7 @@ function cmd(bosco, args) {
           response.end(content);
         });
       } else {
-        response.end(asset.content || asset.data);
+        response.end(asset.data || asset.content);
       }
     });
 
