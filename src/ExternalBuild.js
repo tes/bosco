@@ -49,11 +49,11 @@ module.exports = function(bosco) {
       command = args.shift();
     }
 
-    if (!interpreter) {
-      command = bosco.options.nvmUseDefault + command;
-    } else {
-      command = bosco.options.nvmUse + command;
+    function ensureCorrectNodeVersion(rawCommand) {
+      return (interpreter ? bosco.options.nvmUse : bosco.options.nvmUseDefault) + rawCommand;
     }
+
+    command = ensureCorrectNodeVersion(command);
 
     if (!watchBuilds || !service.name.match(options.watchRegex)) {
       bosco.log('Running build command for ' + service.name.blue + ': ' + commandForLog);
@@ -74,26 +74,13 @@ module.exports = function(bosco) {
       readyText = service.build.watch.ready || readyText;
       checkDelay = service.build.watch.checkDelay || checkDelay;
       if (service.build.watch.command) {
-        command = service.build.watch.command;
-        args = null;
-        arrayCommand = Array.isArray(command);
+        command = ensureCorrectNodeVersion(service.build.watch.command);
       }
-    }
-
-    if (!arrayCommand) {
-      command = command.split(' ');
-      arrayCommand = true;
-      commandForLog = JSON.stringify(command);
-    }
-
-    if (!args) {
-      args = command;
-      command = args.shift();
     }
 
     bosco.log('Spawning ' + 'watch'.red + ' command for ' + service.name.blue + ': ' + commandForLog);
 
-    var wc = spawn(command, args, cwd);
+    var wc = spawn(process.env.SHELL, ['-c', command], cwd);
     var output = '';
     var childError = null;
     var calledReady = false;

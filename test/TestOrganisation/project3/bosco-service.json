@@ -6,7 +6,7 @@
   "build": {
     "command": "echo 'This is the pseudo output of a build command.'",
     "watch": {
-      "command": ["bash", "-c", "echo \"COMPLETA\"; sleep 1"],
+      "command": ["echo \"COMPLETA\"; sleep 1"],
       "ready": "COMPLETA",
       "checkDelay": 10
     }
