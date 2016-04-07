@@ -46,7 +46,6 @@ function getRunConfig(bosco, repo, repoRegex, watchRegex) {
 
 function getRunList(bosco, repos, repoRegex, watchRegex, repoTag, next) {
   var depTree = {};
-  var revDepTree = {};
   var repoList = [];
   var runList = [];
   var svcConfig;
@@ -60,8 +59,6 @@ function getRunList(bosco, repos, repoRegex, watchRegex, repoTag, next) {
       if (!_.contains(repoList, dependency)) {
         repoList.push(dependency);
       }
-      revDepTree[dependency] = revDepTree[dependency] || [];
-      revDepTree[dependency].push(dependent);
     });
   }
 
