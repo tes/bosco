@@ -124,7 +124,7 @@ describe('ExternalBuild', function() {
       name: 'service',
       repoPath: localBosco.getRepoPath(''),
       build: {
-        command: ['bash', '-c', 'echo hi; sleep 1'],
+        command: ['echo hi; sleep 1'],
         watch: {
           ready: 'hi',
           checkDelay: 10
@@ -209,9 +209,9 @@ describe('ExternalBuild', function() {
       name: 'service',
       repoPath: localBosco.getRepoPath(''),
       build: {
-        command: ['bash', '-c', 'echo -n build; echo -n bye >&2;false'],
+        command: ['echo -n build; echo -n bye >&2;false'],
         watch: {
-          command: ['bash', '-c', 'echo -n watch; echo -n bye >&2;sleep 1;false'],
+          command: ['echo -n watch; echo -n bye >&2;sleep 1;false'],
           ready: 'watch',
           checkDelay: 10
         }
