@@ -8,7 +8,7 @@ var hb = require('handlebars');
 module.exports = {
   name: 'template',
   description: 'A command to allow generic, template driven creation of new services and apps',
-  usage: '[add <githubRepo>|remove <githubRepo>|new <templateName> <serviceName>]',
+  usage: '[add <githubRepo>|remove <githubRepo>|create <templateName> <serviceName> <port>]',
 };
 
 function listTemplates(bosco, next) {
