@@ -8,7 +8,7 @@ var hb = require('handlebars');
 module.exports = {
     name:'template',
     description:'A command to allow generic, template driven creation of new services and apps',
-    example:'bosco template | bosco template add|remove <githubRepo> | bosco template new <templateName> <serviceName>',
+    example:'bosco template | bosco template add|remove <githubRepo> | bosco template create <templateName> <serviceName> <port>',
     cmd:cmd
 }
 
