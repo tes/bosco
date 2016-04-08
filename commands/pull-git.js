@@ -27,7 +27,7 @@ function checkCurrentBranch(bosco, repoPath, next) {
       if (stdout) {
         var branch = stdout.replace(/(\r\n|\n|\r)/gm, '');
         if (branch !== 'master') {
-          bosco.warn(repoPath.yellow + ': ' + 'Is ot on master, it is on ' + branch.cyan);
+          bosco.warn(repoPath.yellow + ': ' + 'Is not on master, it is on ' + branch.cyan);
         }
       }
     }
