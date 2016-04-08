@@ -85,7 +85,7 @@ function getRunList(bosco, repos, repoRegex, watchRegex, repoTag) {
 }
 
 function getRepoRunList(/* Same arguments as above */) {
-  return _.map(getRunList.apply(null, arguments), _.property('name'));
+  return _.map(getRunList.apply(null, arguments), 'name');
 }
 
 function getServiceConfigFromGithub(bosco, repo, next) {
