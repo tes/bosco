@@ -8,7 +8,8 @@ module.exports = {
 
 function cmd(bosco, args) {
   var clone = require('./clone');
-  var pull = require('./pull');
+  var pullGit = require('./pull-git');
+  var pullDocker = require('./pull-docker');
   var install = require('./install');
   var activity = require('./activity');
 
@@ -18,8 +19,12 @@ function cmd(bosco, args) {
     clone.cmd(bosco, args, next);
   }
 
-  function executePull(next) {
-    pull.cmd(bosco, args, next);
+  function executePullGit(next) {
+    pullGit.cmd(bosco, args, next);
+  }
+
+  function executePullDocker(next) {
+    pullDocker.cmd(bosco, args, next);
   }
 
   function executeInstall(next) {
@@ -37,7 +42,7 @@ function cmd(bosco, args) {
     bosco.config.save(next);
   }
 
-  async.series([executeClone, executePull, executeInstall, showActivitySummary, setConfigKeyForLastMorningRun], function() {
+  async.series([executeClone, executePullGit, executeInstall, showActivitySummary, executePullDocker, setConfigKeyForLastMorningRun], function() {
     bosco.log('Morning completed');
   });
 }
