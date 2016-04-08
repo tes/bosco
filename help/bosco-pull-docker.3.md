@@ -21,7 +21,7 @@ It is called as part of the wrapper script: `morning`.
 
 This sets a regex string that is used to filter the repository list.
 
-### -nr, --noremote
+### --noremote
 
 This prevents bosco from trying to pull docker images from a remote registry.
 

@@ -21,7 +21,7 @@ It also pulls down any docker images for your team.
 
 This sets a regex string that is used to filter the repository list.
 
-### -nr, --noremote
+### --noremote
 
 This prevents bosco from trying to pull docker images from a remote registry.
 
