@@ -1,6 +1,8 @@
 var async = require('async');
 var exec = require('child_process').exec;
 var NodeRunner = require('../src/RunWrappers/Node');
+var CmdHelper = require('../src/CmdHelper');
+var RunListHelper = require('../src/RunListHelper');
 var green = '\u001b[42m \u001b[0m';
 var red = '\u001b[41m \u001b[0m';
 
@@ -66,7 +68,18 @@ function cmd(bosco, args, next) {
   var repos = bosco.getRepos();
   if (!repos) return bosco.error('You are repo-less :( You need to initialise bosco first, try \'bosco clone\'.');
 
-  bosco.log('Running npm install across all repos ...');
+  bosco.log('Running npm install across repos ...');
+
+  function setRunRepos(cb) {
+    if (CmdHelper.checkInService(bosco)) {
+      RunListHelper.getRepoRunList(bosco, bosco.getRepos(), repoRegex, '$^', null, function(err, runRepos) {
+        repos = runRepos;
+        cb(err);
+      });
+    } else {
+      cb();
+    }
+  }
 
   function installRepos(cb) {
     var progressbar = bosco.config.get('progress') === 'bar';
@@ -89,7 +102,10 @@ function cmd(bosco, args, next) {
     });
   }
 
-  installRepos(function() {
+  async.series([
+    setRunRepos,
+    installRepos,
+  ], function() {
     bosco.log('npm install complete');
     if (next) next();
   });

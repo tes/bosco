@@ -1,8 +1,9 @@
 
 var _ = require('lodash');
 var github = require('octonode');
+var async = require('async');
 
-function getRunConfig(bosco, repo, repoRegex, watchRegex) {
+function getRunConfig(bosco, repo, watchRegex) {
   var repoPath = bosco.getRepoPath(repo);
   var watch = repo.match(watchRegex) ? true : false;
   var packageJson = [repoPath, 'package.json'].join('/');
@@ -44,62 +45,47 @@ function getRunConfig(bosco, repo, repoRegex, watchRegex) {
   return svcConfig;
 }
 
-function getRunList(bosco, repos, repoRegex, watchRegex, repoTag, next) {
-  var depTree = {};
-  var revDepTree = {};
-  var repoList = [];
-  var runList = [];
-  var svcConfig;
+function getRunList(bosco, repos, repoRegex, watchRegex, repoTag) {
+  var configs = {};
 
-  function addDependencies(dependent, dependsOn) {
-    dependsOn.forEach(function(dependency) {
-      if (!dependency) {
-        return;
-      }
-
-      if (!_.contains(repoList, dependency)) {
-        repoList.push(dependency);
-      }
-      revDepTree[dependency] = revDepTree[dependency] || [];
-      revDepTree[dependency].push(dependent);
-    });
+  function getCachedConfig(repo) {
+    var config = configs[repo];
+    if (config) {
+      return config;
+    }
+    config = configs[repo] = getRunConfig(bosco, repo, watchRegex);
+    return config;
   }
 
-  // First build the tree and filtered core list
-  repos.forEach(function(repo) {
-    svcConfig = getRunConfig(bosco, repo, repoRegex, watchRegex);
-    depTree[svcConfig.name] = svcConfig;
-    var matchesRegexOrTag = (!repoTag && repo.match(repoRegex)) || (repoTag && _.contains(svcConfig.tags, repoTag));
-    if (matchesRegexOrTag) {
-      repoList.push(repo);
-    }
-  });
-
-  // Now iterate, but use the dependency tree to build the run list
-  while (repoList.length > 0) {
-    var currentRepo = repoList.shift();
-    svcConfig = depTree[currentRepo];
-    if (svcConfig && svcConfig.service) {
-      runList.push(svcConfig);
-      if (svcConfig.service.dependsOn) {
-        addDependencies(currentRepo, svcConfig.service.dependsOn);
-      }
-    } else {
-      // This is likely to be a remote infra dependency, so lets create a dummy one.
-      svcConfig = getRunConfig(bosco, currentRepo, null, '$^');
-      runList.push(svcConfig);
-    }
+  function matchesRegexOrTag(repo, tags) {
+    return (!repoTag && repo.match(repoRegex)) || (repoTag && _.contains(tags, repoTag));
   }
 
-  // Uniq and sort
-  runList = _.chain(runList)
-    .uniq(function(item) { return item.name; })
-    .sortBy(function(item) {
-      if (item.order) return item.order;
-      return (item.service.type === 'docker' || item.service.type === 'docker-compose') ? 100 : 500;
-    }).value();
+  function matchingRepo(repo) {
+    var config = getCachedConfig(repo);
+    return matchesRegexOrTag(repo, config.tags);
+  }
 
-  next(null, runList);
+  function addDependencies(repo) {
+    return [repo].concat(getCachedConfig(repo).service.dependsOn || []);
+  }
+
+  function getOrder(config) {
+    return config.order || (_.contains(['docker', 'docker-compose'], config.service.type) ? 100 : 500);
+  }
+
+  return _(repos)
+    .filter(matchingRepo)
+    .map(addDependencies)
+    .flatten() // poor man's flatmap
+    .uniq()
+    .map(getCachedConfig)
+    .sortBy(getOrder)
+    .value();
+}
+
+function getRepoRunList(/* Same arguments as above */) {
+  return _.map(getRunList.apply(null, arguments), 'name');
 }
 
 function getServiceConfigFromGithub(bosco, repo, next) {
@@ -128,6 +114,7 @@ function getServiceConfigFromGithub(bosco, repo, next) {
 }
 
 module.exports = {
-  getRunList: getRunList,
+  getRunList: async.asyncify(getRunList),
+  getRepoRunList: async.asyncify(getRepoRunList),
   getServiceConfigFromGithub: getServiceConfigFromGithub,
 };

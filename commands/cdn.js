@@ -44,16 +44,9 @@ function cmd(bosco, args) {
   if (bosco.options.list) {
     repos = bosco.options.list.split(',');
   } else {
-    var onWorkspaceFolder = bosco.options.workspace === process.cwd();
-    var hasDefaultRepoOption = !bosco.options.repo || CmdHelper.isDefaulOption('repo', bosco.options.repo);
-    var hasDefaultTagOption = !bosco.options.tag || CmdHelper.isDefaulOption('tag', bosco.options.tag);
-
-    // Tag and repo options take precendence over cwd
-    if (!onWorkspaceFolder && hasDefaultRepoOption && hasDefaultTagOption) {
-      bosco.options.service = true;
+    if (CmdHelper.checkInService(bosco)) {
       bosco.options.watch = bosco.options.watch || new RegExp(path.basename(process.cwd()));
       watchRegex = new RegExp(bosco.options.watch);
-      bosco.checkInService();
     }
 
     repos = bosco.getRepos();
