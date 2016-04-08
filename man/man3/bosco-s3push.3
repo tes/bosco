@@ -1,4 +1,4 @@
-.TH "BOSCO\-S3PUSH" "3" "March 2015" "" ""
+.TH "BOSCO\-S3PUSH" "3" "April 2016" "" ""
 .SH "NAME"
 \fBbosco-s3push\fR \- Push static assets up to S3
 .SH SYNOPSIS
@@ -37,19 +37,19 @@ Type: String
 The build name / number to assign to this push\.
 .SH CONFIGURATION REQUIREMENTS
 .P
-For this command to work you must have configured the AWS configuration within the \fB\|\.bosco\fR configuration files\.  This can either be in the \fBbosco\.json\fR file (which means it is common across all environments), or in a file named \fBenvironment\.json\fR which means it is applied based on the environment name applied in the \fB\-e\fR option\.
+For this command to work you must have configured the AWS configuration within the \fB\|\.bosco\fP configuration files\.  This can either be in the \fBbosco\.json\fP file (which means it is common across all environments), or in a file named \fBenvironment\.json\fP which means it is applied based on the environment name applied in the \fB\-e\fP option\.
 .P
 The configuration needs to contain the following:
 .P
 .RS 2
 .nf
-  "aws": {
+"aws": {
     "key": "XXX\-AWS\-KEY\-XXX",
     "secret": "XXX\-AWS\-SECRET\-XXX",
     "bucket": "bucket\-name",
     "region": "region\-name",
     "cdn": "https://your\-cloudfront\.cloudfront\.net"
-  }
+}
 .fi
 .RE
 .SH SEE ALSO

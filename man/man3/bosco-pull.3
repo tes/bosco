@@ -1,6 +1,6 @@
-.TH "BOSCO\-PULL" "3" "March 2015" "" ""
+.TH "BOSCO\-PULL" "3" "April 2016" "" ""
 .SH "NAME"
-\fBbosco-pull\fR \- Run 'git pull \-\-rebase master' across all repositories in your Github team\.
+\fBbosco-pull\fR \- Run 'git pull \-\-rebase master' and 'docker pull' across all repositories in your Github team\.
 .SH SYNOPSIS
 .P
 .RS 2
@@ -13,7 +13,7 @@ bosco pull \-r <repoPattern>
 .P
 This command is used to pull changes from all of the github repositories in your configured Github team\.
 .P
-It is called as part of the wrapper script: \fBmorning\fR\|\.
+It also pulls down any docker images for your team\.
 .SH COMMAND LINE OPTIONS
 .SS \-r, \-\-repo
 .RS 0
@@ -24,10 +24,15 @@ Type: String
 
 .RE
 .P
-This sets a regex string to use to filter the repostory list\.
+This sets a regex string that is used to filter the repository list\.
+.SS \-nr, \-\-noremote
+.P
+This prevents bosco from trying to pull docker images from a remote registry\.
 .SH SEE ALSO
 .RS 0
 .IP \(bu 2
-bosco help morning
+bosco help pull\-git
+.IP \(bu 2
+bosco help pull\-docker
 
 .RE

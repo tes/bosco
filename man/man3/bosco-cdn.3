@@ -1,4 +1,4 @@
-.TH "BOSCO\-CDN" "3" "March 2015" "" ""
+.TH "BOSCO\-CDN" "3" "April 2016" "" ""
 .SH "NAME"
 \fBbosco-cdn\fR \- Serve static assets locally for development\.
 .SH SYNOPSIS
@@ -11,14 +11,14 @@ bosco cdn minify
 .RE
 .SH DESCRIPTION
 .P
-This command will run the bundling and minification process and then serve all of the static assets locally, which defaults to http://localhost:7334/\|\.  It will watch the assets specified in the \fBbosco\-service\.json\fR file and reload if they change\.
+This command will run the bundling and minification process and then serve all of the static assets locally, which defaults to http://localhost:7334/\|\.  It will watch the assets specified in the \fBbosco\-service\.json\fP file and reload if they change\.
 .P
 It is expected that you leave this command running while doing development on services, as if you are also using Compoxure then it provides the HTML fragments that allow the static assets to be included in other pages\.
 .SH CONFIGURATION REQUIREMENTS
 .P
-For this command to work you must have configured the \fBbosco\-service\.json\fR file in the base of the micro services who would like to take part in the asset minification process\.
+For this command to work you must have configured the \fBbosco\-service\.json\fP file in the base of the micro services who would like to take part in the asset minification process\.
 .P
-An example \fBbosco\-service\.json\fR file is shown below for a simple service that doesn't have its own build script:
+An example \fBbosco\-service\.json\fP file is shown below for a simple service that doesn't have its own build script:
 .P
 .RS 2
 .nf
