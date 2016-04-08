@@ -45,11 +45,11 @@ function cmd(bosco, args) {
 
   function readyToGo(next) {
     figlet("You're ready to go, fool!", function(err, data) {
-      if (!err) {
+      if (data) {
         bosco.console.log(data);
         bosco.warn('Downloading docker images can take some time. You have all the code and are probably ready to go...\n');
-        next();
       }
+      next();
     });
   }
 
