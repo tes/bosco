@@ -1,6 +1,7 @@
 
 var _ = require('lodash');
 var github = require('octonode');
+var async = require('async');
 
 function getRunConfig(bosco, repo, watchRegex) {
   var repoPath = bosco.getRepoPath(repo);
@@ -44,9 +45,8 @@ function getRunConfig(bosco, repo, watchRegex) {
   return svcConfig;
 }
 
-function getRunList(bosco, repos, repoRegex, watchRegex, repoTag, next) {
+function getRunList(bosco, repos, repoRegex, watchRegex, repoTag) {
   var configs = {};
-  var runList;
 
   function getCachedConfig(repo) {
     var config = configs[repo];
@@ -74,7 +74,7 @@ function getRunList(bosco, repos, repoRegex, watchRegex, repoTag, next) {
     return config.order || (_.contains(['docker', 'docker-compose'], config.service.type) ? 100 : 500);
   }
 
-  runList = _(repos)
+  return _(repos)
     .filter(matchingRepo)
     .map(addDependencies)
     .flatten() // poor man's flatmap
@@ -82,8 +82,10 @@ function getRunList(bosco, repos, repoRegex, watchRegex, repoTag, next) {
     .map(getCachedConfig)
     .sortBy(getOrder)
     .value();
+}
 
-  next(null, runList);
+function getRepoRunList(/* Same arguments as above */) {
+  return _.map(getRunList.apply(null, arguments), _.property('name'));
 }
 
 function getServiceConfigFromGithub(bosco, repo, next) {
@@ -112,6 +114,7 @@ function getServiceConfigFromGithub(bosco, repo, next) {
 }
 
 module.exports = {
-  getRunList: getRunList,
+  getRunList: async.asyncify(getRunList),
+  getRepoRunList: async.asyncify(getRepoRunList),
   getServiceConfigFromGithub: getServiceConfigFromGithub,
 };
