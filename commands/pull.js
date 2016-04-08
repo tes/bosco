@@ -21,7 +21,7 @@ function cmd(bosco, args, next) {
   }
 
   function executePullDocker(next) {
-    pullDocker(bosco, args, next);
+    pullDocker.cmd(bosco, args, next);
   }
 
   async.series([
