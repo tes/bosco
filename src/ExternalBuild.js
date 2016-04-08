@@ -74,8 +74,9 @@ module.exports = function(bosco) {
       readyText = service.build.watch.ready || readyText;
       checkDelay = service.build.watch.checkDelay || checkDelay;
       if (service.build.watch.command) {
-        command = ensureCorrectNodeVersion(service.build.watch.command);
-        commandForLog = command;
+        var watchCommand = service.build.watch.command;
+        commandForLog = watchCommand;
+        command = ensureCorrectNodeVersion(watchCommand);
       }
     }
 
