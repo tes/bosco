@@ -75,6 +75,7 @@ module.exports = function(bosco) {
       checkDelay = service.build.watch.checkDelay || checkDelay;
       if (service.build.watch.command) {
         command = ensureCorrectNodeVersion(service.build.watch.command);
+        commandForLog = command;
       }
     }
 

@@ -124,7 +124,7 @@ describe('ExternalBuild', function() {
       name: 'service',
       repoPath: localBosco.getRepoPath(''),
       build: {
-        command: ['echo hi; sleep 1'],
+        command: 'echo hi; sleep 1',
         watch: {
           ready: 'hi',
           checkDelay: 10
@@ -140,6 +140,10 @@ describe('ExternalBuild', function() {
       if (err) return done(err);
 
       expect(localBosco.console).to.not.have.property('_log');
+      expect(localBosco._log).to.be.an('array');
+      expect(localBosco._log).to.have.length(2);
+      expect(localBosco._log[0]).to.contain('echo hi; sleep 1');
+
       done();
     });
   });
