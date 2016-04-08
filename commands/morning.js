@@ -1,5 +1,6 @@
 var async = require('async');
 var moment = require('moment');
+var figlet = require('figlet');
 
 module.exports = {
   name: 'morning',
@@ -42,7 +43,17 @@ function cmd(bosco, args) {
     bosco.config.save(next);
   }
 
-  async.series([executeClone, executePullGit, executeInstall, showActivitySummary, executePullDocker, setConfigKeyForLastMorningRun], function() {
+  function readyToGo(next) {
+    figlet("You're ready to go, fool!", function(err, data) {
+      if (!err) {
+        bosco.console.log(data);
+        bosco.warn('Downloading docker images can take some time. You have all the code and are probably ready to go...\n');
+        next();
+      }
+    });
+  }
+
+  async.series([executeClone, executePullGit, executeInstall, showActivitySummary, readyToGo, executePullDocker, setConfigKeyForLastMorningRun], function() {
     bosco.log('Morning completed');
   });
 }
