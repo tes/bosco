@@ -147,9 +147,24 @@ function isDefaulOption(option, value) {
   return configOption && configOption.default === value;
 }
 
+function checkInService(bosco) {
+  var onWorkspaceFolder = bosco.options.workspace === process.cwd();
+  var hasDefaultRepoOption = !bosco.options.repo || isDefaulOption('repo', bosco.options.repo);
+  var hasDefaultTagOption = !bosco.options.tag || isDefaulOption('tag', bosco.options.tag);
+
+  // Tag and repo options take precendence over cwd
+  if (!onWorkspaceFolder && hasDefaultRepoOption && hasDefaultTagOption) {
+    bosco.options.service = true;
+    bosco.checkInService();
+    return true;
+  }
+  return false;
+}
+
 module.exports = {
   createOptions: createOptions,
   iterate: iterate,
   execute: execute,
   isDefaulOption: isDefaulOption,
+  checkInService: checkInService,
 };
