@@ -71,14 +71,14 @@ function cmd(bosco, args, next) {
   bosco.log('Running npm install across repos ...');
 
   function setRunRepos(cb) {
-    if (CmdHelper.checkInService(bosco)) {
-      RunListHelper.getRepoRunList(bosco, bosco.getRepos(), repoRegex, '$^', null, function(err, runRepos) {
-        repos = runRepos;
-        cb(err);
-      });
-    } else {
-      cb();
+    if (!CmdHelper.checkInService(bosco)) {
+      return cb();
     }
+
+    RunListHelper.getRepoRunList(bosco, bosco.getRepos(), repoRegex, '$^', null, function(err, runRepos) {
+      repos = runRepos;
+      cb(err);
+    });
   }
 
   function installRepos(cb) {

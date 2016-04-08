@@ -116,14 +116,14 @@ function cmd(bosco, args, next) {
   }
 
   function setRunRepos(cb) {
-    if (CmdHelper.checkInService(bosco)) {
-      RunListHelper.getRepoRunList(bosco, bosco.getRepos(), repoRegex, watchNothing, null, function(err, runRepos) {
-        repos = runRepos;
-        cb(err);
-      });
-    } else {
-      cb();
+    if (!CmdHelper.checkInService(bosco)) {
+      return cb();
     }
+
+    RunListHelper.getRepoRunList(bosco, bosco.getRepos(), repoRegex, watchNothing, null, function(err, runRepos) {
+      repos = runRepos;
+      cb(err);
+    });
   }
 
   async.series([
