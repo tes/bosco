@@ -1,4 +1,4 @@
-.TH "BOSCO\-RUN" "3" "March 2015" "" ""
+.TH "BOSCO\-RUN" "3" "April 2016" "" ""
 .SH "NAME"
 \fBbosco-run\fR \- Run your services\.
 .SH SYNOPSIS
@@ -12,19 +12,19 @@ bosco run \-t <tag>
 .RE
 .SH DESCRIPTION
 .P
-This command launches all of your services \- either as Node processes via PM2, or as Docker images if specified in the \fBbosco\-service\.json\fR\|\.
+This command launches all of your services \- either as Node processes via PM2, or as Docker images if specified in the \fBbosco\-service\.json\fP\|\.
 .SS Node Services
 .P
 Node services are launched via PM2, via one of two mechanisms:
 .RS 0
 .IP \(bu 2
-If a \fBstart\fR command is specified in the \fBpackage\.json\fR, then it will launch the service using this command\.
+If a \fBstart\fP command is specified in the \fBpackage\.json\fP, then it will launch the service using this command\.
 .IP \(bu 2
-If there is no start command in the \fBpackage\.json\fR, but a \fBstart\fR command is specified in the \fBbosco\-service\.json\fR, then it will launch the service using this command\.
+If there is no start command in the \fBpackage\.json\fP, but a \fBstart\fP command is specified in the \fBbosco\-service\.json\fP, then it will launch the service using this command\.
 
 .RE
 .P
-For example, in \fBpackage\.json\fR:
+For example, in \fBpackage\.json\fP:
 .P
 .RS 2
 .nf
@@ -36,7 +36,7 @@ For example, in \fBpackage\.json\fR:
 .fi
 .RE
 .P
-In \fBbosco\-service\.json\fR:
+In \fBbosco\-service\.json\fP:
 .P
 .RS 2
 .nf
@@ -51,9 +51,9 @@ In \fBbosco\-service\.json\fR:
 .RE
 .SS Docker Services
 .P
-Docker services are launched via Docker, and need the Docker configuration to be specified within the \fBbosco\-service\.json\fR file\.
+Docker services are launched via Docker, and need the Docker configuration to be specified within the \fBbosco\-service\.json\fP file\.
 .P
-For example, in \fBbosco\-service\.json\fR:
+For example, in \fBbosco\-service\.json\fP:
 .P
 .RS 2
 .nf
@@ -86,7 +86,7 @@ Type: String
 This sets a regex string to use to filter the repostory list\.
 .SS \-t, \-\-tag
 .P
-This sets a tag to use to filter the repostory list (as specified in \fBbosco\-service\.json\fR as above)\.
+This sets a tag to use to filter the repostory list (as specified in \fBbosco\-service\.json\fP as above)\.
 .SH SEE ALSO
 .RS 0
 .IP \(bu 2

@@ -1,0 +1,36 @@
+.TH "BOSCO\-PULL\-DOCKER" "3" "April 2016" "" ""
+.SH "NAME"
+\fBbosco-pull-docker\fR \- Pull docker images
+.SH SYNOPSIS
+.P
+.RS 2
+.nf
+bosco pull\-docker
+bosco pull\-docker \-r <repoPattern>
+.fi
+.RE
+.SH DESCRIPTION
+.P
+This command is used to pull changes from your docker registry\.
+.P
+It is called as part of the wrapper script: \fBmorning\fP\|\.
+.SH COMMAND LINE OPTIONS
+.SS \-r, \-\-repo
+.RS 0
+.IP \(bu 2
+Default: \.*
+.IP \(bu 2
+Type: String
+
+.RE
+.P
+This sets a regex string that is used to filter the repository list\.
+.SS \-\-noremote
+.P
+This prevents bosco from trying to pull docker images from a remote registry\.
+.SH SEE ALSO
+.RS 0
+.IP \(bu 2
+bosco help morning
+
+.RE

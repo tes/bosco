@@ -1,4 +1,4 @@
-bosco-pull(3) -- Run 'git pull --rebase master' across all repositories in your Github team.
+bosco-pull(3) -- Run 'git pull --rebase master' and 'docker pull' across all repositories in your Github team.
 ==============================================
 
 ## SYNOPSIS
@@ -10,7 +10,7 @@ bosco-pull(3) -- Run 'git pull --rebase master' across all repositories in your 
 
 This command is used to pull changes from all of the github repositories in your configured Github team.
 
-It is called as part of the wrapper script: `morning`.
+It also pulls down any docker images for your team.
 
 ## COMMAND LINE OPTIONS
 
@@ -19,8 +19,13 @@ It is called as part of the wrapper script: `morning`.
 * Default: .*
 * Type: String
 
-This sets a regex string to use to filter the repostory list.
+This sets a regex string that is used to filter the repository list.
+
+### --noremote
+
+This prevents bosco from trying to pull docker images from a remote registry.
 
 ## SEE ALSO
 
-* bosco help morning
+* bosco help pull-git
+* bosco help pull-docker

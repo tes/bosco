@@ -1,5 +1,6 @@
 var async = require('async');
 var moment = require('moment');
+var figlet = require('figlet');
 
 module.exports = {
   name: 'morning',
@@ -8,7 +9,8 @@ module.exports = {
 
 function cmd(bosco, args) {
   var clone = require('./clone');
-  var pull = require('./pull');
+  var pullGit = require('./pull-git');
+  var pullDocker = require('./pull-docker');
   var install = require('./install');
   var activity = require('./activity');
 
@@ -18,8 +20,12 @@ function cmd(bosco, args) {
     clone.cmd(bosco, args, next);
   }
 
-  function executePull(next) {
-    pull.cmd(bosco, args, next);
+  function executePullGit(next) {
+    pullGit.cmd(bosco, args, next);
+  }
+
+  function executePullDocker(next) {
+    pullDocker.cmd(bosco, args, next);
   }
 
   function executeInstall(next) {
@@ -37,7 +43,17 @@ function cmd(bosco, args) {
     bosco.config.save(next);
   }
 
-  async.series([executeClone, executePull, executeInstall, showActivitySummary, setConfigKeyForLastMorningRun], function() {
+  function readyToGo(next) {
+    figlet("You're ready to go, fool!", function(err, data) {
+      if (data) {
+        bosco.console.log(data);
+        bosco.warn('Downloading docker images can take some time. You have all the code and are probably ready to go...\n');
+      }
+      next();
+    });
+  }
+
+  async.series([executeClone, executePullGit, executeInstall, showActivitySummary, readyToGo, executePullDocker, setConfigKeyForLastMorningRun], function() {
     bosco.log('Morning completed');
   });
 }
