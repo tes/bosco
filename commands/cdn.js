@@ -59,8 +59,14 @@ function cmd(bosco, args) {
   }
 
   function startServer(staticAssets, staticRepos, serverPort) {
-    var isWatchedAsset = function(assetPath) {
-      return assetPath && !fs.lstatSync(assetPath).isDirectory() && assetPath.match(watchRegex);
+    var isWatchedFile = function(assetPath) {
+      var watched;
+      try {
+        watched = assetPath && !fs.lstatSync(assetPath).isDirectory() && assetPath.match(watchRegex);
+      } catch (ex) {
+        watched = false;
+      }
+      return watched;
     };
 
     function getAsset(assetUrl) {
@@ -100,7 +106,7 @@ function cmd(bosco, args) {
         'Access-Control-Allow-Origin': '*',
       });
 
-      if (isWatchedAsset(asset.path)) {
+      if (isWatchedFile(asset.path)) {
         fs.readFile(asset.path, function(err, content) {
           response.end(content);
         });
@@ -112,7 +118,7 @@ function cmd(bosco, args) {
     server.listen(serverPort);
 
     if (bosco.options['browser-sync']) {
-      var assets = _.filter(_.map(staticAssets, 'path'), isWatchedAsset);
+      var assets = _.filter(_.map(staticAssets, 'path'), isWatchedFile);
       var extraFiles = _.filter(_.uniq(_.flattenDeep(_.map(staticAssets, 'extraFiles'))));
       var assetsToWatch = _.union(assets, extraFiles);
       bs.init({
