@@ -83,7 +83,7 @@ Runner.prototype.getInterpreter = function(bosco, options, next) {
       }
     });
 
-    e.on('exit', function() {
+    e.on('close', function() {
       if (interpreter) {
         bosco.log(options.name + ' using .nvmrc: ' + interpreter.cyan);
       }
