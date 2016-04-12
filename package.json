@@ -29,7 +29,7 @@
     "bosco": "./bin/bosco.js"
   },
   "directories": {
-    "man": "./man",
+    "man": "./man/man3",
     "bin": "./bin"
   },
   "repository": {
