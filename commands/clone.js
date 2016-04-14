@@ -164,7 +164,7 @@ function cmd(bosco, args, next) {
   var team = bosco.getTeam();
   var teamConfig = bosco.config.get('teams:' + team);
 
-  var client = github.client(bosco.config.get('github:authToken'));
+  var client = github.client(bosco.config.get('github:authToken'), {hostname: bosco.config.get('github:apiHostname') });
 
   if (!teamConfig) {
     // The user does not have a team, so just treat the repos config

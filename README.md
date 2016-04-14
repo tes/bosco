@@ -44,6 +44,15 @@ At the end of this sequence of steps you will have:
 * Any dependent modules linked between projects (e.g. if one repo is actually a module depended on by another).
 * All projects fully npm installed.
 
+### Github enterprise support
+
+In order to use Bosco with your github enterprise account an additional parameter is avaialable in the bosco config file.
+
+````
+apiHostname: "your.enterprise.hostname/api/v3"
+````
+
+
 ## To join a new team
 
 ```
