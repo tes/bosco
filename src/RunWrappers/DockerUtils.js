@@ -4,8 +4,6 @@ var path = require('path');
 var fs = require('fs');
 var sf = require('sf');
 var tar = require('tar-fs');
-var green = '\u001b[42m \u001b[0m';
-var red = '\u001b[41m \u001b[0m';
 
 function getHostIp() {
   var ip = _.chain(os.networkInterfaces())
@@ -82,23 +80,29 @@ function createContainer(docker, fqn, options, next) {
  * Check to see if the process is running by making a connection and
  * seeing if it is immediately closed or stays open long enough for us to close it.
  */
-function checkRunning(port, next) {
+function checkRunning(port, host, next) {
   var net = require('net');
-  var socket = net.createConnection(port);
+  var socket = net.createConnection(port, host);
   var start = new Date();
   var timer;
+  var finished;
   socket.on('connect', function() {
     timer = setTimeout(function() { socket.end(); }, 200);
   });
   socket.on('close', function(hadError) {
     if (hadError) return; // If we are closing due to an error ignore it
-
     clearTimeout(timer);
     var closed = new Date() - start;
-    next(null, closed > 100 ? true : false);
+    if (!finished) {
+      finished = true;
+      next(null, closed > 100 ? true : false);
+    }
   });
   socket.on('error', function() {
-    next(new Error('Failed to connect'), false);
+    if (!finished) {
+      finished = true;
+      next(new Error('Failed to connect'), false);
+    }
   });
 }
 
@@ -135,11 +139,12 @@ function startContainer(bosco, docker, fqn, options, container, next) {
       return next();
     }
 
+    var checkHost = bosco.config.get('dockerHost') || 'localhost';
     var checkTimeout = options.service.checkTimeout || 10000;
     var checkEnd = Date.now() + checkTimeout;
 
     function check() {
-      checkRunning(checkPort, function(err, running) {
+      checkRunning(checkPort, checkHost, function(err, running) {
         if (!err && running) {
           process.stdout.write('\n');
           return next();
@@ -152,10 +157,10 @@ function startContainer(bosco, docker, fqn, options, container, next) {
         }
 
         process.stdout.write('.');
-        setTimeout(check, 500);
+        setTimeout(check, 50);
       });
     }
-    bosco.log('Waiting for ' + options.name.green + ' to respond on port ' + ('' + checkPort).magenta);
+    bosco.log('Waiting for ' + options.name.green + ' to respond at ' + checkHost.magenta + ' on port ' + ('' + checkPort).magenta);
     check();
   });
 }
@@ -233,22 +238,11 @@ function pullImage(bosco, docker, repoTag, next) {
   bosco.log('Pulling image ' + repoTag.green + ' ...');
 
   docker.pull(repoTag, function(err, stream) {
-    var currentLayer;
-    var progress;
-    var previousTotal;
+    var currentLayers = {};
 
     if (err || prettyError) return next(prettyError || err);
 
-    function newBar(id, total) {
-      if (bosco.config.get('progress') === 'bar') {
-        return new bosco.Progress('Downloading ' + id + ' [:bar] :percent :etas', {
-          complete: green,
-          incomplete: red,
-          width: 50,
-          total: total,
-        });
-      }
-
+    function newBar(id) {
       var logged = false;
       return {
         tick: function() {
@@ -261,18 +255,23 @@ function pullImage(bosco, docker, repoTag, next) {
     }
 
     stream.on('data', function(data) {
-      var json = JSON.parse(data);
-
+      var json;
+      try {
+        json = JSON.parse(data);
+      } catch (ex) {
+        json = {};
+      }
       if (json.errorDetail) {
         prettyError = json.error;
       } else if (json.status === 'Downloading') {
-        if (json.id !== currentLayer) {
-          progress = newBar(json.id, json.progressDetail.total);
-          currentLayer = json.id;
-          previousTotal = 0;
+        if (!currentLayers[json.id]) {
+          currentLayers[json.id] = {};
+          currentLayers[json.id].progress = newBar(json.id, json.progressDetail.total);
+        } else {
+          currentLayers[json.id].progress.tick();
         }
-        progress.tick(json.progressDetail.current - previousTotal);
-        previousTotal = json.progressDetail.current;
+      } else if (json.status === 'Pull complete') {
+        bosco.log('Pull complete for layer ' + json.id);
       }
     });
     stream.once('end', handler);
