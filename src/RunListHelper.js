@@ -66,19 +66,21 @@ function getRunList(bosco, repos, repoRegex, watchRegex, repoTag) {
     return matchesRegexOrTag(repo, config.tags);
   }
 
-  function addDependencies(repo) {
-    return [repo].concat(getCachedConfig(repo).service.dependsOn || []);
+  // in order to understand recursion one must understand recursion
+  function addDependencies(resolved, repo) {
+    if (_.contains(resolved, repo)) {
+      return resolved;
+    }
+    return _.reduce(getCachedConfig(repo).service.dependsOn, addDependencies, resolved.concat(repo || []));
   }
 
   function getOrder(config) {
     return config.order || (_.contains(['docker', 'docker-compose'], config.service.type) ? 100 : 500);
   }
 
-  return _(repos)
+  return _.chain(repos)
     .filter(matchingRepo)
-    .map(addDependencies)
-    .flatten() // poor man's flatmap
-    .uniq()
+    .reduce(addDependencies, [])
     .map(getCachedConfig)
     .sortBy(getOrder)
     .value();
