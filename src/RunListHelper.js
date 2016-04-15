@@ -93,7 +93,7 @@ function getRepoRunList(/* Same arguments as above */) {
 function getServiceConfigFromGithub(bosco, repo, next) {
   var team = bosco.getTeam();
   var organisation = team.split('/')[0];
-  var client = github.client(bosco.config.get('github:authToken'));
+  var client = github.client(bosco.config.get('github:authToken'), {hostname: bosco.config.get('github:apiHostname')});
   var githubRepo = organisation + '/' + repo;
   var configKey = 'cache:github:' + githubRepo;
   var cachedConfig = bosco.config.get(configKey);

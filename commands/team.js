@@ -56,7 +56,7 @@ function getTeams(client, cb) {
 }
 
 function syncTeams(bosco, next) {
-  var client = github.client(bosco.config.get('github:authToken'));
+  var client = github.client(bosco.config.get('github:authToken'), {hostname: bosco.config.get('github:apiHostname')});
   var currentTeams = bosco.config.get('teams') || {};
   var added = 0;
 
