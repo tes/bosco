@@ -3,8 +3,12 @@
 var expect = require('expect.js');
 var fs = require('fs-extra');
 var sinon = require('sinon');
+var osenv = require('osenv');
+var _ = require('lodash');
 
 var Bosco = require('../index');
+
+var HOME = osenv.home();
 
 describe('bosco', function() {
   var bosco;
@@ -35,7 +39,9 @@ describe('bosco', function() {
         Object.defineProperty(process, 'platform', {
           value: platform
         });
-        process.env = env;
+        if (env) {
+          process.env = _.assign({HOME: HOME}, env);
+        }
         return bosco.findConfigFolder();
       } finally {
         Object.defineProperty(process, 'platform', {
@@ -47,7 +53,6 @@ describe('bosco', function() {
 
     function getXdgConfigEnv(name) {
       return {
-        HOME: '/my/home',
         XDG_CONFIG_HOME: '/my/' + name + '/config/home',
         XDG_DATA_HOME: '/my/' + name + '/data/home',
         XDG_CACHE_HOME: '/my/' + name + '/cache/home'
@@ -63,20 +68,20 @@ describe('bosco', function() {
 
     it('should default to XDG for config on linux', function() {
       mockBosco.expects('_migrateConfig').twice();
-      expect(getConfigDir(bosco, 'linux', {HOME: '/my/home'})).to.be('/my/home/.config/bosco');
-      expect(getConfigDir(bosco, 'linux', {HOME: '/my/home', XDG_CONFIG_HOME: '/my/linux/config/home'})).to.be('/my/linux/config/home/bosco');
+      expect(getConfigDir(bosco, 'linux')).to.be(HOME + '/.config/bosco');
+      expect(getConfigDir(bosco, 'linux', {XDG_CONFIG_HOME: '/my/linux/config/home'})).to.be('/my/linux/config/home/bosco');
     });
 
     it('should default to dot-dir for config on not-linux', function() {
       mockBosco.expects('_migrateConfig').never();
-      expect(getConfigDir(bosco, 'darwin', {HOME: '/my/home'})).to.be('/my/home/.bosco');
-      expect(getConfigDir(bosco, 'win32', {HOME: '/my/home'})).to.be('/my/home/.bosco');
+      expect(getConfigDir(bosco, 'darwin')).to.be(HOME + '/.bosco');
+      expect(getConfigDir(bosco, 'win32')).to.be(HOME + '/.bosco');
     });
 
     it('should call migrate with correct args', function() {
-      mockBosco.expects('_migrateConfig').once().withArgs('/my/home/.bosco', '/my/home/.config/bosco');
+      mockBosco.expects('_migrateConfig').once().withArgs(HOME + '/.bosco', HOME + '/.config/bosco');
 
-      getConfigDir(bosco, 'linux', {HOME: '/my/home'});
+      getConfigDir(bosco, 'linux');
     });
   });
 
