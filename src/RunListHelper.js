@@ -104,7 +104,10 @@ function getServiceConfigFromGithub(bosco, repo, next) {
     var ghrepo = client.repo(githubRepo);
     bosco.log('Retrieving ' + 'bosco-service.json'.green + ' config from github @ ' + githubRepo.cyan);
     ghrepo.contents('bosco-service.json', function(err, contents) {
-      if (err) { return next(err); }
+      if (err) {
+        bosco.log('Failed to get service config - does bosco have access?', err);
+        return next(err);
+      }
       var content = new Buffer(contents.content, 'base64');
       var config = JSON.parse(content.toString());
       bosco.config.set(configKey, config);
