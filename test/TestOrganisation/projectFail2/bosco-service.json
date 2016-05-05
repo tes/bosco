@@ -6,14 +6,13 @@
       "glob": [
         "js/**"
       ]
-    },
-    "css": {}
+    }
   },
   "files": {
     "info": {
       "basePath": "/public",
-      "pdf": [
-        "pdf/guide.pdf"
+      "doc": [
+        "doc/test.txt"
       ]
     }
   }

@@ -45,7 +45,7 @@ module.exports = function(bosco) {
     return assets;
   }
 
-  function createAssetList(boscoRepo, buildNumber, minified, tagFilter, next) {
+  function createAssetList(boscoRepo, buildNumber, minified, tagFilter, fileTypesWhitelist, next) {
     var assetHelper = AssetHelper.getAssetHelper(boscoRepo, tagFilter);
     var staticAssets = [];
     var assetKey;
@@ -53,7 +53,7 @@ module.exports = function(bosco) {
 
     if (boscoRepo.assets) {
       assetBasePath = boscoRepo.assets.basePath || '.';
-      _.forEach(_.pick(boscoRepo.assets, ['js', 'css', 'img', 'html', 'swf', 'fonts']), function(assets, type) {
+      _.forEach(_.pick(boscoRepo.assets, fileTypesWhitelist), function(assets, type) {
         _.forOwn(assets, function(value, tag) {
           if (!value) return;
           _.forEach(value, function(potentialAsset) {
@@ -75,7 +75,7 @@ module.exports = function(bosco) {
     if (boscoRepo.files) {
       _.forOwn(boscoRepo.files, function(assetTypes, tag) {
         assetBasePath = assetTypes.basePath || '.';
-        _.forEach(_.pick(assetTypes, ['js', 'css', 'img', 'html', 'swf', 'fonts']), function(value, type) {
+        _.forEach(_.pick(assetTypes, fileTypesWhitelist), function(value, type) {
           if (!value) return;
           _.forEach(value, function(potentialAsset) {
             var assets = globAsset(potentialAsset, path.join(boscoRepo.path, assetBasePath));
@@ -117,7 +117,7 @@ module.exports = function(bosco) {
             if (!ignoreFailure) return cb(err);
             failedBuilds.push({name: service.name, err: err});
           }
-          createAssetList(service, options.buildNumber, options.minify, options.tagFilter, function(err, assets) {
+          createAssetList(service, options.buildNumber, options.minify, options.tagFilter, options.fileTypesWhitelist, function(err, assets) {
             if (err) {
               if (!ignoreFailure) return cb(err);
               failedBuilds.push({name: service.name, err: err});
