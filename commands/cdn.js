@@ -188,6 +188,7 @@ function cmd(bosco, args) {
         tagFilter: fileKey,
         watchBuilds: false,
         reloadOnly: true,
+        fileTypesWhitelist: bosco.options.fileTypesWhitelist,
       };
       bosco.staticUtils.getStaticAssets(staticAssetOptions, function(err, updatedAssets) {
         _.forEach(updatedAssets, function(value) {
