@@ -182,6 +182,30 @@ e.g.
 }
 ```
 
+### Supported static asset types
+
+Bosco has a specific list of asset filetypes that it will process, although this can be easily extended using options.fileTypesWhitelist.
+
+The current list is 'js', 'css', 'img', 'html', 'swf', 'fonts', 'pdf'.
+
+To serve swf, fonts or pdf, you should add them under a 'files' key (at the same level as the 'assets' key), with the following structure:
+
+```json
+{
+  "assets": { 
+    ... 
+  },
+  "files": {
+    "info": {
+      "basePath": "dist",
+      "fonts": [
+        "pdf/guide.pdf"
+      ]
+    }
+  }
+}
+```
+
 ## Using Bosco to start Docker projects
 
 If you add a bosco-service.json at the base of your docker projects, you can take advantage of Bosco knowing how to build, pull and run them as dependencies of your services:

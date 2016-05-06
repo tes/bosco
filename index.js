@@ -47,6 +47,7 @@ Bosco.prototype.init = function(options) {
 
   self.options.cpus = require('os').cpus().length;
   self.options.inService = false;
+  self.options.fileTypesWhitelist = ['js', 'css', 'img', 'html', 'swf', 'fonts', 'pdf'];
 
   self.config = require('nconf');
   self.prompt = prompt;
