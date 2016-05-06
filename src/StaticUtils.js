@@ -45,8 +45,9 @@ module.exports = function(bosco) {
     return assets;
   }
 
-  function createAssetList(boscoRepo, buildNumber, minified, tagFilter, fileTypesWhitelist, next) {
+  function createAssetList(boscoRepo, buildNumber, minified, tagFilter, next) {
     var assetHelper = AssetHelper.getAssetHelper(boscoRepo, tagFilter);
+    var fileTypesWhitelist = bosco.options.fileTypesWhitelist;
     var staticAssets = [];
     var assetKey;
     var assetBasePath;
@@ -117,7 +118,7 @@ module.exports = function(bosco) {
             if (!ignoreFailure) return cb(err);
             failedBuilds.push({name: service.name, err: err});
           }
-          createAssetList(service, options.buildNumber, options.minify, options.tagFilter, options.fileTypesWhitelist, function(err, assets) {
+          createAssetList(service, options.buildNumber, options.minify, options.tagFilter, function(err, assets) {
             if (err) {
               if (!ignoreFailure) return cb(err);
               failedBuilds.push({name: service.name, err: err});

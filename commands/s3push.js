@@ -215,7 +215,6 @@ function cmd(bosco, args, callback) {
       tagFilter: tag,
       watchBuilds: false,
       reloadOnly: false,
-      fileTypesWhitelist: bosco.options.fileTypesWhitelist,
     };
 
     bosco.staticUtils.getStaticAssets(options, function(err, staticAssets) {

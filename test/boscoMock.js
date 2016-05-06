@@ -18,7 +18,8 @@ module.exports = function boscoMock(extra) {
       environment: 'test',
       nvmUse: '',
       nvmUseDefault: '',
-      nvmWhich: ''
+      nvmWhich: '',
+      fileTypesWhitelist: ['js', 'css', 'img', 'html', 'swf', 'fonts', 'pdf']
     },
     getRepos: function() {
       return this.repos;

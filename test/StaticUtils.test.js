@@ -14,8 +14,6 @@ function arrayContains(arr, contains) {
   });
 }
 
-var fileTypesWhitelist = ['js', 'css', 'img', 'html', 'swf', 'fonts', 'pdf'];
-
 describe('Bosco Static Asset Handling', function() {
   this.timeout(10000);
   this.slow(5000);
@@ -29,7 +27,6 @@ describe('Bosco Static Asset Handling', function() {
       tagFilter: null,
       watchBuilds: false,
       reloadOnly: false,
-      fileTypesWhitelist: fileTypesWhitelist
     }
 
     var localBosco = boscoMock()
@@ -59,7 +56,6 @@ describe('Bosco Static Asset Handling', function() {
       tagFilter: null,
       watchBuilds: false,
       reloadOnly: false,
-      fileTypesWhitelist: fileTypesWhitelist
     }
 
     var localBosco = boscoMock()
@@ -96,7 +92,6 @@ describe('Bosco Static Asset Handling', function() {
       tagFilter: null,
       watchBuilds: false,
       reloadOnly: false,
-      fileTypesWhitelist: fileTypesWhitelist
     }
     var localBosco = boscoMock()
     var utils = StaticUtils(localBosco);
@@ -138,7 +133,6 @@ describe('Bosco Static Asset Handling', function() {
       tagFilter: null,
       watchBuilds: false,
       reloadOnly: false,
-      fileTypesWhitelist: fileTypesWhitelist
     }
 
     var localBosco = boscoMock()
@@ -168,7 +162,6 @@ describe('Bosco Static Asset Handling', function() {
       tagFilter: null,
       watchBuilds: false,
       reloadOnly: false,
-      fileTypesWhitelist: fileTypesWhitelist
     };
 
     var localBosco = boscoMock()
@@ -193,7 +186,6 @@ describe('Bosco Static Asset Handling', function() {
       buildNumber: 'local',
       watchBuilds: false,
       reloadOnly: false,
-      fileTypesWhitelist: fileTypesWhitelist
     }
 
     var utils = StaticUtils(boscoMock());
@@ -225,7 +217,6 @@ describe('Bosco Static Asset Handling', function() {
       buildNumber: 'local',
       watchBuilds: false,
       reloadOnly: false,
-      fileTypesWhitelist: fileTypesWhitelist
     }
 
     var utils = StaticUtils(boscoMock());
@@ -250,7 +241,6 @@ describe('Bosco Static Asset Handling', function() {
       buildNumber: 'local',
       watchBuilds: false,
       reloadOnly: false,
-      fileTypesWhitelist: fileTypesWhitelist
     }
 
     var utils = StaticUtils(boscoMock());
@@ -277,7 +267,6 @@ describe('Bosco Static Asset Handling - Custom Building', function() {
       buildNumber: 'local',
       watchBuilds: false,
       reloadOnly: false,
-      fileTypesWhitelist: fileTypesWhitelist
     }
 
     var utils = StaticUtils(boscoMock());
@@ -306,7 +295,6 @@ describe('Bosco Static Asset Handling - Custom Building', function() {
       buildNumber: 'local',
       watchBuilds: false,
       reloadOnly: false,
-      fileTypesWhitelist: fileTypesWhitelist
     }
 
     var utils = StaticUtils(boscoMock());
@@ -326,7 +314,6 @@ describe('Bosco Static Asset Handling - Custom Building', function() {
       buildNumber: 'local',
       watchBuilds: true,
       reloadOnly: false,
-      fileTypesWhitelist: fileTypesWhitelist
     }
 
     var utils = StaticUtils(boscoMock());
@@ -354,7 +341,6 @@ describe('Bosco Static Asset Handling - Custom Building', function() {
       buildNumber: 'local',
       watchBuilds: true,
       reloadOnly: false,
-      fileTypesWhitelist: fileTypesWhitelist
     }
 
     var utils = StaticUtils(boscoMock());
@@ -376,7 +362,6 @@ describe('Bosco Static Asset Handling - Custom Building', function() {
       buildNumber: 'local',
       watchBuilds: true,
       reloadOnly: false,
-      fileTypesWhitelist: fileTypesWhitelist
     }
 
     var utils = StaticUtils(boscoMock());
