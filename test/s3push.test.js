@@ -19,7 +19,8 @@ describe('s3push', function() {
       nvmUseDefault: '',
       nvmWhich: '',
       repos: ['projectFail'],
-      noprompt: true
+      noprompt: true,
+      fileTypesWhitelist: ['js', 'css', 'img', 'html', 'swf', 'fonts', 'pdf']
     };
     options.options = options;
     var localBosco = boscoMock(options);
@@ -28,6 +29,25 @@ describe('s3push', function() {
     s3push.cmd(localBosco, [], function(err) {
       expect(err).to.be.an(Error);
       expect(err).to.have.property('code', 1);
+      done();
+    });
+  });
+
+  it('should fail if their are no assets to push to s3', function(done) {
+    var options = {
+      nvmUse: '',
+      nvmUseDefault: '',
+      nvmWhich: '',
+      repos: ['projectEmpty'],
+      noprompt: true,
+      fileTypesWhitelist: ['js', 'css', 'img', 'html', 'swf', 'fonts', 'pdf']
+    };
+    options.options = options;
+    var localBosco = boscoMock(options);
+    localBosco.staticUtils = StaticUtils(localBosco);
+
+    s3push.cmd(localBosco, [], function(err) {
+      expect(err).to.be.an(Error);
       done();
     });
   });
@@ -43,7 +63,8 @@ describe('s3push', function() {
       nvmWhich: '',
       repos: ['project3'],
       noprompt: true,
-      knox: {putBuffer: putBuffer}
+      knox: {putBuffer: putBuffer},
+      fileTypesWhitelist: ['js', 'css', 'img', 'html', 'swf', 'fonts', 'pdf']
     };
     options.options = options;
     var localBosco = boscoMock(options);
@@ -68,7 +89,8 @@ describe('s3push', function() {
       nvmWhich: '',
       repos: ['project3'],
       noprompt: true,
-      knox: {putBuffer: putBuffer}
+      knox: {putBuffer: putBuffer},
+      fileTypesWhitelist: ['js', 'css', 'img', 'html', 'swf', 'fonts', 'pdf']
     };
     options.options = options;
     var localBosco = boscoMock(options);
@@ -112,7 +134,8 @@ describe('s3push', function() {
       noprompt: true,
       environment: 'test',
       service: true,
-      knox: {putBuffer: putBuffer}
+      knox: {putBuffer: putBuffer},
+      fileTypesWhitelist: ['js', 'css', 'img', 'html', 'swf', 'fonts', 'pdf']
     };
     options.options = options;
     var localBosco = boscoMock(options);

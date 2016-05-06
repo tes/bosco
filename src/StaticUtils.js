@@ -145,6 +145,10 @@ module.exports = function(bosco) {
 
         var staticAssets = _.compact(_.flatten(assetList));
 
+        if (staticAssets.length === 0) {
+          return next(new Error('No assets found - failing fast ...'));
+        }
+
         if (!options.minify) return createAssetHtmlFiles(staticAssets, next);
 
         // Now go and minify
