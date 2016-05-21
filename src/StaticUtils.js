@@ -153,7 +153,7 @@ module.exports = function(bosco) {
 
         // Now go and minify
         minify(staticAssets, function(err, minifiedAssets) {
-          if (err) return next(err);
+          if (err && !ignoreFailure) return next(err);
           createAssetHtmlFiles(minifiedAssets, next);
         });
       });

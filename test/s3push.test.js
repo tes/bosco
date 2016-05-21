@@ -33,6 +33,27 @@ describe('s3push', function() {
     });
   });
 
+
+  it('should fail if the minification fails', function(done) {
+    var options = {
+      nvmUse: '',
+      nvmUseDefault: '',
+      nvmWhich: '',
+      repos: ['projectFail2'],
+      noprompt: true,
+      fileTypesWhitelist: ['js', 'css', 'img', 'html', 'swf', 'fonts', 'pdf']
+    };
+    options.options = options;
+    var localBosco = boscoMock(options);
+    localBosco.staticUtils = StaticUtils(localBosco);
+
+    s3push.cmd(localBosco, [], function(err) {
+      expect(err).to.be.an(Error);
+      done();
+    });
+  });
+
+
   it('should fail if their are no assets to push to s3', function(done) {
     var options = {
       nvmUse: '',
