@@ -108,10 +108,27 @@ describe('s3push', function() {
     options.options = options;
     var localBosco = boscoMock(options);
     localBosco.staticUtils = StaticUtils(localBosco);
-
     s3push.cmd(localBosco, [], function(err) {
       expect(err).to.be.an(Error);
       expect(err).to.have.property('message', message);
+      done();
+    });
+  });
+
+  it('should fail if any of the files specified in a bundle are missing', function(done) {
+    var options = {
+      nvmUse: '',
+      nvmUseDefault: '',
+      nvmWhich: '',
+      repos: ['projectFail2'],
+      noprompt: true,
+      fileTypesWhitelist: ['js', 'css', 'img', 'html', 'swf', 'fonts', 'pdf']
+    };
+    options.options = options;
+    var localBosco = boscoMock(options);
+    localBosco.staticUtils = StaticUtils(localBosco);
+    s3push.cmd(localBosco, [], function(err) {
+      expect(err).to.be.an(Error);
       done();
     });
   });

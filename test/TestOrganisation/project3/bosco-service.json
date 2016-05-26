@@ -28,8 +28,9 @@
   },
   "files": {
     "files-top": {
+      "basePath": "/dist",
       "swf": [
-        "flash.swf"
+        "swf/flash.swf"
       ]
     }
   }
