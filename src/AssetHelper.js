@@ -37,7 +37,7 @@ module.exports = function(bosco) {
 
   function getAssetHelper(boscoRepo, tagFilter) {
     return {
-      addAsset: function(staticAssets, buildNumber, assetKey, asset, tag, type, basePath, externalBuild) {
+      addAsset: function(staticAssets, buildNumber, assetKey, asset, tag, type, basePath, externalBuild, minificationConfig) {
         if (tagFilter && tag !== tagFilter) return;
 
         var newAsset = {};
@@ -66,6 +66,7 @@ module.exports = function(bosco) {
           newAsset.checksum = checksum(newAsset.content, 'sha1', 'hex');
           newAsset.uniqueKey = newAsset.bundleKey + ':' + assetKey;
           newAsset.extraBrowserSyncFiles = getExtraFiles(newAsset.repoPath, boscoRepo.build);
+          newAsset.minificationConfig = minificationConfig;
           staticAssets.push(newAsset);
         }
       },

@@ -53,8 +53,26 @@ describe('s3push', function() {
     });
   });
 
+  it('should not minify if bundle is declared already minified', function(done) {
+    var options = {
+      nvmUse: '',
+      nvmUseDefault: '',
+      nvmWhich: '',
+      repos: ['projectFail2'],
+      noprompt: true,
+      fileTypesWhitelist: ['js', 'css', 'img', 'html', 'swf', 'fonts', 'pdf']
+    };
+    options.options = options;
+    var localBosco = boscoMock(options);
+    localBosco.staticUtils = StaticUtils(localBosco);
 
-  it('should fail if their are no assets to push to s3', function(done) {
+    s3push.cmd(localBosco, [], function(err) {
+      expect(err).to.be.an(Error);
+      done();
+    });
+  });
+
+  it('should not fail if their are no assets to push to s3', function(done) {
     var options = {
       nvmUse: '',
       nvmUseDefault: '',
@@ -68,7 +86,7 @@ describe('s3push', function() {
     localBosco.staticUtils = StaticUtils(localBosco);
 
     s3push.cmd(localBosco, [], function(err) {
-      expect(err).to.be.an(Error);
+      expect(err).to.be(undefined);
       done();
     });
   });

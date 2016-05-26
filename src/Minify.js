@@ -18,66 +18,90 @@ module.exports = function(bosco) {
       var serviceName;
       var buildNumber;
       var tag;
+      var minificationConfig;
 
-      bosco.log('Compiling ' + _.size(items) + ' ' + bundleKey.blue + ' JS assets ...');
-
-      var uglifyConfig = bosco.config.get('js:uglify');
-
+      // On first item retrieve shared properties
       if (!serviceName) {
         var firstItem = items[0];
         serviceName = firstItem.serviceName;
         buildNumber = firstItem.buildNumber;
         tag = firstItem.tag;
+        minificationConfig = firstItem.minificationConfig;
       }
 
-      var uglifyOptions = {
-        output: uglifyConfig ? uglifyConfig.outputOptions : null,
-        compressor: uglifyConfig ? uglifyConfig.compressorOptions : null,
-        mangle: uglifyConfig ? uglifyConfig.mangle : null,
-        outSourceMap: tag + '.js.map',
-        sourceMapIncludeSources: true,
-      };
-
-      try {
-        compiled = UglifyJS.minify(_.values(_.pluck(items, 'path')), uglifyOptions);
-      } catch (ex) {
-        var errorMsg = 'There was an error minifying files in ' + bundleKey.blue + ', error: ' + ex.message;
-        err = new Error(errorMsg);
+      // If a bundle is already minified it can only have a single item
+      if (minificationConfig.alreadyMinified && items.length === 1) {
+        bosco.log('Adding already minified ' + bundleKey.blue + ' JS assets ...');
+        var item = items[0];
+        var sourceMapContent;
+        var sourceMapPath = item.path + minificationConfig.sourceMapExtension;
+        if (bosco.exists(sourceMapPath)) {
+          sourceMapContent = fs.readFileSync(item.path + minificationConfig.sourceMapExtension).toString();
+        }
         compiled = {
-          code: '',
+          code: item.content,
+          map: sourceMapContent,
         };
+      } else {
+        if (minificationConfig.alreadyMinified) {
+          bosco.warn('More than one asset in bundle, re-minifying already minified ' + _.size(items) + ' ' + bundleKey.blue + ' JS assets ...');
+        } else {
+          bosco.log('Compiling ' + _.size(items) + ' ' + bundleKey.blue + ' JS assets ...');
+        }
+
+        var uglifyConfig = bosco.config.get('js:uglify');
+
+        var uglifyOptions = {
+          output: uglifyConfig ? uglifyConfig.outputOptions : null,
+          compressor: uglifyConfig ? uglifyConfig.compressorOptions : null,
+          mangle: uglifyConfig ? uglifyConfig.mangle : null,
+          outSourceMap: tag + '.js.map',
+          sourceMapIncludeSources: true,
+        };
+
+        try {
+          compiled = UglifyJS.minify(_.values(_.pluck(items, 'path')), uglifyOptions);
+        } catch (ex) {
+          var errorMsg = 'There was an error minifying files in ' + bundleKey.blue + ', error: ' + ex.message;
+          err = new Error(errorMsg);
+          compiled = {
+            code: '',
+          };
+        }
       }
 
-      var mapKey = createKey(serviceName, buildNumber, tag, 'js', 'js', 'map');
+      if (compiled.map) {
+        var mapKey = createKey(serviceName, buildNumber, tag, 'js', 'js', 'map');
+        var mapItem = {};
+        mapItem.assetKey = mapKey;
+        mapItem.serviceName = serviceName;
+        mapItem.buildNumber = buildNumber;
+        mapItem.path = 'js-source-map';
+        mapItem.relativePath = 'js-source-map';
+        mapItem.extname = '.map';
+        mapItem.tag = tag;
+        mapItem.type = 'js';
+        mapItem.mimeType = 'application/javascript';
+        mapItem.content = compiled.map;
+        staticAssets.push(mapItem);
+      }
 
-      var mapItem = {};
-      mapItem.assetKey = mapKey;
-      mapItem.serviceName = serviceName;
-      mapItem.buildNumber = buildNumber;
-      mapItem.path = 'js-source-map';
-      mapItem.relativePath = 'js-source-map';
-      mapItem.extname = '.map';
-      mapItem.tag = tag;
-      mapItem.type = 'js';
-      mapItem.mimeType = 'application/javascript';
-      mapItem.content = compiled.map;
-      staticAssets.push(mapItem);
-
-      var minifiedKey = createKey(serviceName, buildNumber, tag, null, 'js', 'js');
-      var minifiedItem = {};
-      minifiedItem.assetKey = minifiedKey;
-      minifiedItem.serviceName = serviceName;
-      minifiedItem.buildNumber = buildNumber;
-      minifiedItem.path = 'minified-js';
-      minifiedItem.relativePath = 'minified-js';
-      minifiedItem.extname = '.js';
-      minifiedItem.tag = tag;
-      minifiedItem.type = 'js';
-      minifiedItem.mimeType = 'application/javascript';
-      minifiedItem.content = compiled.code;
-      staticAssets.push(minifiedItem);
+      if (compiled.code) {
+        var minifiedKey = createKey(serviceName, buildNumber, tag, null, 'js', 'js');
+        var minifiedItem = {};
+        minifiedItem.assetKey = minifiedKey;
+        minifiedItem.serviceName = serviceName;
+        minifiedItem.buildNumber = buildNumber;
+        minifiedItem.path = 'minified-js';
+        minifiedItem.relativePath = 'minified-js';
+        minifiedItem.extname = '.js';
+        minifiedItem.tag = tag;
+        minifiedItem.type = 'js';
+        minifiedItem.mimeType = 'application/javascript';
+        minifiedItem.content = compiled.code;
+        staticAssets.push(minifiedItem);
+      }
     });
-
     next(err, staticAssets);
   }
 

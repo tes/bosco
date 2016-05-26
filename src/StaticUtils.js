@@ -51,9 +51,14 @@ module.exports = function(bosco) {
     var staticAssets = [];
     var assetKey;
     var assetBasePath;
+    var minificationConfig = {};
 
     if (boscoRepo.assets) {
       assetBasePath = boscoRepo.assets.basePath || '.';
+      minificationConfig = {
+        alreadyMinified: !!boscoRepo.assets.alreadyMinified,
+        sourceMapExtension: boscoRepo.assets.sourceMapExtension || '.map',
+      };
       _.forEach(_.pick(boscoRepo.assets, fileTypesWhitelist), function(assets, type) {
         _.forOwn(assets, function(value, tag) {
           if (!value) return;
@@ -66,7 +71,7 @@ module.exports = function(bosco) {
             }
             _.forEach(globbedAssets, function(asset) {
               assetKey = path.join(boscoRepo.serviceName, buildNumber, asset);
-              assetHelper.addAsset(staticAssets, buildNumber, assetKey, asset, tag, type, assetBasePath, true);
+              assetHelper.addAsset(staticAssets, buildNumber, assetKey, asset, tag, type, assetBasePath, true, minificationConfig);
             });
           });
         });
@@ -76,6 +81,10 @@ module.exports = function(bosco) {
     if (boscoRepo.files) {
       _.forOwn(boscoRepo.files, function(assetTypes, tag) {
         assetBasePath = assetTypes.basePath || '.';
+        minificationConfig = {
+          alreadyMinified: !!assetTypes.alreadyMinified,
+          sourceMapExtension: assetTypes.sourceMapExtension || '.map',
+        };
         _.forEach(_.pick(assetTypes, fileTypesWhitelist), function(value, type) {
           if (!value) return;
           _.forEach(value, function(potentialAsset) {
@@ -87,7 +96,7 @@ module.exports = function(bosco) {
             }
             _.forEach(assets, function(asset) {
               assetKey = path.join(boscoRepo.serviceName, buildNumber, asset);
-              assetHelper.addAsset(staticAssets, buildNumber, assetKey, asset, tag, type, assetBasePath, true);
+              assetHelper.addAsset(staticAssets, buildNumber, assetKey, asset, tag, type, assetBasePath, true, minificationConfig);
             });
           });
         });
@@ -146,7 +155,7 @@ module.exports = function(bosco) {
         var staticAssets = _.compact(_.flatten(assetList));
 
         if (staticAssets.length === 0) {
-          return next(new Error('No assets found - failing fast ...'));
+          return next();
         }
 
         if (!options.minify) return createAssetHtmlFiles(staticAssets, next);

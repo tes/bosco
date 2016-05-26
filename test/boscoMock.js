@@ -4,9 +4,9 @@ var _ = require('lodash');
 
 function getLogger() {
   return {
-    log: function(msg) { this._log = this._log || []; this._log.push(msg) },
-    error: function(msg) { this._error = this._error || []; this._error.push(msg) },
-    warn: function(msg) { this._warn = this._warn || []; this._warn.push(msg) }
+    log: function(msg) { this._log = this._log || []; this._log.push(msg); },
+    error: function(msg) { this._error = this._error || []; this._error.push(msg); },
+    warn: function(msg) { this._warn = this._warn || []; this._warn.push(msg); }
   };
 }
 

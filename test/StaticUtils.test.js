@@ -233,6 +233,29 @@ describe('Bosco Static Asset Handling', function() {
     });
   });
 
+  it('should not re-minify already minified assets', function(done) {
+    var options = {
+      repos: ['project3'],
+      minify: true,
+      tagFilter: null,
+      buildNumber: 'local',
+      watchBuilds: false,
+      reloadOnly: false,
+    }
+
+    var utils = StaticUtils(boscoMock());
+
+    utils.getStaticAssets(options, function(err, assets) {
+      if (err) return done(err);
+      var assetKeys = _.pluck(assets, 'assetKey');
+      arrayContains(assetKeys, [
+        'project3/local/js/compiled.js.map',
+        'project3/local/js/compiled.js'
+      ]);
+      done();
+    });
+  });
+
   it('should create a formatted repo list when requested for cdn mode', function(done) {
     var options = {
       repos: ['project1', 'project2', 'project3'],

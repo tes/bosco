@@ -13,6 +13,8 @@
   },
   "assets": {
     "basePath": "/dist",
+    "alreadyMinified": true,
+    "sourceMapExtension": ".map",
     "js": {
       "compiled": [
         "js/compiled.js"

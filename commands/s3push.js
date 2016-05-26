@@ -222,6 +222,10 @@ function cmd(bosco, args, callback) {
         bosco.error('There was an error: ' + err.message);
         return next(err);
       }
+      if (!staticAssets) {
+        bosco.warn('No assets found to push ...');
+        return next();
+      }
       pushAllToS3(staticAssets, function(err) {
         if (err) {
           bosco.error('There was an error: ' + err.message);
