@@ -28,8 +28,33 @@
   "bin": {
     "bosco": "./bin/bosco.js"
   },
+  "man": [
+    "./man/bosco-activity.3",
+    "./man/bosco-audit.3",
+    "./man/bosco-cdn.3",
+    "./man/bosco-clean.3",
+    "./man/bosco-clone.3",
+    "./man/bosco-commit.3",
+    "./man/bosco-config.3",
+    "./man/bosco-exec.3",
+    "./man/bosco-grep.3",
+    "./man/bosco-install.3",
+    "./man/bosco-morning.3",
+    "./man/bosco-ps.3",
+    "./man/bosco-pull-docker.3",
+    "./man/bosco-pull-git.3",
+    "./man/bosco-pull.3",
+    "./man/bosco-pushall.3",
+    "./man/bosco-run.3",
+    "./man/bosco-s3delete.3",
+    "./man/bosco-s3push.3",
+    "./man/bosco-setup.3",
+    "./man/bosco-stop.3",
+    "./man/bosco-team.3",
+    "./man/bosco-template.3",
+    "./man/bosco-upstream.3"
+  ],
   "directories": {
-    "man": "./man",
     "bin": "./bin"
   },
   "repository": {
