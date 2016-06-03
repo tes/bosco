@@ -29,25 +29,52 @@ module.exports = function(bosco) {
         minificationConfig = firstItem.minificationConfig;
       }
 
+      function addSourceMap(content) {
+        if (!content) return;
+        var mapKey = createKey(serviceName, buildNumber, tag, 'js', 'js', 'map');
+        var mapItem = {};
+        mapItem.assetKey = mapKey;
+        mapItem.serviceName = serviceName;
+        mapItem.buildNumber = buildNumber;
+        mapItem.path = 'js-source-map';
+        mapItem.relativePath = 'js-source-map';
+        mapItem.extname = '.map';
+        mapItem.tag = tag;
+        mapItem.type = 'js';
+        mapItem.mimeType = 'application/javascript';
+        mapItem.content = content;
+        staticAssets.push(mapItem);
+      }
+
+      function addMinifiedJs(content) {
+        if (!content) return;
+        var minifiedKey = createKey(serviceName, buildNumber, tag, null, 'js', 'js');
+        var minifiedItem = {};
+        minifiedItem.assetKey = minifiedKey;
+        minifiedItem.serviceName = serviceName;
+        minifiedItem.buildNumber = buildNumber;
+        minifiedItem.path = 'minified-js';
+        minifiedItem.relativePath = 'minified-js';
+        minifiedItem.extname = '.js';
+        minifiedItem.tag = tag;
+        minifiedItem.type = 'js';
+        minifiedItem.mimeType = 'application/javascript';
+        minifiedItem.content = content;
+        staticAssets.push(minifiedItem);
+      }
+
       // If a bundle is already minified it can only have a single item
-      if (minificationConfig.alreadyMinified && items.length === 1) {
+      if (minificationConfig.alreadyMinified) {
         bosco.log('Adding already minified ' + bundleKey.blue + ' JS assets ...');
-        var item = items[0];
-        var sourceMapContent;
-        var sourceMapPath = item.path + minificationConfig.sourceMapExtension;
-        if (bosco.exists(sourceMapPath)) {
-          sourceMapContent = fs.readFileSync(item.path + minificationConfig.sourceMapExtension).toString();
-        }
-        compiled = {
-          code: item.content,
-          map: sourceMapContent,
-        };
+        _.forEach(items, function(item) {
+          if (item.extname === minificationConfig.sourceMapExtension) {
+            addSourceMap(item.content);
+          } else {
+            addMinifiedJs(item.content);
+          }
+        });
       } else {
-        if (minificationConfig.alreadyMinified) {
-          bosco.warn('More than one asset in bundle, re-minifying already minified ' + _.size(items) + ' ' + bundleKey.blue + ' JS assets ...');
-        } else {
-          bosco.log('Compiling ' + _.size(items) + ' ' + bundleKey.blue + ' JS assets ...');
-        }
+        bosco.log('Compiling ' + _.size(items) + ' ' + bundleKey.blue + ' JS assets ...');
 
         var uglifyConfig = bosco.config.get('js:uglify');
 
@@ -68,40 +95,12 @@ module.exports = function(bosco) {
             code: '',
           };
         }
-      }
 
-      if (compiled.map) {
-        var mapKey = createKey(serviceName, buildNumber, tag, 'js', 'js', 'map');
-        var mapItem = {};
-        mapItem.assetKey = mapKey;
-        mapItem.serviceName = serviceName;
-        mapItem.buildNumber = buildNumber;
-        mapItem.path = 'js-source-map';
-        mapItem.relativePath = 'js-source-map';
-        mapItem.extname = '.map';
-        mapItem.tag = tag;
-        mapItem.type = 'js';
-        mapItem.mimeType = 'application/javascript';
-        mapItem.content = compiled.map;
-        staticAssets.push(mapItem);
-      }
-
-      if (compiled.code) {
-        var minifiedKey = createKey(serviceName, buildNumber, tag, null, 'js', 'js');
-        var minifiedItem = {};
-        minifiedItem.assetKey = minifiedKey;
-        minifiedItem.serviceName = serviceName;
-        minifiedItem.buildNumber = buildNumber;
-        minifiedItem.path = 'minified-js';
-        minifiedItem.relativePath = 'minified-js';
-        minifiedItem.extname = '.js';
-        minifiedItem.tag = tag;
-        minifiedItem.type = 'js';
-        minifiedItem.mimeType = 'application/javascript';
-        minifiedItem.content = compiled.code;
-        staticAssets.push(minifiedItem);
+        addSourceMap(compiled.map);
+        addMinifiedJs(compiled.code);
       }
     });
+
     next(err, staticAssets);
   }
 
