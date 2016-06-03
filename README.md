@@ -192,8 +192,8 @@ To serve swf, fonts or pdf, you should add them under a 'files' key (at the same
 
 ```json
 {
-  "assets": { 
-    ... 
+  "assets": {
+    ...
   },
   "files": {
     "info": {
@@ -287,9 +287,11 @@ For example, a project that uses Gulp to create assets as well as watch for chan
     },
     "assets": {
         "basePath": "/dist",
+        "alreadyMinified": true,
         "js": {
             "upload": [
                 "js/tsl-uploader.js"
+                "js/tsl-uploader.js.map"
             ]
         },
         "css": {
@@ -309,6 +311,8 @@ For example, a project that uses Gulp to create assets as well as watch for chan
 In this mode, instead of directly defining the JS and CSS assets, simply define a build configuration that includes the command to run before pulling together the assets, along with a watch command (if available).
 
 The files created as a result of the build step should just be included as normal, but they won't be read until the build command is complete.
+
+If you provide the `alreadyMinified` flag, you can also provide a source map (this is optional), see above.
 
 ### CDN
 
