@@ -33,6 +33,12 @@ module.exports = {
     alias: 'l',
     type: 'string',
     desc: 'Start a list of repos (comma separated)',
+  },
+  {
+    name: 'dont',
+    alias: 'd',
+    type: 'boolean',
+    desc: 'Do not start current repo',
   }],
 };
 
@@ -98,7 +104,6 @@ function cmd(bosco, args, allDone) {
 
     getRunList(function(err, runList) {
       if (err) return next(err);
-
       async.mapSeries(runList, function(runConfig, cb) {
         if (!runConfig.service.type) {
           RunListHelper.getServiceConfigFromGithub(bosco, runConfig.name, function(err, svcConfig) {

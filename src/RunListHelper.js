@@ -61,6 +61,10 @@ function getRunList(bosco, repos, repoRegex, watchRegex, repoTag) {
     return (!repoTag && repo.match(repoRegex)) || (repoTag && _.contains(tags, repoTag));
   }
 
+  function notCurrentService(repo) {
+    return !(bosco.options.inService && bosco.options.dont && repo === bosco.options.inServiceRepo);
+  }
+
   function matchingRepo(repo) {
     var config = getCachedConfig(repo);
     return matchesRegexOrTag(repo, config.tags);
@@ -81,6 +85,7 @@ function getRunList(bosco, repos, repoRegex, watchRegex, repoTag) {
   return _.chain(repos)
     .filter(matchingRepo)
     .reduce(addDependencies, [])
+    .filter(notCurrentService)
     .map(getCachedConfig)
     .sortBy(getOrder)
     .value();

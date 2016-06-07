@@ -485,6 +485,7 @@ Bosco.prototype.checkInService = function() {
   var cwd = path.resolve('bosco-service.json');
   if (self.exists(cwd) && self.options.service) {
     self.options.inService = true;
+    self.options.inServiceRepo = path.relative('..', '.');
     self.options.workspace = path.resolve('..');
     // Replace getRepos
     self.getRepos = function() {
