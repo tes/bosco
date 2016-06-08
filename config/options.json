@@ -62,5 +62,12 @@
     "type": "number",
     "default": 0,
     "desc": "Delay on browser refresh - useful to increase if refresh requires server restarts"
+  },
+  {
+    "name": "verbose",
+    "alias": "v",
+    "type": "boolean",
+    "default": false,
+    "desc": "Verbose output"
   }
 ]

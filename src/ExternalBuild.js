@@ -12,6 +12,7 @@ module.exports = function(bosco) {
     var commandForLog = command;
     var cwd = {cwd: service.repoPath};
     var arrayCommand = Array.isArray(command);
+    var verbose = bosco.options.verbose;
     var args;
 
     var buildFinished = function(err, stdout, stderr) {
@@ -35,7 +36,7 @@ module.exports = function(bosco) {
         bosco.log(log);
       }
 
-      if (err || stderr) {
+      if (err || stderr || verbose) {
         if (stdout) bosco.console.log(stdout);
         if (stderr) bosco.error(stderr);
       }
