@@ -38,7 +38,7 @@ module.exports = {
     name: 'dev',
     alias: 'd',
     type: 'boolean',
-    desc: 'Does not start current repo, use when you want to start it manually',
+    desc: 'Only start the dependencies of the current repo, not itself',
   }],
 };
 
