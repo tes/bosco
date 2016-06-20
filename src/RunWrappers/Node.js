@@ -10,10 +10,6 @@ require('colors');
 function Runner() {
 }
 
-function convertIfBuffer(data) {
-  return data instanceof Buffer ? data.toString() : data;
-}
-
 Runner.prototype.init = function(bosco, next) {
   this.bosco = bosco;
   pm2.connect(next);
@@ -57,10 +53,10 @@ Runner.prototype.getInterpreter = function(bosco, options, next) {
   var found = false;
   var hasNvmRc = bosco.exists(path.join(options.cwd, '.nvmrc'));
   if (hasNvmRc) {
-    var e = exec(bosco.options.nvmWhich, {cwd: options.cwd, encoding: 'utf8'});
+    var e = exec(bosco.options.nvmWhich, {cwd: options.cwd});
+    e.stdout.setEncoding('utf8');
 
-    e.stdout.on('data', function(nvmStream) {
-      var data = convertIfBuffer(nvmStream);
+    e.stdout.on('data', function(data) {
       if (data.indexOf('Found') === 0) {
         found = true;
       } else {
@@ -70,9 +66,8 @@ Runner.prototype.getInterpreter = function(bosco, options, next) {
       }
     });
 
-    e.stderr.on('data', function(nvmStream) {
+    e.stderr.on('data', function(data) {
       if (!hadError) {
-        var data = convertIfBuffer(nvmStream);
         hadError = true;
         if (data.indexOf('No .nvmrc file found') === 0) {
           // Use default
