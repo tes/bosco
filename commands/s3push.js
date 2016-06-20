@@ -228,7 +228,10 @@ function cmd(bosco, args, callback) {
       }
       var erroredAssets = _.where(staticAssets, {type: 'error'});
       if (erroredAssets.length > 0) {
-        bosco.error('There were errors encountered above, failing ...');
+        bosco.error('There were errors encountered above that you must resolve:');
+        erroredAssets.forEach(function(e) {
+          bosco.error(e.message);
+        });
         return next(new Error('Errors encountered during build'));
       }
       pushAllToS3(staticAssets, function(err) {
