@@ -54,6 +54,7 @@ Runner.prototype.getInterpreter = function(bosco, options, next) {
   var hasNvmRc = bosco.exists(path.join(options.cwd, '.nvmrc'));
   if (hasNvmRc) {
     var e = exec(bosco.options.nvmWhich, {cwd: options.cwd});
+    e.stdout.setEncoding('utf8');
 
     e.stdout.on('data', function(data) {
       if (data.indexOf('Found') === 0) {
