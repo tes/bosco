@@ -64,6 +64,11 @@ function createContainer(docker, fqn, options, next) {
     optsCreate = _.extend(optsCreate, options.service.docker.Config);
   }
 
+  if (options.service.docker && options.service.docker.HostConfig) {
+    // For example options look in HostConfig in: docker inspect <container_name>
+    optsCreate = _.extend(optsCreate, options.service.docker.HostConfig);
+  }
+
   // Process any variables
   processCmdVars(optsCreate, options.name, options.cwd);
 
@@ -123,7 +128,7 @@ function startContainer(bosco, docker, fqn, options, container, next) {
 
   bosco.log('Starting ' + options.name.green + ': ' + fqn.magenta + '...');
 
-  container.start(optsStart, function(err) {
+  container.start(function(err) {
     if (err) {
       bosco.error('Failed to start Docker image: ' + err.message);
       return next(err);
