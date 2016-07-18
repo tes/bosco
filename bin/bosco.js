@@ -138,12 +138,7 @@ if (argv.completion) {
   process.exit();
 }
 
-// Only take options we have specified.
-var boscoOptions = {};
-_.forOwn((boscoArgs.parsed || {}).aliases || {}, function(val, optionName) {
-  boscoOptions[optionName] = argv[optionName];
-});
-
+var boscoOptions = argv;
 boscoOptions.program = boscoArgs;
 boscoOptions.args = argv._;
 boscoOptions.version = pkg.version;

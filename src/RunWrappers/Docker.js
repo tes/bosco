@@ -51,7 +51,7 @@ Runner.prototype.list = function(detailed, next) {
   docker.listContainers({
     all: false,
   }, function(err, containers) {
-    if (!detailed) return next(err, _.pluck(containers, 'Names'));
+    if (!detailed) return next(err, _.map(containers, 'Names'));
     next(err, containers);
   });
 };

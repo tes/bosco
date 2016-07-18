@@ -42,15 +42,15 @@ function cmd(bosco, args, done) {
 
   function stopService(repo, boscoService, services, cb) {
     if (boscoService.service && boscoService.service.type === 'docker') {
-      if (_.contains(services, repo)) {
+      if (_.includes(services, repo)) {
         return DockerRunner.stop(boscoService, cb);
       }
     } else if (boscoService.service && boscoService.service.type === 'docker-compose') {
-      if (_.contains(services, 'docker-compose')) {
+      if (_.includes(services, 'docker-compose')) {
         return DockerComposeRunner.stop(boscoService, cb);
       }
     } else {
-      if (_.contains(services, repo)) {
+      if (_.includes(services, repo)) {
         return NodeRunner.stop({name: repo}, cb);
       }
     }
@@ -80,7 +80,7 @@ function cmd(bosco, args, done) {
       }, function() {
         // Special case for bosco-cdn, room for improvement to make this
         // generic for all custom bosco services.
-        if (!_.contains(runningServices, 'bosco-cdn')) return cb();
+        if (!_.includes(runningServices, 'bosco-cdn')) return cb();
         NodeRunner.stop({name: 'bosco-cdn'}, cb);
       });
     });

@@ -58,7 +58,7 @@ function getRunList(bosco, repos, repoRegex, watchRegex, repoTag) {
   }
 
   function matchesRegexOrTag(repo, tags) {
-    return (!repoTag && repo.match(repoRegex)) || (repoTag && _.contains(tags, repoTag));
+    return (!repoTag && repo.match(repoRegex)) || (repoTag && _.includes(tags, repoTag));
   }
 
   function notCurrentService(repo) {
@@ -72,14 +72,14 @@ function getRunList(bosco, repos, repoRegex, watchRegex, repoTag) {
 
   // in order to understand recursion one must understand recursion
   function addDependencies(resolved, repo) {
-    if (_.contains(resolved, repo)) {
+    if (_.includes(resolved, repo)) {
       return resolved;
     }
     return _.reduce(getCachedConfig(repo).service.dependsOn, addDependencies, resolved.concat(repo || []));
   }
 
   function getOrder(config) {
-    return config.order || (_.contains(['docker', 'docker-compose'], config.service.type) ? 100 : 500);
+    return config.order || (_.includes(['docker', 'docker-compose'], config.service.type) ? 100 : 500);
   }
 
   return _.chain(repos)

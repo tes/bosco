@@ -226,7 +226,7 @@ function cmd(bosco, args, callback) {
         bosco.warn('No assets found to push ...');
         return next();
       }
-      var erroredAssets = _.where(staticAssets, {type: 'error'});
+      var erroredAssets = _.filter(staticAssets, {type: 'error'});
       if (erroredAssets.length > 0) {
         bosco.error('There were errors encountered above that you must resolve:');
         erroredAssets.forEach(function(e) {
