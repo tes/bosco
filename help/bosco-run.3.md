@@ -71,6 +71,10 @@ This sets a regex string to use to filter the repostory list.
 
 This sets a tag to use to filter the repostory list (as specified in `bosco-service.json` as above).
 
+### -d, --deps-only
+
+This only starts dependencies of the current service.
+
 ## SEE ALSO
 
 * bosco help stop
