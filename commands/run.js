@@ -14,7 +14,7 @@ var notRunningServices = [];
 module.exports = {
   name: 'run',
   description: 'Runs all of the microservices (or subset based on regex pattern)',
-  usage: '[-r <repoPattern>] [-t <tag>]',
+  usage: '[-r <repoPattern>] [-t <tag>] [-d]',
   requiresNvm: true,
   options: [{
     name: 'tag',
@@ -35,10 +35,10 @@ module.exports = {
     desc: 'Start a list of repos (comma separated)',
   },
   {
-    name: 'dont',
+    name: 'deps-only',
     alias: 'd',
     type: 'boolean',
-    desc: 'Do not start current repo',
+    desc: 'Only start the dependencies of the current repo, not itself',
   }],
 };
 
