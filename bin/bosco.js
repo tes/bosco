@@ -141,7 +141,7 @@ if (argv.completion) {
 }
 
 // Only take options we have specified.
-var boscoOptions = argv;
+var boscoOptions = {};
 _.forOwn((boscoArgs.parsed || {}).aliases || {}, function(val, optionName) {
   boscoOptions[optionName] = argv[optionName];
 });
