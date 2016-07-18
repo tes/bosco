@@ -21,11 +21,11 @@ module.exports = {
 function getRepoList(client, teamConfig, page, next) {
   if (teamConfig.isUser) {
     client.get('/user/repos', {per_page: 20, page: page}, function(err, status, body, headers) {
-      next(err, _.pluck(body, 'name'), _.contains(headers.link, 'rel="next"'));
+      next(err, _.map(body, 'name'), _.includes(headers.link, 'rel="next"'));
     });
   } else {
     client.get('/teams/' + teamConfig.id + '/repos', {per_page: 20, page: page}, function(err, status, body, headers) {
-      next(err, _.pluck(body, 'name'), _.contains(headers.link, 'rel="next"'));
+      next(err, _.map(body, 'name'), _.includes(headers.link, 'rel="next"'));
     });
   }
 }

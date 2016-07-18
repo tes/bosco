@@ -12,7 +12,7 @@ function getHostIp() {
     .filter(function(val) {
       return (val.family === 'IPv4' && val.internal === false);
     })
-    .pluck('address')
+    .map('address')
     .first()
     .value();
 

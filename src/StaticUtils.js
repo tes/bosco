@@ -117,7 +117,7 @@ module.exports = function(bosco) {
       // Remove any service that doesnt have an assets child
       // or doesn't match repo tag
       var assetServices = _.filter(services, function(service) {
-        return (!repoTag || _.contains(service.tags, repoTag)) &&
+        return (!repoTag || _.includes(service.tags, repoTag)) &&
           (service.assets || service.files) && service.name.match(options.repoRegex);
       });
 

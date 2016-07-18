@@ -29,7 +29,7 @@ function cmd(bosco, args) {
   }
 
   bosco.knox.list({ prefix: bosco.options.environment + '/' + toDelete }, function(err, data) {
-    var files = _.pluck(data.Contents, 'Key');
+    var files = _.map(data.Contents, 'Key');
     if (files.length === 0) return bosco.error('There doesn\'t appear to be any files matching that push.');
 
     confirm('Are you sure you want to delete '.white + (files.length + '').green + ' files in push ' + toDelete.green + '?', function(err, confirmed) {

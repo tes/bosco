@@ -7,10 +7,10 @@ module.exports = function(bosco) {
   var createKey = require('./AssetHelper')(bosco).createKey;
 
   function compileJs(staticAssets, jsAssets, next) {
-    var bundleKeys = _.uniq(_.pluck(jsAssets, 'bundleKey'));
+    var bundleKeys = _.uniq(_.map(jsAssets, 'bundleKey'));
     var err;
     _.forEach(bundleKeys, function(bundleKey) {
-      var items = _.where(jsAssets, {bundleKey: bundleKey});
+      var items = _.filter(jsAssets, {bundleKey: bundleKey});
 
       if (items.length === 0) { return; }
 
@@ -87,7 +87,7 @@ module.exports = function(bosco) {
         };
 
         try {
-          compiled = UglifyJS.minify(_.values(_.pluck(items, 'path')), uglifyOptions);
+          compiled = UglifyJS.minify(_.values(_.map(items, 'path')), uglifyOptions);
         } catch (ex) {
           var errorMsg = 'There was an error minifying files in ' + bundleKey.blue + ', error: ' + ex.message;
           err = new Error(errorMsg);
@@ -105,10 +105,10 @@ module.exports = function(bosco) {
   }
 
   function compileCss(staticAssets, cssAssets, next) {
-    var bundleKeys = _.uniq(_.pluck(cssAssets, 'bundleKey'));
+    var bundleKeys = _.uniq(_.map(cssAssets, 'bundleKey'));
 
     _.forEach(bundleKeys, function(bundleKey) {
-      var items = _.where(cssAssets, {bundleKey: bundleKey});
+      var items = _.filter(cssAssets, {bundleKey: bundleKey});
       var cssContent = '';
       var serviceName;
       var buildNumber;
@@ -158,8 +158,8 @@ module.exports = function(bosco) {
   }
 
   function minify(staticAssets, next) {
-    var jsAssets = _.where(staticAssets, {type: 'js'});
-    var cssAssets = _.where(staticAssets, {type: 'css'});
+    var jsAssets = _.filter(staticAssets, {type: 'js'});
+    var cssAssets = _.filter(staticAssets, {type: 'css'});
     var remainingAssets = _.filter(staticAssets, function(item) {
       return item.type !== 'js' && item.type !== 'css';
     });

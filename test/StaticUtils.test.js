@@ -35,7 +35,7 @@ describe('Bosco Static Asset Handling', function() {
     utils.getStaticAssets(options, function(err, assets) {
       if (err) return done(err);
 
-      var assetKeys = _.pluck(assets, 'assetKey');
+      var assetKeys = _.map(assets, 'assetKey');
       arrayContains(assetKeys, [
         'project1/local/html/bottom.js.html',
         'project1/local/html/top.js.html',
@@ -64,7 +64,7 @@ describe('Bosco Static Asset Handling', function() {
     utils.getStaticAssets(options, function(err, assets) {
       if (err) return done(err);
 
-      var assetKeys = _.pluck(assets, 'assetKey');
+      var assetKeys = _.map(assets, 'assetKey');
       arrayContains(assetKeys, [
         'project1/local/html/bottom.js.html',
         'project1/local/html/top.js.html',
@@ -98,7 +98,7 @@ describe('Bosco Static Asset Handling', function() {
     utils.getStaticAssets(options, function(err, assets) {
       if (err) return done(err);
 
-      var assetKeys = _.pluck(assets, 'assetKey');
+      var assetKeys = _.map(assets, 'assetKey');
       arrayContains(assetKeys, [
         'project1/local/html/bottom.js.html',
         'project1/local/html/top.js.html',
@@ -141,7 +141,7 @@ describe('Bosco Static Asset Handling', function() {
     utils.getStaticAssets(options, function(err, assets) {
       if (err) return done(err);
 
-      var assetKeys = _.pluck(assets, 'assetKey');
+      var assetKeys = _.map(assets, 'assetKey');
       arrayContains(assetKeys, [
         'project4/local/html/glob.js.html',
         'project4/local/js/bottom1.js',
@@ -170,7 +170,7 @@ describe('Bosco Static Asset Handling', function() {
     utils.getStaticAssets(options, function(err, assets) {
       if (err) return done(err);
 
-      var assetKeys = _.pluck(assets, 'assetKey');
+      var assetKeys = _.map(assets, 'assetKey');
       arrayContains(assetKeys, [
         'projectFail2/local/js/bottom1.js'
         ]);
@@ -193,7 +193,7 @@ describe('Bosco Static Asset Handling', function() {
     utils.getStaticAssets(options, function(err, assets) {
       if (err) return done(err);
 
-      var assetKeys = _.pluck(assets, 'assetKey');
+      var assetKeys = _.map(assets, 'assetKey');
       arrayContains(assetKeys, [
         'project1/local/html/top.js.html',
         'project2/local/html/top.js.html',
@@ -224,7 +224,7 @@ describe('Bosco Static Asset Handling', function() {
     utils.getStaticAssets(options, function(err, assets) {
       if (err) return done(err);
 
-      var assetKeys = _.pluck(assets, 'assetKey');
+      var assetKeys = _.map(assets, 'assetKey');
       arrayContains(assetKeys, [
         'project1/local/js/top.js.map',
         'project2/local/js/top.js.map'
@@ -247,7 +247,7 @@ describe('Bosco Static Asset Handling', function() {
 
     utils.getStaticAssets(options, function(err, assets) {
       if (err) return done(err);
-      var assetKeys = _.pluck(assets, 'assetKey');
+      var assetKeys = _.map(assets, 'assetKey');
       arrayContains(assetKeys, [
         'project3/local/js/compiled.js.map',
         'project3/local/js/compiled.js'
@@ -297,7 +297,7 @@ describe('Bosco Static Asset Handling - Custom Building', function() {
     utils.getStaticAssets(options, function(err, assets) {
       if (err) return done(err);
 
-      var assetKeys = _.pluck(assets, 'assetKey');
+      var assetKeys = _.map(assets, 'assetKey');
       arrayContains(assetKeys, [
         'project3/local/html/compiled.js.html',
         'project3/local/html/compiled.css.html',
@@ -344,7 +344,7 @@ describe('Bosco Static Asset Handling - Custom Building', function() {
     utils.getStaticAssets(options, function(err, assets) {
       if (err) return done(err);
 
-      var assetKeys = _.pluck(assets, 'assetKey');
+      var assetKeys = _.map(assets, 'assetKey');
       arrayContains(assetKeys, [
         'project3/local/html/compiled.js.html',
         'project3/local/html/compiled.css.html',
@@ -392,7 +392,7 @@ describe('Bosco Static Asset Handling - Custom Building', function() {
     utils.getStaticAssets(options, function(err, assets) {
       if (err) return done(err);
 
-      var assetKeys = _.pluck(assets, 'assetKey');
+      var assetKeys = _.map(assets, 'assetKey');
       arrayContains(assetKeys, [
         'project3/local/html/compiled.js.html',
         'project3/local/html/compiled.css.html',

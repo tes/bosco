@@ -33,7 +33,7 @@ function dockerPullService(bosco, definition, next) {
 
 function dockerPullRemote(bosco, repos, runConfig, next) {
   var isLocalService = !!(runConfig.service && runConfig.service.type);
-  var isLocalRepo = _.contains(repos, runConfig.name);
+  var isLocalRepo = _.includes(repos, runConfig.name);
   if (isLocalService || isLocalRepo) {
     return next();
   }

@@ -79,7 +79,7 @@ function cmd(bosco, args, allDone) {
   function startRunnableServices(next) {
     function runService(runConfig, cb) {
       if (runConfig.service && runConfig.service.type === 'docker') {
-        if (_.contains(runningServices, runConfig.name)) {
+        if (_.includes(runningServices, runConfig.name)) {
           bosco.warn('Service ' + runConfig.name.green + ' is already running ...');
           return cb();
         }
@@ -93,7 +93,7 @@ function cmd(bosco, args, allDone) {
       }
 
       if (runConfig.service && runConfig.service.type === 'node') {
-        if (_.contains(runningServices, runConfig.name)) {
+        if (_.includes(runningServices, runConfig.name)) {
           bosco.warn('Service ' + runConfig.name.green + ' is already running ...');
           return cb();
         }
@@ -172,7 +172,7 @@ function cmd(bosco, args, allDone) {
     }
 
     bosco.log('All services started.');
-    if (!_.contains(args, 'cdn')) return done();
+    if (!_.includes(args, 'cdn')) return done();
 
     var cdn = require('./cdn');
     cdn.cmd(bosco, [], function() {});
