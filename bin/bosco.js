@@ -131,6 +131,8 @@ if (localCommandPath !== globalCommandPath) {
 boscoArgs = addBoscoCommands(boscoArgs, globalCommands);
 boscoArgs = addBoscoCommands(boscoArgs, localCommands);
 
+// Manually parse argv due to change in yargs
+boscoArgs.parse(_.drop(process.argv, 2));
 var argv = boscoArgs.argv || {};
 
 if (argv.completion) {
@@ -138,7 +140,12 @@ if (argv.completion) {
   process.exit();
 }
 
+// Only take options we have specified.
 var boscoOptions = argv;
+_.forOwn((boscoArgs.parsed || {}).aliases || {}, function(val, optionName) {
+  boscoOptions[optionName] = argv[optionName];
+});
+
 boscoOptions.program = boscoArgs;
 boscoOptions.args = argv._;
 boscoOptions.version = pkg.version;
