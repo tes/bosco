@@ -35,7 +35,7 @@ module.exports = {
     desc: 'Start a list of repos (comma separated)',
   },
   {
-    name: 'dev',
+    name: 'deps-only',
     alias: 'd',
     type: 'boolean',
     desc: 'Only start the dependencies of the current repo, not itself',
