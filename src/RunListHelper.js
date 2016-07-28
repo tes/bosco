@@ -62,7 +62,7 @@ function getRunList(bosco, repos, repoRegex, watchRegex, repoTag) {
   }
 
   function notCurrentService(repo) {
-    return !(bosco.options.inService && bosco.options.dont && repo === bosco.options.inServiceRepo);
+    return !(bosco.options.inService && bosco.options['deps-only'] && repo === bosco.options.inServiceRepo);
   }
 
   function matchingRepo(repo) {
