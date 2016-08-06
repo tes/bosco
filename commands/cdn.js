@@ -71,7 +71,7 @@ function cmd(bosco, args) {
 
     function getAsset(assetUrl) {
       var key = assetUrl.replace('/', '');
-      return _.find(staticAssets, 'assetKey', key);
+      return _.find(staticAssets, {assetKey: key});
     }
 
     var server = http.createServer(function(request, response) {
