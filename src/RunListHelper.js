@@ -42,6 +42,8 @@ function getRunConfig(bosco, repo, watchRegex) {
     }
   }
 
+  svcConfig.service.type = svcConfig.service.type || 'remote';
+
   return svcConfig;
 }
 

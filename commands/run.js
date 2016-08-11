@@ -102,13 +102,13 @@ function cmd(bosco, args, allDone) {
       return cb();
     }
 
-    getRunList(function(err, runList) {
-      if (err) return next(err);
-      async.mapSeries(runList, function(runConfig, cb) {
-        if (!runConfig.service.type) {
+    function runServices(runList, cb) {
+      bosco.log('Launching ' + (runList.services.length + '').green + ' services with parallel limit of ' + (runList.limit + '').cyan + ' ...');
+      async.mapLimit(runList.services, runList.limit, function(runConfig, cb2) {
+        if (runConfig.service.type === 'remote') {
           RunListHelper.getServiceConfigFromGithub(bosco, runConfig.name, function(err, svcConfig) {
-            if (err) { return cb(); }
-            if (svcConfig.type === 'docker') { return cb(); }
+            if (err) { return cb2(); }
+            if (svcConfig.type === 'node') { return cb2(); }
             // Do not allow build in this mode, so default to run
             if (svcConfig.service && svcConfig.service.build) {
               delete svcConfig.service.build;
@@ -116,12 +116,24 @@ function cmd(bosco, args, allDone) {
             if (!svcConfig.name) {
               svcConfig.name = runConfig.name;
             }
-            runService(svcConfig, cb);
+            runService(svcConfig, cb2);
           });
         } else {
-          runService(runConfig, cb);
+          runService(runConfig, cb2);
         }
-      }, next);
+      }, cb);
+    }
+
+    getRunList(function(err, runList) {
+      if (err) return next(err);
+      var infraServices = _.filter(runList, function(i) { return i.service.type !== 'node'; });
+      var nodeServices = _.filter(runList, function(i) { return i.service.type === 'node' && _.startsWith('service-', i.name); });
+      var nodeApps = _.filter(runList, function(i) { return i.service.type === 'node' && !_.startsWith('service-', i.name); });
+      async.mapSeries([
+          {services: infraServices, limit: bosco.concurrency.cpu},
+          {services: nodeServices, limit: bosco.concurrency.network},
+          {services: nodeApps, limit: bosco.concurrency.network},
+      ], runServices, next);
     });
   }
 

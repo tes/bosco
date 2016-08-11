@@ -60,12 +60,12 @@ function cmd(bosco, args, done) {
 
   function stopRunningServices(cb) {
     RunListHelper.getRunList(bosco, repos, repoRegex, null, repoTag, function(err, services) {
-      async.mapSeries(services, function(boscoService, next) {
+      async.mapLimit(services, bosco.concurrency.network, function(boscoService, next) {
         var repo = boscoService.name;
 
         if (!repo.match(repoRegex)) return next();
 
-        if (boscoService.service && boscoService.service.type) {
+        if (boscoService.service && boscoService.service.type !== 'remote') {
           return stopService(repo, boscoService, runningServices, next);
         }
 
