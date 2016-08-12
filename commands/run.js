@@ -131,8 +131,8 @@ function cmd(bosco, args, allDone) {
       var nodeApps = _.filter(runList, function(i) { return i.service.type === 'node' && !_.startsWith('service-', i.name); });
       async.mapSeries([
           {services: infraServices, limit: bosco.concurrency.cpu},
-          {services: nodeServices, limit: bosco.concurrency.network},
-          {services: nodeApps, limit: bosco.concurrency.network},
+          {services: nodeServices, limit: bosco.concurrency.cpu},
+          {services: nodeApps, limit: bosco.concurrency.cpu},
       ], runServices, next);
     });
   }
