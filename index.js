@@ -55,7 +55,7 @@ Bosco.prototype.init = function(options) {
 
   self.concurrency = {
     network: self.options.cpus * 4, // network constrained
-    cpu: self.options.cpus, // cpu constrained
+    cpu: self.options.cpus - 1, // cpu constrained
   };
 
   events.EventEmitter.call(this);

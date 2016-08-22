@@ -151,17 +151,14 @@ function startContainer(bosco, docker, fqn, options, container, next) {
     function check() {
       checkRunning(checkPort, checkHost, function(err, running) {
         if (!err && running) {
-          process.stdout.write('\n');
           return next();
         }
 
         if (Date.now() > checkEnd) {
-          process.stdout.write('\n');
           bosco.warn('Could not detect if ' + options.name.green + ' had started on port ' + ('' + checkPort).magenta + ' after ' + checkTimeout + 'ms');
           return next();
         }
 
-        process.stdout.write('.');
         setTimeout(check, 50);
       });
     }
