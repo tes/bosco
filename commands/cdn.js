@@ -153,8 +153,7 @@ function cmd(bosco, args) {
     }
 
     function getIndexForKey(assetList, fileKey) {
-      var find = (_.isObject(assetList)) ? _.findKey : _.findIndex;
-      return find(assetList, 'assetKey', fileKey);
+      return _.findIndex(assetList, {assetKey: fileKey});
     }
 
     function reloadFile(fileKey) {
