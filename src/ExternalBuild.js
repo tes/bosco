@@ -31,12 +31,13 @@ module.exports = function(bosco) {
         bosco.error(log);
       } else {
         log = 'Finished build command for ' + service.name.blue;
-        if (stderr || stdout) log += ':';
+        if ((stderr || stdout) & !verbose) log += ':';
 
         bosco.log(log);
       }
 
-      if (err || stderr || verbose) {
+      var hasErrors = (err || stderr);
+      if (hasErrors && !verbose) {
         if (stdout) bosco.console.log(stdout);
         if (stderr) bosco.error(stderr);
       }
@@ -71,9 +72,11 @@ module.exports = function(bosco) {
 
     var readyText = 'finished';
     var checkDelay = 500; // delay before checking for any stdout
+    var timeout = 10000;
     if (service.build.watch) {
       readyText = service.build.watch.ready || readyText;
       checkDelay = service.build.watch.checkDelay || checkDelay;
+      timeout = service.build.watch.timeout || timeout;
       if (service.build.watch.command) {
         var watchCommand = service.build.watch.command;
         commandForLog = watchCommand;
@@ -87,7 +90,6 @@ module.exports = function(bosco) {
     var output = '';
     var childError = null;
     var calledReady = false;
-    var timeout = checkDelay * 100; // Seems reasonable for build cycle
     var timer = 0;
     var watchBuildFinished;
 
@@ -129,6 +131,9 @@ module.exports = function(bosco) {
       if (!calledReady) {
         output += data.toString();
       }
+      if (verbose) {
+        process.stdout.write(data.toString());
+      }
     });
 
     watchBuildFinished = function() {
@@ -140,10 +145,13 @@ module.exports = function(bosco) {
 
     wc.stderr.on('data', function(data) {
       childError = true;
-      if (calledReady) {
+      if (calledReady && !verbose) {
         bosco.error('Watch'.red + ' command for ' + service.name.blue + ' stderr:\n' + data.toString());
       } else {
         output += data.toString();
+      }
+      if (verbose) {
+        process.stderr.write(data.toString());
       }
     });
 
