@@ -18,9 +18,9 @@ module.exports = function(bosco) {
     }
 
     function buildCompleted(err) {
-      var rtn = buildFinished(err, output);
+      var outputToReturn = output;
       reset();
-      return rtn;
+      return buildFinished(err, outputToReturn);
     }
 
     function onBuildTimeout() {
