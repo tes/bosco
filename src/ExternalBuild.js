@@ -17,9 +17,11 @@ module.exports = function(bosco) {
     var firstBuildCalledBack = false;
 
     function buildFinished(err, stdout, stderr) {
-      // watch stderr output isn't considered fatal
       var realError = (err && err !== true) ? err : null;
-      var hasError = err || stderr;
+      // watch stderr output isn't considered fatal
+      var hasStdErr = Array.isArray(stdout) && stdout.some(function(entry) { return entry.type === 'stderr'; });
+      var hasError = err || stderr || hasStdErr;
+
       var log;
       if (realError) {
         log = 'Failed'.red + ' build command for ' + service.name.blue;
@@ -31,13 +33,22 @@ module.exports = function(bosco) {
         bosco.error(log);
       } else {
         log = 'Finished build command for ' + service.name.blue;
+        if (hasError) log += ' with ' + 'stderr'.red;
         if (hasError && !verbose) log += ':';
         bosco.log(log);
       }
+
       if (hasError && !verbose) {
-        if (stdout) bosco.console.log(stdout);
-        if (stderr) bosco.error(stderr);
+        if (Array.isArray(stdout)) {
+          stdout.forEach(function(output) {
+            bosco.process[output.type].write(output.data);
+          });
+        } else {
+          if (stdout) bosco.console.log(stdout);
+          if (stderr) bosco.error(stderr);
+        }
       }
+
       if (!firstBuildCalledBack) {
         firstBuildCalledBack = true;
         next(realError);

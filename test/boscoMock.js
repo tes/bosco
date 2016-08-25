@@ -6,13 +6,21 @@ function getLogger() {
   return {
     log: function(msg) { this._log = this._log || []; this._log.push(msg); },
     error: function(msg) { this._error = this._error || []; this._error.push(msg); },
-    warn: function(msg) { this._warn = this._warn || []; this._warn.push(msg); }
+    warn: function(msg) { this._warn = this._warn || []; this._warn.push(msg); },
+  };
+}
+
+function getProcess() {
+  return {
+    stdout: { write: function(msg) { this._data = this._data || []; this._data.push(msg); } },
+    stderr: { write: function(msg) { this._data = this._data || []; this._data.push(msg); } },
   };
 }
 
 module.exports = function boscoMock(extra) {
   return _.assign({}, getLogger(), {
     console: getLogger(),
+    process: getProcess(),
     repos: [],
     options: {
       environment: 'test',

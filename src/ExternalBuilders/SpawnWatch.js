@@ -4,74 +4,74 @@ module.exports = function(bosco) {
   return function(service, command, cwd, verbose, buildFinished) {
     bosco.log('Spawning ' + 'watch'.red + ' command for ' + service.name.blue + ': ' + command.log);
     var wc = spawn(process.env.SHELL, ['-c', command.command], cwd);
-    var output = '';
-    var errorOutput = '';
-    var childError = null;
-    var checkFinishedTimer;
-    var overallTimeout;
-    var waitingForOutput = true;
+    var output;
+    var outputCache;
+    var outputCacheIndex;
+    var overallTimeoutTimer;
 
-    var watchBuildFinished = function(err, stdout, stderr) {
-      clearTimeout(checkFinishedTimer);
-      clearTimeout(overallTimeout);
-      checkFinishedTimer = null;
-      waitingForOutput = true;
-      output = '';
-      errorOutput = '';
-      buildFinished(err, stdout, stderr);
-    };
+    function reset() {
+      output = [];
+      outputCache = '';
+      outputCacheIndex = -1;
+      if (overallTimeoutTimer) clearTimeout(overallTimeoutTimer);
+      overallTimeoutTimer = null;
+    }
 
-    var checkFinished = function() {
-      if (childError && childError !== true) {
-        return watchBuildFinished(childError, output, errorOutput);
-      }
-      if (output.indexOf(command.ready) >= 0) {
-        return watchBuildFinished(childError, output);
-      }
-      checkFinishedTimer = setTimeout(checkFinished, command.checkDelay);
-    };
+    function buildCompleted(err) {
+      var rtn = buildFinished(err, output);
+      reset();
+      return rtn;
+    }
 
-    overallTimeout = setTimeout(function() {
-      clearTimeout(checkFinishedTimer);
-      bosco.error('Build timed out beyond ' + command.timeout / 1000 + ' seconds, likely an issue with the project build - you may need to check locally. Was looking for: ' + command.ready);
-      childError = new Error('build timed out beyond ' + command.timeout / 1000 + ' seconds');
+    function onBuildTimeout() {
+      var errorMessage = 'Build timed out beyond ' + command.timeout / 1000 + ' seconds';
+      bosco.error(errorMessage + ', likely an issue with the project build - you may need to check locally. Was looking for: ' + command.ready);
       wc.kill();
-      return watchBuildFinished(childError, '', output);
-    }, command.timeout);
+      return buildCompleted(new Error(errorMessage));
+    }
 
-    wc.on('exit', function(code, signal) {
-      if (!childError || childError === true) {
-        // any exit of a watch process is an error.
-        childError = new Error('Watch process exited with code ' + code + ' and signal ' + signal);
-        childError.code = code;
-        childError.signal = signal;
+    function buildStarted() {
+      bosco.log('Started build command for ' + service.name.blue + ' ...');
+      overallTimeoutTimer = setTimeout(onBuildTimeout, command.timeout);
+    }
+
+    function isBuildFinished() {
+      output.forEach(function(entry, i) {
+        if (i <= outputCacheIndex) { return; }
+        outputCache += entry.data;
+        outputCacheIndex = i;
+      });
+      return outputCache.indexOf(command.ready) >= 0;
+    }
+
+    function onChildOutput(type, data) {
+      if (!data) { return; }
+
+      if (output.length < 1) {
+        buildStarted();
       }
+
+      output.push({type: type, data: data.toString()});
+      if (verbose) {
+        bosco.process[type].write(data.toString());
+      }
+
+      if (isBuildFinished()) {
+        buildCompleted();
+      }
+    }
+
+    function onChildExit(code, signal) {
+      var childError = new Error('Watch process exited with code ' + code + ' and signal ' + signal);
+      childError.code = code;
+      childError.signal = signal;
       bosco.error('Watch'.red + ' command for ' + service.name.blue + ' died with code ' + code);
-    });
+      return buildCompleted(childError);
+    }
 
-    wc.stdout.on('data', function(data) {
-      if (waitingForOutput) {
-        if (!checkFinishedTimer) checkFinished();
-        waitingForOutput = false;
-        bosco.log('Started build for service ' + service.name.blue + ' ...');
-      }
-      output += data.toString();
-      if (verbose) {
-        process.stdout.write(data.toString());
-      }
-    });
-
-    wc.stderr.on('data', function(data) {
-      if (waitingForOutput) {
-        if (!checkFinishedTimer) checkFinished();
-        waitingForOutput = false;
-        bosco.log('Started build for service ' + service.name.blue + ', but immediately errored ...');
-      }
-      childError = true;
-      errorOutput += data.toString();
-      if (verbose) {
-        process.stdout.write(data.toString());
-      }
-    });
+    reset();
+    wc.stdout.on('data', function(data) { onChildOutput('stdout', data); });
+    wc.stderr.on('data', function(data) { onChildOutput('stderr', data); });
+    wc.on('exit', onChildExit);
   };
 };

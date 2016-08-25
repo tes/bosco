@@ -209,9 +209,9 @@ describe('ExternalBuild', function() {
       name: 'service',
       repoPath: localBosco.getRepoPath(''),
       build: {
-        command: ['echo -n build; echo -n bye >&2;false'],
+        command: ['echo -n build >&2;false'],
         watch: {
-          command: ['echo -n watch; echo -n bye >&2;sleep 1;false'],
+          command: ['echo -n watch >&2;sleep 1;false'],
           ready: 'watch',
           checkDelay: 10
         }
@@ -224,7 +224,9 @@ describe('ExternalBuild', function() {
 
     doBuild(service, options, null, function(err) {
       if (err) return done(err);
-      expect(localBosco.console._log).to.eql(['watch']);
+      expect(localBosco.process.stderr).to.have.property('_data');
+      expect(localBosco.process.stderr._data).to.eql(['watch']);
+      expect(localBosco.process.stdout).to.not.have.property('_data');
       expect(localBosco).to.have.property('_log');
       expect(localBosco).to.not.have.property('_error');
       done();

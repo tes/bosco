@@ -516,6 +516,7 @@ Bosco.prototype._log = function(identifier, msg, args) {
 };
 
 Bosco.prototype.console = global.console;
+Bosco.prototype.process = global.process;
 
 Bosco.prototype.exists = function(checkPath) {
   return fs.existsSync(checkPath);
