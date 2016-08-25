@@ -183,7 +183,7 @@ describe('ExternalBuild', function() {
       build: {
         command: 'echo hello; sleep 1',
         watch: {
-          checkDelay: 1
+          timeout: 1
         }
       }
     };
