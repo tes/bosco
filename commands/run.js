@@ -103,12 +103,17 @@ function cmd(bosco, args, allDone) {
     }
 
     function runServices(runList, cb) {
+      if (runList.services.length < 1) {
+        cb();
+        return;
+      }
+
       bosco.log('Launching ' + (runList.services.length + '').green + ' services with parallel limit of ' + (runList.limit + '').cyan + ' ...');
-      async.mapLimit(runList.services, runList.limit, function(runConfig, cb2) {
+      async.mapLimit(runList.services, runList.limit, function(runConfig, asyncMapCb) {
         if (runConfig.service.type === 'remote') {
           RunListHelper.getServiceConfigFromGithub(bosco, runConfig.name, function(err, svcConfig) {
-            if (err) { return cb2(); }
-            if (svcConfig.type === 'node') { return cb2(); }
+            if (err) { return asyncMapCb(); }
+            if (svcConfig.type === 'node') { return asyncMapCb(); }
             // Do not allow build in this mode, so default to run
             if (svcConfig.service && svcConfig.service.build) {
               delete svcConfig.service.build;
@@ -116,10 +121,10 @@ function cmd(bosco, args, allDone) {
             if (!svcConfig.name) {
               svcConfig.name = runConfig.name;
             }
-            runService(svcConfig, cb2);
+            runService(svcConfig, asyncMapCb);
           });
         } else {
-          runService(runConfig, cb2);
+          runService(runConfig, asyncMapCb);
         }
       }, cb);
     }
