@@ -127,7 +127,7 @@ describe('ExternalBuild', function() {
         command: 'echo hi; sleep 1',
         watch: {
           ready: 'hi',
-          checkDelay: 10
+          checkDelay: 1
         }
       }
     };
@@ -138,12 +138,9 @@ describe('ExternalBuild', function() {
 
     doBuild(service, options, null, function(err) {
       if (err) return done(err);
-
       expect(localBosco.console).to.not.have.property('_log');
       expect(localBosco._log).to.be.an('array');
-      expect(localBosco._log).to.have.length(2);
       expect(localBosco._log[0]).to.contain('echo hi; sleep 1');
-
       done();
     });
   });
@@ -172,8 +169,7 @@ describe('ExternalBuild', function() {
       expect(err).to.have.property('code', 0);
       expect(localBosco._error).to.be.an('array');
       expect(localBosco._error).to.have.length(2);
-      expect(localBosco._error[0]).to.contain('with code 0');
-      expect(localBosco._error[1]).to.be('\n');
+      expect(localBosco._error[1]).to.contain('with code 0');
       done();
     });
   });
@@ -185,7 +181,7 @@ describe('ExternalBuild', function() {
       name: 'service',
       repoPath: localBosco.getRepoPath(''),
       build: {
-        command: 'sleep 1',
+        command: 'echo hello; sleep 1',
         watch: {
           timeout: 1
         }
@@ -213,9 +209,9 @@ describe('ExternalBuild', function() {
       name: 'service',
       repoPath: localBosco.getRepoPath(''),
       build: {
-        command: ['echo -n build; echo -n bye >&2;false'],
+        command: ['echo -n build >&2;false'],
         watch: {
-          command: ['echo -n watch; echo -n bye >&2;sleep 1;false'],
+          command: ['echo -n watch >&2;sleep 1;false'],
           ready: 'watch',
           checkDelay: 10
         }
@@ -228,7 +224,9 @@ describe('ExternalBuild', function() {
 
     doBuild(service, options, null, function(err) {
       if (err) return done(err);
-      expect(localBosco.console._log).to.eql(['watchbye']);
+      expect(localBosco.process.stderr).to.have.property('_data');
+      expect(localBosco.process.stderr._data).to.eql(['watch']);
+      expect(localBosco.process.stdout).to.not.have.property('_data');
       expect(localBosco).to.have.property('_log');
       expect(localBosco).to.not.have.property('_error');
       done();

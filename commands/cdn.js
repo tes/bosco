@@ -148,15 +148,27 @@ function cmd(bosco, args) {
       if (asset.path) watchSet[asset.path] = asset.assetKey;
     });
 
+    function directoryIsInWatchSet(directory) {
+      return _.reduce(_.keys(watchSet), function(result, value) {
+        var resolvedWatchPath = value;
+        var directoryWatch = resolvedWatchPath.indexOf(directory) >= 0;
+        return result || directoryWatch;
+      }, false);
+    }
+
     function filterFn(f, stat) {
-      return f.match(watchRegex) && stat.isDirectory() || watchSet[f];
+      var watchDirectory = false;
+      if (f.match(watchRegex) && stat.isDirectory()) {
+        watchDirectory = directoryIsInWatchSet(f);
+      }
+      return watchDirectory || watchSet[f];
     }
 
     function getIndexForKey(assetList, fileKey) {
       return _.findIndex(assetList, {assetKey: fileKey});
     }
 
-    function reloadFile(fileKey) {
+    function reloadFile(fileKey, filePath) {
       if (!fileKey) return;
 
       if (!minify) {
@@ -173,7 +185,8 @@ function cmd(bosco, args) {
           }
           staticAssets[assetIndex].data = data;
           staticAssets[assetIndex].content = data.toString();
-          bosco.log('Reloaded ' + fileKey);
+          var reloadLog = 'Reloaded ' + path.relative(bosco.getOrgPath(), filePath);
+          bosco.log(reloadLog.green);
           reloading[fileKey] = false;
         });
         return;
@@ -199,14 +212,14 @@ function cmd(bosco, args) {
     }
 
     watch.createMonitor(bosco.getOrgPath(), {filter: filterFn, ignoreDotFiles: true, ignoreUnreadableDir: true, ignoreDirectoryPattern: /node_modules|\.git|coverage/, interval: 1000}, function(monitor) {
-      bosco.log('Watching ' + _.keys(monitor.files).length + ' files ...');
+      bosco.log('Watching ' + _.keys(monitor.files).length + ' folders and files ...');
 
       function onChange(f) {
         var fileKey = watchSet[f];
 
         if (reloading[fileKey]) return;
         reloading[fileKey] = true;
-        reloadFile(fileKey);
+        reloadFile(fileKey, f);
       }
 
       monitor.on('changed', onChange);

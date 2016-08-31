@@ -4,7 +4,7 @@
     "name": "project3"
   },
   "build": {
-    "command": "false",
+    "command": "echo blah; false",
     "watch": {
       "checkDelay": 10
     }
