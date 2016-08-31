@@ -50,6 +50,10 @@ function getRunConfig(bosco, repo, watchRegex) {
 function getRunList(bosco, repos, repoRegex, watchRegex, repoTag) {
   var configs = {};
 
+  function isCurrentService(repo) {
+    return (bosco.options.inService && repo === bosco.options.inServiceRepo);
+  }
+
   function getCachedConfig(repo) {
     var config = configs[repo];
     if (config) {
@@ -64,7 +68,7 @@ function getRunList(bosco, repos, repoRegex, watchRegex, repoTag) {
   }
 
   function notCurrentService(repo) {
-    return !(bosco.options.inService && bosco.options['deps-only'] && repo === bosco.options.inServiceRepo);
+    return !(bosco.options['deps-only'] && isCurrentService(repo));
   }
 
   function matchingRepo(repo) {
