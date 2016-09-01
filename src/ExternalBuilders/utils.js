@@ -7,14 +7,12 @@ module.exports = function(bosco) {
     var commandForLog;
     var command;
     var ready;
-    var checkDelay;
     var timeout;
     var args;
     if (watch) {
       var watchConfig = buildConfig.watch || {};
       ready = watchConfig.ready || 'finished';
-      checkDelay = watchConfig.checkDelay || 500;
-      timeout = watchConfig.timeout || checkDelay * 100;
+      timeout = watchConfig.timeout || 10000;
       command = watchConfig.command || buildConfig.command;
       commandForLog = command;
     } else {
@@ -28,7 +26,7 @@ module.exports = function(bosco) {
       }
     }
     command = ensureCorrectNodeVersion(command, interpreter);
-    return {command: command, args: args, log: commandForLog, watch: watch, ready: ready, checkDelay: checkDelay, timeout: timeout};
+    return {command: command, args: args, log: commandForLog, watch: watch, ready: ready, timeout: timeout};
   }
 
   return {

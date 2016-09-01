@@ -127,7 +127,6 @@ describe('ExternalBuild', function() {
         command: 'echo hi; sleep 1',
         watch: {
           ready: 'hi',
-          checkDelay: 1
         }
       }
     };
@@ -155,7 +154,6 @@ describe('ExternalBuild', function() {
         command: 'bash -c echo',
         watch: {
           ready: 'hi',
-          checkDelay: 10
         }
       }
     };
@@ -212,8 +210,7 @@ describe('ExternalBuild', function() {
         command: ['echo -n build >&2;false'],
         watch: {
           command: ['echo -n watch >&2;sleep 1;false'],
-          ready: 'watch',
-          checkDelay: 10
+          ready: 'watch'
         }
       }
     };

@@ -4,10 +4,7 @@
     "name": "project3"
   },
   "build": {
-    "command": "echo blah; false",
-    "watch": {
-      "checkDelay": 10
-    }
+    "command": "echo blah; false"
   },
   "assets": {
     "basePath": "/dist",
