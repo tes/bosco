@@ -408,6 +408,7 @@ Bosco.prototype.getOrgPath = function() {
 };
 
 Bosco.prototype.getRepoPath = function(repo) {
+  var self = this;
   // Strip out / to support full github references
   var repoName;
   if (repo.indexOf('/') < 0) {
@@ -415,7 +416,12 @@ Bosco.prototype.getRepoPath = function(repo) {
   } else {
     repoName = repo.split('/')[1];
   }
-  return [path.resolve(this.getWorkspacePath()), repoName].join('/');
+
+  var isRepoCurrentService = (self.options.inService && repo === self.options.inServiceRepo);
+  var repoPath = isRepoCurrentService
+    ? path.resolve('.')
+    : [path.resolve(this.getWorkspacePath()), repoName].join('/');
+  return repoPath;
 };
 
 // Additional exports
@@ -480,16 +486,35 @@ Bosco.prototype.getAssetCdnUrl = function(assetUrl) {
   return this.getBaseCdnUrl() + '/' + url;
 };
 
+Bosco.prototype.getRepoName = function() {
+  var self = this;
+  var repoName = path.relative('..', '.');
+  var packagePath = path.resolve('package.json');
+  if (self.exists(packagePath)) {
+    var package = require(packagePath);
+    if (package.name) {
+      repoName = package.name;
+    }
+  }
+  var boscoServicePath = path.resolve('bosco-service.json');
+  if (self.exists(boscoServicePath)) {
+    var boscoService = require(boscoServicePath);
+    if (boscoService.service && boscoService.service.name) {
+      repoName = boscoService.service.name;
+    }
+  }
+  return repoName;
+};
+
 Bosco.prototype.checkInService = function() {
   var self = this;
   var cwd = path.resolve('bosco-service.json');
   if (self.exists(cwd) && self.options.service) {
     self.options.inService = true;
-    self.options.inServiceRepo = path.relative('..', '.');
-    self.options.workspace = path.resolve('..');
+    self.options.inServiceRepo = self.getRepoName();
     // Replace getRepos
     self.getRepos = function() {
-      return [path.relative('..', '.')];
+      return [self.getRepoName()];
     };
   }
 };

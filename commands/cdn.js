@@ -45,7 +45,7 @@ function cmd(bosco, args) {
     repos = bosco.options.list.split(',');
   } else {
     if (CmdHelper.checkInService(bosco)) {
-      bosco.options.watch = bosco.options.watch || new RegExp(path.basename(process.cwd()));
+      bosco.options.watch = bosco.options.watch || new RegExp(bosco.getRepoName());
       watchRegex = new RegExp(bosco.options.watch);
     }
 
@@ -158,7 +158,7 @@ function cmd(bosco, args) {
 
     function filterFn(f, stat) {
       var watchDirectory = false;
-      if (f.match(watchRegex) && stat.isDirectory()) {
+      if (stat.isDirectory()) {
         watchDirectory = directoryIsInWatchSet(f);
       }
       return watchDirectory || watchSet[f];
@@ -211,8 +211,19 @@ function cmd(bosco, args) {
       });
     }
 
-    watch.createMonitor(bosco.getOrgPath(), {filter: filterFn, ignoreDotFiles: true, ignoreUnreadableDir: true, ignoreDirectoryPattern: /node_modules|\.git|coverage/, interval: 1000}, function(monitor) {
-      bosco.log('Watching ' + _.keys(monitor.files).length + ' folders and files ...');
+    var watchOpts = {
+      filter: filterFn,
+      ignoreDotFiles: true,
+      ignoreUnreadableDir: true,
+      ignoreDirectoryPattern: /node_modules|\.git|coverage/,
+      interval: 1000,
+    };
+    watch.createMonitor(bosco.getOrgPath(), watchOpts, function(monitor) {
+      var monitoredPaths = _.keys(monitor.files);
+      var monitoredFiles = _.filter(monitoredPaths, function(monitoredPath) {
+        return fs.lstatSync(monitoredPath).isFile();
+      });
+      bosco.log('Watching ' + monitoredFiles.length + ' files ...');
 
       function onChange(f) {
         var fileKey = watchSet[f];
