@@ -130,6 +130,7 @@ function cmd(bosco, args) {
   }
 
   function watchCallback(err, service) {
+    if (err) { return bosco.error(err); }
     bosco.log('Local CDN ready after build for service: ' + service.name.green);
   }
 
