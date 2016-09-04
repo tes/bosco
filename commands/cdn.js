@@ -1,9 +1,7 @@
 var _ = require('lodash');
 var async = require('async');
 var fs = require('fs');
-var path = require('path');
 var http = require('http');
-var watch = require('watch');
 var url = require('url');
 var browserSync = require('browser-sync');
 var RunListHelper = require('../src/RunListHelper');
@@ -131,114 +129,11 @@ function cmd(bosco, args) {
     bosco.log('Server is listening on ' + serverPort);
   }
 
-  function startMonitor(staticAssets) {
-    var watchSet = {};
-    var reloading = {};
-
-    _.forEach(staticAssets, function(asset) {
-      if (asset.repo && !asset.repo.match(watchRegex)) return;
-
-      if (minify && asset.extname === '.manifest') {
-        asset.files.forEach(function(file) {
-          if (file) watchSet[file.path] = asset.tag;
-        });
-        return;
-      }
-
-      if (asset.path) watchSet[asset.path] = asset.assetKey;
-    });
-
-    function directoryIsInWatchSet(directory) {
-      return _.reduce(_.keys(watchSet), function(result, value) {
-        var resolvedWatchPath = value;
-        var directoryWatch = resolvedWatchPath.indexOf(directory) >= 0;
-        return result || directoryWatch;
-      }, false);
-    }
-
-    function filterFn(f, stat) {
-      var watchDirectory = false;
-      if (stat.isDirectory()) {
-        watchDirectory = directoryIsInWatchSet(f);
-      }
-      return watchDirectory || watchSet[f];
-    }
-
-    function getIndexForKey(assetList, fileKey) {
-      return _.findIndex(assetList, {assetKey: fileKey});
-    }
-
-    function reloadFile(fileKey, filePath) {
-      if (!fileKey) return;
-
-      if (!minify) {
-        var assetIndex = getIndexForKey(staticAssets, fileKey);
-        if (!assetIndex) {
-          bosco.error('Unable to locate asset with key: ' + fileKey);
-          return;
-        }
-        fs.readFile(staticAssets[assetIndex].path, function(err, data) {
-          if (err) {
-            bosco.log('Error reloading ' + fileKey);
-            bosco.log(err.toString());
-            return;
-          }
-          staticAssets[assetIndex].data = data;
-          staticAssets[assetIndex].content = data.toString();
-          var reloadLog = 'Reloaded ' + path.relative(bosco.getOrgPath(), filePath);
-          bosco.log(reloadLog.green);
-          reloading[fileKey] = false;
-        });
-        return;
-      }
-
-      bosco.log('Recompiling tag ' + fileKey.blue);
-      var staticAssetOptions = {
-        repos: repos,
-        minify: minify,
-        buildNumber: 'local',
-        tagFilter: fileKey,
-        watchBuilds: false,
-        reloadOnly: true,
-      };
-      bosco.staticUtils.getStaticAssets(staticAssetOptions, function(err, updatedAssets) {
-        _.forEach(updatedAssets, function(value) {
-          var index = getIndexForKey(staticAssets, value.assetKey);
-          staticAssets[index] = value;
-        });
-        bosco.log('Reloaded minified assets for tag ' + fileKey.blue);
-        reloading[fileKey] = false;
-      });
-    }
-
-    var watchOpts = {
-      filter: filterFn,
-      ignoreDotFiles: true,
-      ignoreUnreadableDir: true,
-      ignoreDirectoryPattern: /node_modules|\.git|coverage/,
-      interval: 1000,
-    };
-    watch.createMonitor(bosco.getOrgPath(), watchOpts, function(monitor) {
-      var monitoredPaths = _.keys(monitor.files);
-      var monitoredFiles = _.filter(monitoredPaths, function(monitoredPath) {
-        return fs.lstatSync(monitoredPath).isFile();
-      });
-      bosco.log('Watching ' + monitoredFiles.length + ' files ...');
-
-      function onChange(f) {
-        var fileKey = watchSet[f];
-
-        if (reloading[fileKey]) return;
-        reloading[fileKey] = true;
-        reloadFile(fileKey, f);
-      }
-
-      monitor.on('changed', onChange);
-      monitor.on('created', onChange);
-    });
+  function watchCallback(err, service) {
+    bosco.log('Local CDN ready after build for service: ' + service.name.green);
   }
 
-  if (minify) bosco.log('Minifying front end assets, this can take some time ...');
+  if (minify) bosco.log('Running per service builds for front end assets, this can take some time ...');
 
   getRunList(function(err, repoList) {
     var repoNames = _.map(repoList, 'name');
@@ -253,6 +148,7 @@ function cmd(bosco, args) {
       watchRegex: watchRegex,
       repoRegex: repoRegex,
       repoTag: repoTag,
+      watchCallback: watchCallback,
     };
 
     var executeAsync = {
@@ -262,7 +158,6 @@ function cmd(bosco, args) {
 
     async.parallel(executeAsync, function(err, results) {
       startServer(results.staticAssets, results.staticRepos, port);
-      startMonitor(results.staticAssets);
     });
   });
 }

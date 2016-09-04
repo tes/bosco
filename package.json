@@ -95,7 +95,6 @@
     "tail": "^1.1.0",
     "tar-fs": "^1.2.0",
     "uglify-js": "^2.6.1",
-    "watch": "^0.19.1",
     "yargs": "^4.8.1"
   },
   "devDependencies": {
