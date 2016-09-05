@@ -10,7 +10,7 @@ module.exports = {
 function cmd(bosco, args) {
   var stringCommand = args.join(' ');
   var command = args[0];
-  var cmdArgs = _.rest(args);
+  var cmdArgs = _.tail(args);
 
   bosco.log('Running "' + stringCommand.green + '" across all matching repos ...');
 
