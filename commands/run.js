@@ -16,30 +16,32 @@ module.exports = {
   description: 'Runs all of the microservices (or subset based on regex pattern)',
   usage: '[-r <repoPattern>] [-t <tag>] [-d]',
   requiresNvm: true,
-  options: [{
-    name: 'tag',
-    alias: 't',
-    type: 'string',
-    desc: 'Filter by a tag defined within bosco-service.json',
-  },
-  {
-    name: 'watch',
-    alias: 'w',
-    type: 'string',
-    desc: 'Watch the applications started with run for changes that match this regular expression',
-  },
-  {
-    name: 'list',
-    alias: 'l',
-    type: 'string',
-    desc: 'Start a list of repos (comma separated)',
-  },
-  {
-    name: 'deps-only',
-    alias: 'd',
-    type: 'boolean',
-    desc: 'Only start the dependencies of the current repo, not itself',
-  }],
+  options: [
+    {
+      name: 'tag',
+      alias: 't',
+      type: 'string',
+      desc: 'Filter by a tag defined within bosco-service.json',
+    },
+    {
+      name: 'watch',
+      alias: 'w',
+      type: 'string',
+      desc: 'Watch the applications started with run for changes that match this regular expression',
+    },
+    {
+      name: 'list',
+      alias: 'l',
+      type: 'string',
+      desc: 'Start a list of repos (comma separated)',
+    },
+    {
+      name: 'deps-only',
+      alias: 'd',
+      type: 'boolean',
+      desc: 'Only start the dependencies of the current repo, not itself',
+    },
+  ],
 };
 
 function cmd(bosco, args, allDone) {

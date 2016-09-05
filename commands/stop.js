@@ -10,6 +10,26 @@ module.exports = {
   name: 'stop',
   description: 'Stops all of the microservices (or subset based on regex pattern)',
   usage: '[-r <repoPattern>]',
+  options: [
+    {
+      name: 'tag',
+      alias: 't',
+      type: 'string',
+      desc: 'Filter by a tag defined within bosco-service.json',
+    },
+    {
+      name: 'list',
+      alias: 'l',
+      type: 'string',
+      desc: 'Start a list of repos (comma separated)',
+    },
+    {
+      name: 'deps-only',
+      alias: 'd',
+      type: 'boolean',
+      desc: 'Only start the dependencies of the current repo, not itself',
+    },
+  ],
 };
 
 function cmd(bosco, args, done) {
