@@ -52,6 +52,8 @@ module.exports = function(bosco) {
       if (!firstBuildCalledBack) {
         firstBuildCalledBack = true;
         next(realError);
+      } else {
+        if (options.watchCallback) { options.watchCallback(realError, service); }
       }
     }
 
