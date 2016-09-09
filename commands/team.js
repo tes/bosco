@@ -14,7 +14,7 @@ module.exports = {
 
 function showTeams(bosco) {
   var teamConfig = bosco.config.get('teams');
-  var teams = _.keys(teamConfig);
+  var teams = _.keys(teamConfig).sort();
 
   bosco.log('Your current github organisations and teams:');
   _.each(teams, function(team) {
@@ -105,22 +105,24 @@ function linkTeam(bosco, team, folder, next) {
 }
 
 function setupInitialLink(bosco, next) {
-  var teams = _.keys(bosco.config.get('teams'));
-
-  inquirer.prompt([{
+  var teams = _.keys(bosco.config.get('teams')).sort();
+  var currentTeam = bosco.getTeam();
+  var repoQuestion = {
     type: 'list',
     message: 'Select a team to map to a workspace directory:',
     name: 'repo',
+    default: currentTeam,
     choices: teams,
-  }], function( answer1 ) {
-    inquirer.prompt([{
-      type: 'input',
-      message: 'Enter the path to map team to (defaults to current folder):',
-      name: 'folder',
-      default: '.',
-    }], function( answer2 ) {
-      linkTeam(bosco, answer1.repo, answer2.folder, next);
-    });
+  };
+  var folderQuestion = {
+    type: 'input',
+    message: 'Enter the path to map team to (defaults to current folder):',
+    name: 'folder',
+    default: '.',
+  };
+
+  inquirer.prompt([repoQuestion, folderQuestion]).then(function(answers) {
+    linkTeam(bosco, answers.repo, answers.folder, next);
   });
 }
 
