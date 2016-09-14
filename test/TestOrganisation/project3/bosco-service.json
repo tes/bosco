@@ -7,8 +7,7 @@
     "command": "echo 'This is the pseudo output of a build command.'",
     "watch": {
       "command": ["echo \"COMPLETA\"; sleep 1"],
-      "ready": "COMPLETA",
-      "checkDelay": 10
+      "ready": "COMPLETA"
     }
   },
   "assets": {
