@@ -32,11 +32,19 @@ function cmd(bosco) {
     });
   }
 
+  function calcFluidColumnWidth(fixedColumnWidths, numberOfColumns) {
+    var minFluidColWidth = 20;
+    var fluidColWidth = process.stdout.columns - fixedColumnWidths - numberOfColumns - 1;
+    return (fluidColWidth > minFluidColWidth)
+      ? fluidColWidth
+      : minFluidColWidth;
+  }
+
   function printNodeServices(name, list) {
     var table = new Table({
       chars: {'mid': '', 'left-mid': '', 'mid-mid': '', 'right-mid': ''},
       head: [name + ' Service', 'PID', 'Status', 'Mode', 'Watch'],
-      colWidths: [60, 10, 10, 12, 10],
+      colWidths: [calcFluidColumnWidth(42, 5), 10, 10, 12, 10],
     });
 
     list.forEach(function(item) {
@@ -51,7 +59,7 @@ function cmd(bosco) {
     var table = new Table({
       chars: {'mid': '', 'left-mid': '', 'mid-mid': '', 'right-mid': ''},
       head: [name + ' Service', 'Status', 'FQN'],
-      colWidths: [25, 20, 60],
+      colWidths: [25, 20, calcFluidColumnWidth(45, 3)],
     });
 
     list.forEach(function(item) {
