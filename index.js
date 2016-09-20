@@ -374,7 +374,7 @@ Bosco.prototype.getTeam = function() {
   var teamConfig = self.config.get('teams');
   var currentTeam;
   _.keys(teamConfig).forEach(function(team) {
-    if (teamConfig[team].path === self.options.workspace) {
+    if (self.options.workspace.indexOf(teamConfig[team].path) >= 0) {
       currentTeam = team;
     }
   });
@@ -396,7 +396,7 @@ Bosco.prototype.getOrg = function() {
   var teamConfig = self.config.get('teams');
   var currentOrg = '';
   _.keys(teamConfig).forEach(function(team) {
-    if (teamConfig[team].path === self.options.workspace) {
+    if (self.options.workspace.indexOf(teamConfig[team].path) >= 0) {
       currentOrg = team.split('/')[0];
     }
   });

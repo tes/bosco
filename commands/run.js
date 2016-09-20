@@ -110,12 +110,15 @@ function cmd(bosco, args, allDone) {
         return;
       }
 
-      bosco.log('Launching ' + (runList.services.length + '').green + ' services with parallel limit of ' + (runList.limit + '').cyan + ' ...');
+      bosco.log('Launching ' + (runList.services.length + '').green + ' ' + runList.type.cyan + ' processes with parallel limit of ' + (runList.limit + '').cyan + ' ...');
+      var missingDependencies = [];
       async.mapLimit(runList.services, runList.limit, function(runConfig, asyncMapCb) {
         if (runConfig.service.type === 'remote') {
           RunListHelper.getServiceConfigFromGithub(bosco, runConfig.name, function(err, svcConfig) {
-            if (err) { return asyncMapCb(); }
-            if (svcConfig.type === 'node') { return asyncMapCb(); }
+            if (err || !svcConfig || svcConfig.type === 'node') {
+              missingDependencies.push(runConfig.name);
+              return asyncMapCb();
+            }
             // Do not allow build in this mode, so default to run
             if (svcConfig.service && svcConfig.service.build) {
               delete svcConfig.service.build;
@@ -128,7 +131,12 @@ function cmd(bosco, args, allDone) {
         } else {
           runService(runConfig, asyncMapCb);
         }
-      }, cb);
+      }, function(err) {
+        if (missingDependencies.length > 0) {
+          bosco.warn('Unable to start dependencies: ' + missingDependencies.join(',').cyan);
+        }
+        cb(err);
+      });
     }
 
     getRunList(function(err, runList) {
@@ -137,9 +145,9 @@ function cmd(bosco, args, allDone) {
       var nodeServices = _.filter(runList, function(i) { return i.service.type === 'node' && _.startsWith('service-', i.name); });
       var nodeApps = _.filter(runList, function(i) { return i.service.type === 'node' && !_.startsWith('service-', i.name); });
       async.mapSeries([
-          {services: infraServices, limit: bosco.concurrency.cpu},
-          {services: nodeServices, limit: bosco.concurrency.cpu},
-          {services: nodeApps, limit: bosco.concurrency.cpu},
+          {services: infraServices, type: 'general', limit: bosco.concurrency.cpu},
+          {services: nodeServices, type: 'service', limit: bosco.concurrency.cpu},
+          {services: nodeApps, type: 'app', limit: bosco.concurrency.cpu},
       ], runServices, next);
     });
   }
