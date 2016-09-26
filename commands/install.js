@@ -3,6 +3,7 @@ var exec = require('child_process').exec;
 var NodeRunner = require('../src/RunWrappers/Node');
 var CmdHelper = require('../src/CmdHelper');
 var RunListHelper = require('../src/RunListHelper');
+var _ = require('lodash');
 var green = '\u001b[42m \u001b[0m';
 var red = '\u001b[41m \u001b[0m';
 
@@ -76,7 +77,9 @@ function cmd(bosco, args, next) {
     }
 
     RunListHelper.getRepoRunList(bosco, bosco.getRepos(), repoRegex, '$^', null, function(err, runRepos) {
-      repos = runRepos;
+      repos = _.chain(runRepos)
+              .filter(function(repo) { return repo.service.type !== 'remote'; })
+              .map('name');
       cb(err);
     });
   }
