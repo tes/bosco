@@ -133,7 +133,7 @@ function cmd(bosco, args, allDone) {
         }
       }, function(err) {
         if (missingDependencies.length > 0) {
-          bosco.warn('Unable to start dependencies: ' + missingDependencies.join(',').cyan);
+          bosco.error('Unable to start dependencies: ' + missingDependencies.join(',').cyan);
         }
         cb(err);
       });
@@ -141,11 +141,11 @@ function cmd(bosco, args, allDone) {
 
     getRunList(function(err, runList) {
       if (err) return next(err);
-      var infraServices = _.filter(runList, function(i) { return i.service.type !== 'node'; });
+      var dockerServices = _.filter(runList, function(i) { return i.service.type !== 'node'; });
       var nodeServices = _.filter(runList, function(i) { return i.service.type === 'node' && _.startsWith('service-', i.name); });
       var nodeApps = _.filter(runList, function(i) { return i.service.type === 'node' && !_.startsWith('service-', i.name); });
       async.mapSeries([
-          {services: infraServices, type: 'general', limit: bosco.concurrency.cpu},
+          {services: dockerServices, type: 'docker', limit: bosco.concurrency.cpu},
           {services: nodeServices, type: 'service', limit: bosco.concurrency.cpu},
           {services: nodeApps, type: 'app', limit: bosco.concurrency.cpu},
       ], runServices, next);
