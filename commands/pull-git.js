@@ -123,7 +123,7 @@ function cmd(bosco, args, next) {
 
     RunListHelper.getRepoRunList(bosco, bosco.getRepos(), repoRegex, watchNothing, null, function(err, runRepos) {
       repos = _.chain(runRepos)
-                .filter(function(repo) { return repo.service.type !== 'remote'; })
+                .filter(function(repo) { return repo.type !== 'remote'; })
                 .map('name');
       cb(err);
     });
