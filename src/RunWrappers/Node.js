@@ -149,7 +149,7 @@ Runner.prototype.start = function(options, next) {
     return next();
   }
 
-  var startOptions = { name: options.name, cwd: options.cwd, watch: options.watch, executeCommand: executeCommand, force: true, scriptArgs: scriptArgs };
+  var startOptions = { name: options.name, cwd: options.cwd, watch: options.watch, executeCommand: executeCommand, autorestart: false, force: true, scriptArgs: scriptArgs };
 
   self.getInterpreter(this.bosco, options, function(err, interpreter) {
     if (err) { return next(err); }
