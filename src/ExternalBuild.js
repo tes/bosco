@@ -16,14 +16,10 @@ module.exports = function(bosco) {
     var cwd = {cwd: service.repoPath};
     var firstBuildCalledBack = false;
 
-    function buildFinished(err, stdout, stderr) {
-      var realError = (err && err !== true) ? err : null;
-      // watch stderr output isn't considered fatal
-      var hasStdErr = Array.isArray(stdout) && stdout.some(function(entry) { return entry.type === 'stderr'; });
-      var hasError = err || stderr || hasStdErr;
-
+    function buildFinishedExec(err, stdout, stderr) {
+      var hasError = err || stderr;
       var log;
-      if (realError) {
+      if (err) {
         log = 'Failed'.red + ' build command for ' + service.name.blue;
         if (err.code !== null) {
           log += ' exited with code ' + err.code;
@@ -39,22 +35,51 @@ module.exports = function(bosco) {
       }
 
       if (hasError && !verbose) {
-        if (Array.isArray(stdout)) {
-          stdout.forEach(function(output) {
-            bosco.process[output.type].write(output.data);
-          });
-        } else {
-          if (stdout) bosco.console.log(stdout);
-          if (stderr) bosco.error(stderr);
-        }
+        if (stdout) bosco.console.log(stdout);
+        if (stderr) bosco.error(stderr);
       }
 
       if (!firstBuildCalledBack) {
         firstBuildCalledBack = true;
-        next(realError);
-      } else {
-        if (options.watchCallback) { options.watchCallback(realError, service); }
+        next(err);
       }
+    }
+
+    function buildFinished(err, output, execStderr) {
+      if (typeof output === 'string') {
+        return buildFinishedExec(err, output, execStderr);
+      }
+
+      // watch stderr output isn't considered fatal
+      var hasStdErr = output.stderr.length > 0;
+      var hasError = err || hasStdErr;
+
+      var log;
+      if (err) {
+        log = 'Failed'.red + ' build command for ' + service.name.blue;
+        if (err.code !== null) {
+          log += ' exited with code ' + err.code;
+          if (err.signal !== null) log += ' and signal ' + err.signal;
+        }
+        if (output.stderr || output.stdout) log += ':';
+        bosco.error(log);
+      } else {
+        log = 'Finished build command for ' + service.name.blue;
+        if (hasError) log += ' with errors:';
+        bosco.log(log);
+      }
+
+      if (hasError && !verbose) {
+        bosco.process.stdout.write(output.stdout);
+        bosco.process.stderr.write(output.stderr);
+      }
+
+      if (!firstBuildCalledBack) {
+        firstBuildCalledBack = true;
+        next(err);
+      }
+
+      if (options.watchCallback) { options.watchCallback(err, service, output); }
     }
 
     if (!watchingService) {

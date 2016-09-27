@@ -1,16 +1,22 @@
 var spawn = require('child_process').spawn;
+var _ = require('lodash');
 
 module.exports = function(bosco) {
   return function(service, command, cwd, verbose, buildFinished) {
-    bosco.log('Spawning ' + 'watch'.red + ' command for ' + service.name.blue + ': ' + command.log);
+    bosco.log('Spawning ' + 'watch'.cyan + ' command for ' + service.name.blue + ': ' + command.log);
     var wc = spawn(process.env.SHELL, ['-c', command.command], cwd);
-    var output;
+    var output = {state: 'starting', data: [], stdout: '', stderr: ''};
     var outputCache;
     var outputCacheIndex;
     var overallTimeoutTimer;
 
+    function addOutput(type, data) {
+      output[type] += data;
+      output.data.push({type: type, data: data});
+    }
+
     function reset() {
-      output = [];
+      output = {state: 'starting', data: [], stdout: '', stderr: ''};
       outputCache = '';
       outputCacheIndex = -1;
       if (overallTimeoutTimer) clearTimeout(overallTimeoutTimer);
@@ -18,16 +24,19 @@ module.exports = function(bosco) {
     }
 
     function buildCompleted(err) {
-      var outputToReturn = output;
+      var outputToReturn = _.clone(output);
       reset();
       return buildFinished(err, outputToReturn);
     }
 
     function onBuildTimeout() {
-      var errorMessage = 'Build timed out beyond ' + command.timeout / 1000 + ' seconds';
-      bosco.error(errorMessage + ', likely an issue with the project build - you may need to check locally. Was looking for: ' + command.ready);
-      wc.kill();
-      return buildCompleted(new Error(errorMessage));
+      var errorMessage = 'Build timed out beyond ' + command.timeout / 1000 + ' seconds, likely the project build not writing out ready text: ' + command.ready + '\n';
+      output.state = 'timeout';
+      addOutput('stderr', errorMessage);
+      if (verbose) {
+        bosco.error(errorMessage);
+      }
+      return buildCompleted();
     }
 
     function buildStarted() {
@@ -36,7 +45,7 @@ module.exports = function(bosco) {
     }
 
     function isBuildFinished() {
-      output.forEach(function(entry, i) {
+      output.data.forEach(function(entry, i) {
         if (i <= outputCacheIndex) { return; }
         outputCache += entry.data;
         outputCacheIndex = i;
@@ -47,16 +56,17 @@ module.exports = function(bosco) {
     function onChildOutput(type, data) {
       if (!data) { return; }
 
-      if (output.length < 1) {
+      if (output.data.length < 1) {
         buildStarted();
       }
 
-      output.push({type: type, data: data.toString()});
+      addOutput(type, data.toString());
       if (verbose) {
         bosco.process[type].write(data.toString());
       }
 
       if (isBuildFinished()) {
+        output.state = 'finished';
         buildCompleted();
       }
     }
@@ -65,7 +75,8 @@ module.exports = function(bosco) {
       var childError = new Error('Watch process exited with code ' + code + ' and signal ' + signal);
       childError.code = code;
       childError.signal = signal;
-      bosco.error('Watch'.red + ' command for ' + service.name.blue + ' died with code ' + code);
+      output.state = 'child-exit';
+      addOutput('stderr', 'Watch'.red + ' command for ' + service.name.blue + ' died with code ' + code);
       return buildCompleted(childError);
     }
 
