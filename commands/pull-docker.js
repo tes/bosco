@@ -18,44 +18,37 @@ module.exports = {
 };
 
 function dockerPullService(bosco, definition, next) {
-  if (definition.service && definition.service.type === 'docker') {
-    DockerRunner.update(definition, function(err) {
-      if (err) {
-        var errMessage = err.reason ? err.reason : err;
-        bosco.error('Error pulling ' + definition.name + ', reason: ' + errMessage);
-      }
-      next();
-    });
-  } else {
-    return next();
-  }
+  if (!definition.service || definition.service.type !== 'docker') return next();
+
+  DockerRunner.update(definition, function(err) {
+    if (err) {
+      var errMessage = err.reason ? err.reason : err;
+      bosco.error('Error pulling ' + definition.name + ', reason: ' + errMessage);
+    }
+    next();
+  });
 }
 
 function dockerPullRemote(bosco, repos, runConfig, next) {
-  var isLocalService = !!(runConfig.service && runConfig.service.type);
+  var isRemoteService = !runConfig.service || !runConfig.service.type || runConfig.service.type === 'remote';
   var isLocalRepo = _.includes(repos, runConfig.name);
-  if (isLocalService || isLocalRepo) {
-    return next();
-  }
+  if (!isRemoteService || isLocalRepo) return next();
+
   RunListHelper.getServiceConfigFromGithub(bosco, runConfig.name, function(err, svcConfig) {
-    if (err) {
-      return next();
-    }
-    if (!svcConfig.name) {
-      svcConfig.name = runConfig.name;
-    }
+    if (err) return next();
+
+    if (!svcConfig.name) svcConfig.name = runConfig.name;
+
     dockerPullService(bosco, svcConfig, next);
   });
 }
 
 function dockerPull(bosco, progressbar, bar, repoPath, repo, next) {
   var boscoService = [repoPath, 'bosco-service.json'].join('/');
-  if (bosco.exists(boscoService)) {
-    var definition = require(boscoService);
-    dockerPullService(bosco, definition, next);
-  } else {
-    return next();
-  }
+  if (!bosco.exists(boscoService)) return next();
+
+  var definition = require(boscoService);
+  dockerPullService(bosco, definition, next);
 }
 
 function cmd(bosco, args, next) {
