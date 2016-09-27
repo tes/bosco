@@ -141,9 +141,13 @@ function cmd(bosco, args, allDone) {
 
     getRunList(function(err, runList) {
       if (err) return next(err);
-      var dockerServices = _.filter(runList, function(i) { return i.service.type !== 'node'; });
+      var dockerServices = _.filter(runList, function(i) { return i.service.type === 'docker' || i.service.type === 'remote'; });
       var nodeServices = _.filter(runList, function(i) { return i.service.type === 'node' && _.startsWith('service-', i.name); });
       var nodeApps = _.filter(runList, function(i) { return i.service.type === 'node' && !_.startsWith('service-', i.name); });
+      var unknownServices = _.filter(runList, function(i) { return !_.includes(['docker', 'node', 'remote'], i.service.type); });
+      if (unknownServices.length > 0) {
+        bosco.error('Unable to run services of unknown type: ' + _.map(unknownServices, 'name').join(', ').cyan);
+      }
       async.mapSeries([
           {services: dockerServices, type: 'docker', limit: bosco.concurrency.cpu},
           {services: nodeServices, type: 'service', limit: bosco.concurrency.cpu},
