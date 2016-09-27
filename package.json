@@ -1,6 +1,6 @@
 {
   "name": "bosco",
-  "version": "0.5.48",
+  "version": "0.5.49",
   "description": "Bosco will take care of your microservices, just don't try and use him on a plane.",
   "main": "index.js",
   "scripts": {
@@ -84,7 +84,7 @@
     "octonode": "^0.7.4",
     "osenv": "^0.1.0",
     "parse-link-header": "^0.4.1",
-    "pm2": "^1.1.1",
+    "pm2": "^2.0.5",
     "prettyjson": "^1.0.0",
     "progress": "^1.1.8",
     "prompt": "^1.0.0",
