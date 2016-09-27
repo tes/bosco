@@ -79,25 +79,40 @@ function cmd(bosco, args, allDone) {
   }
 
   function startRunnableServices(next) {
+    var alreadyRunning = 0;
+
     function runService(runConfig, cb) {
       if (runConfig.service && runConfig.service.type === 'docker') {
         if (_.includes(runningServices, runConfig.name)) {
-          bosco.warn('Service ' + runConfig.name.green + ' is already running ...');
+          if (bosco.options.verbose) {
+            bosco.warn('Service ' + runConfig.name.green + ' is already running ...');
+          }
           return cb();
         }
-        bosco.log('Running docker service ' + runConfig.name.green + ' ...');
+        if (bosco.options.verbose) {
+          bosco.log('Running docker service ' + runConfig.name.green + ' ...');
+        }
         return DockerRunner.start(runConfig, cb);
       }
 
       if (runConfig.service && runConfig.service.type === 'docker-compose') {
-        bosco.log('Running docker-compose ' + runConfig.name.green + ' ...');
+        if (bosco.options.verbose) {
+          bosco.log('Running docker-compose ' + runConfig.name.green + ' ...');
+        }
         return DockerComposeRunner.start(runConfig, cb);
       }
 
       if (runConfig.service && runConfig.service.type === 'node') {
         if (_.includes(runningServices, runConfig.name)) {
-          bosco.warn('Service ' + runConfig.name.green + ' is already running ...');
+          if (bosco.options.verbose) {
+            bosco.warn('Service ' + runConfig.name.green + ' is already running ...');
+          } else {
+            alreadyRunning++;
+          }
           return cb();
+        }
+        if (bosco.options.verbose) {
+          bosco.log('Running node service ' + runConfig.name.green + ' ...');
         }
         return NodeRunner.start(runConfig, cb);
       }
@@ -132,6 +147,9 @@ function cmd(bosco, args, allDone) {
           runService(runConfig, asyncMapCb);
         }
       }, function(err) {
+        if (alreadyRunning > 0 && !bosco.options.verbose) {
+          bosco.log('Did not start ' + ('' + alreadyRunning).cyan + ' services that were already running.  Use --verbose to see more detail.');
+        }
         if (missingDependencies.length > 0) {
           bosco.error('Unable to start dependencies: ' + missingDependencies.join(',').cyan);
         }
@@ -146,7 +164,7 @@ function cmd(bosco, args, allDone) {
       var nodeApps = _.filter(runList, function(i) { return i.service.type === 'node' && !_.startsWith('service-', i.name); });
       var unknownServices = _.filter(runList, function(i) { return !_.includes(['docker', 'node', 'remote'], i.service.type); });
       if (unknownServices.length > 0) {
-        bosco.error('Unable to run services of unknown type: ' + _.map(unknownServices, 'name').join(', ').cyan);
+        bosco.error('Unable to run services of un-recognised type: ' + _.map(unknownServices, 'name').join(', ').cyan + '. Check their bosco-service.json configuration.');
       }
       async.mapSeries([
           {services: dockerServices, type: 'docker', limit: bosco.concurrency.cpu},
