@@ -79,25 +79,26 @@ function cmd(bosco, args, done) {
   }
 
   function stopRunningServices(cb) {
+    var missingDependencies = [];
     RunListHelper.getRunList(bosco, repos, repoRegex, null, repoTag, function(err, services) {
       async.mapLimit(services, bosco.concurrency.network, function(boscoService, next) {
         var repo = boscoService.name;
-
         if (!repo.match(repoRegex)) return next();
-
         if (boscoService.service && boscoService.service.type !== 'remote') {
           return stopService(repo, boscoService, runningServices, next);
         }
-
         RunListHelper.getServiceConfigFromGithub(bosco, boscoService.name, function(err, svcConfig) {
-          if (err || !svcConfig) {
-            bosco.warn('Unable to retrieve config for ' + boscoService.name.cyan + ' in github, continuing ...');
+          if (err || !svcConfig || svcConfig.type === 'node') {
+            missingDependencies.push(boscoService.name);
             return next();
           }
           if (!svcConfig.name) svcConfig.name = boscoService.name;
           stopService(repo, svcConfig, runningServices, next);
         });
       }, function() {
+        if (missingDependencies.length > 0) {
+          bosco.warn('Unable to stop dependencies: ' + missingDependencies.join(',').cyan);
+        }
         // Special case for bosco-cdn, room for improvement to make this
         // generic for all custom bosco services.
         if (!_.includes(runningServices, 'bosco-cdn')) return cb();

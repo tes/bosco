@@ -85,7 +85,7 @@ Runner.prototype.getInterpreter = function(bosco, options, next) {
     });
 
     e.on('close', function() {
-      if (interpreter) {
+      if (interpreter && bosco.options.verbose) {
         bosco.log(options.name + ' using .nvmrc: ' + interpreter.cyan);
       }
       if (!installing) {
@@ -93,7 +93,9 @@ Runner.prototype.getInterpreter = function(bosco, options, next) {
       }
     });
   } else {
-    bosco.log(options.name + ' no .nvmrc found, using nvm default ...');
+    if (bosco.options.verbose) {
+      bosco.log(options.name + ' no .nvmrc found, using nvm default ...');
+    }
     next();
   }
 };
@@ -145,7 +147,7 @@ Runner.prototype.start = function(options, next) {
   }
 
   if (!self.bosco.exists(options.cwd + '/' + location)) {
-    self.bosco.warn('Can\'t start ' + options.name.red + ', as I can\'t find script: ' + location.red);
+    self.bosco.error('Can\'t start ' + options.name.red + ', as I can\'t find script: ' + location.red);
     return next();
   }
 
@@ -162,7 +164,7 @@ Runner.prototype.start = function(options, next) {
         self.bosco.log('Starting ' + options.name.cyan + ' via ' + interpreter + ' ...');
       }
     } else {
-      self.bosco.log('Starting ' + options.name.cyan + ' via ...');
+      self.bosco.log('Starting ' + options.name.cyan);
     }
 
     pm2.start(location, startOptions, next);
