@@ -86,6 +86,8 @@ function cmd(bosco, args, allDone) {
         if (_.includes(runningServices, runConfig.name)) {
           if (bosco.options.verbose) {
             bosco.warn('Service ' + runConfig.name.green + ' is already running ...');
+          } else {
+            alreadyRunning++;
           }
           return cb();
         }
