@@ -166,8 +166,9 @@ describe('ExternalBuild', function() {
       expect(err).to.be.an(Error);
       expect(err).to.have.property('code', 0);
       expect(localBosco._error).to.be.an('array');
-      expect(localBosco._error).to.have.length(2);
-      expect(localBosco._error[1]).to.contain('with code 0');
+      expect(localBosco._error).to.have.length(1);
+      expect(localBosco.process.stderr._data).to.have.length(1);
+      expect(localBosco.process.stderr._data[0]).to.contain('with code 0');
       done();
     });
   });
@@ -187,18 +188,66 @@ describe('ExternalBuild', function() {
     };
     var options = {
       watchBuilds: true,
-      watchRegex: /./
+      watchRegex: /./,
+      watchCallback: function(err, service, output) {
+        expect(output.state).to.be('timeout');
+        expect(localBosco.process.stderr._data).to.be.an('array');
+        expect(localBosco.process.stderr._data.length).to.be.greaterThan(0);
+        expect(localBosco.process.stderr._data[0]).to.contain('timed out');
+        done();
+      }
     };
 
     doBuild(service, options, null, function(err) {
-      expect(err).to.be.an(Error);
-      expect(err).to.not.have.property('code');
-      expect(localBosco._error).to.be.an('array');
-      expect(localBosco._error.length).to.be.greaterThan(0);
-      expect(localBosco._error[0]).to.contain('timed out');
-      done();
+      expect(err).to.be(undefined);
     });
   });
+
+  it('should error and log if watch times out after a successful first build, but then continue watching', function(done) {
+
+    this.timeout(6000);
+    this.slow(3000);
+
+    var localBosco = boscoMock();
+    localBosco.options.verbose = true;
+    var doBuild = ExternalBuild(localBosco).doBuild;
+    var service = {
+      name: 'service',
+      repoPath: localBosco.getRepoPath(''),
+      build: {
+        command: 'echo goodbye; sleep 0.2; echo hello; sleep 0.2; echo goodbye; sleep 0.2;',
+        watch: {
+          timeout: 100,
+          ready: 'goodbye'
+        }
+      }
+    };
+
+    var stateTransitions = [];
+    var expectedTransitions = ['finished', 'timeout', 'finished', 'child-exit'];
+
+    var options = {
+      watchBuilds: true,
+      watchRegex: /./,
+      watchCallback: function(err, service, output) {
+        stateTransitions.push(output.state);
+        if(stateTransitions.length === 4) {
+          expect(err).to.be.an(Error);
+          expect(err).to.have.property('code');
+          expect(stateTransitions[0]).to.be(expectedTransitions[0]);
+          expect(stateTransitions[1]).to.be(expectedTransitions[1]);
+          expect(stateTransitions[2]).to.be(expectedTransitions[2]);
+          expect(stateTransitions[3]).to.be(expectedTransitions[3]);
+          done();
+        }
+      }
+    };
+
+    doBuild(service, options, null, function(err) {
+      expect(err).to.be(undefined);
+    });
+  });
+
 
   it('should use watch command if provided', function(done) {
     var localBosco = boscoMock();
@@ -223,7 +272,6 @@ describe('ExternalBuild', function() {
       if (err) return done(err);
       expect(localBosco.process.stderr).to.have.property('_data');
       expect(localBosco.process.stderr._data).to.eql(['watch']);
-      expect(localBosco.process.stdout).to.not.have.property('_data');
       expect(localBosco).to.have.property('_log');
       expect(localBosco).to.not.have.property('_error');
       done();
