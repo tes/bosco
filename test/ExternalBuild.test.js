@@ -234,10 +234,7 @@ describe('ExternalBuild', function() {
         if(stateTransitions.length === 4) {
           expect(err).to.be.an(Error);
           expect(err).to.have.property('code');
-          expect(stateTransitions[0]).to.be(expectedTransitions[0]);
-          expect(stateTransitions[1]).to.be(expectedTransitions[1]);
-          expect(stateTransitions[2]).to.be(expectedTransitions[2]);
-          expect(stateTransitions[3]).to.be(expectedTransitions[3]);
+          expect(stateTransitions).to.eql(expectedTransitions);
           done();
         }
       }
