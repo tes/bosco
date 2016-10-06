@@ -103,6 +103,16 @@ module.exports = function(bosco) {
       });
     }
 
+    if (boscoRepo.libraries) {
+      _.forEach(boscoRepo.libraries, function(library) {
+        var assets = globAsset(library.glob, path.join(boscoRepo.path, library.basePath));
+        _.forEach(assets, function(asset) {
+          assetKey = path.join('vendor', 'library', asset);
+          assetHelper.addAsset(staticAssets, 'library', assetKey, asset, 'vendor', 'library', library.basePath, true, {alreadyMinified: true});
+        });
+      });
+    }
+
     next(null, staticAssets);
   }
 
