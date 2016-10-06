@@ -24,7 +24,7 @@ function cmd(bosco) {
       var activeBranch = stdout.match(/\* (.*)/)[1];
 
       if (activeBranch !== 'master') {
-        bosco.log(path.blue + ' is on branch \'' + activeBranch + '\'');
+        bosco.log(path.blue + ' is on branch \'' + activeBranch.cyan + '\'');
       }
     },
   });
