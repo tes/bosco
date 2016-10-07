@@ -202,7 +202,13 @@ To serve swf, fonts or pdf, you should add them under a 'files' key (at the same
         "pdf/guide.pdf"
       ]
     }
-  }
+  },
+  "libraries": [
+    {
+        "basePath": "src/vendor",
+        "glob": "**/**"
+    }
+  ]
 }
 ```
 
