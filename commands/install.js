@@ -12,6 +12,12 @@ module.exports = {
   description: 'Runs npm install against all repos',
   usage: '[-r <repoPattern>]',
   requiresNvm: true,
+  options: [{
+    name: 'yarn',
+    alias: 'y',
+    type: 'boolean',
+    desc: 'Use yarn instead of npm install',
+  }],
 };
 
 function install(bosco, progressbar, bar, repoPath, repo, next) {
@@ -20,24 +26,9 @@ function install(bosco, progressbar, bar, repoPath, repo, next) {
     if (progressbar) bar.tick();
     return next();
   }
-
-  NodeRunner.getInterpreter(bosco, {name: repo, cwd: repoPath}, function(err, interpreter) {
-    if (err) {
-      bosco.error(err);
-      return next();
-    }
-    var npmCommand;
-    if (interpreter) {
-      npmCommand = bosco.options.nvmUse + 'npm';
-    } else {
-      npmCommand = bosco.options.nvmUseDefault + 'npm';
-    }
-    if (bosco.config.get('npm:registry')) {
-      npmCommand += ' --registry ' + bosco.config.get('npm:registry');
-    }
-    npmCommand += ' install';
-
-    exec(npmCommand, {
+  if (bosco.options.yarn) {
+    var yarnComamnd = 'yarn';
+    exec(yarnComamnd, {
       cwd: repoPath,
     }, function(err, stdout, stderr) {
       if (progressbar) bar.tick();
@@ -47,9 +38,9 @@ function install(bosco, progressbar, bar, repoPath, repo, next) {
       } else {
         if (!progressbar) {
           if (!stdout) {
-            bosco.log('NPM install for ' + repoPath.blue + ': ' + 'No changes'.green);
+            bosco.log('Yarn install for ' + repoPath.blue + ': ' + 'No changes'.green);
           } else {
-            bosco.log('NPM install for ' + repoPath.blue);
+            bosco.log('Yarn install for ' + repoPath.blue);
             bosco.console.log(stdout);
             if (stderr) {
               bosco.error(stderr);
@@ -59,7 +50,47 @@ function install(bosco, progressbar, bar, repoPath, repo, next) {
       }
       next();
     });
-  });
+  } else {
+    NodeRunner.getInterpreter(bosco, {name: repo, cwd: repoPath}, function(err, interpreter) {
+      if (err) {
+        bosco.error(err);
+        return next();
+      }
+      var npmCommand;
+      if (interpreter) {
+        npmCommand = bosco.options.nvmUse + 'npm';
+      } else {
+        npmCommand = bosco.options.nvmUseDefault + 'npm';
+      }
+      if (bosco.config.get('npm:registry')) {
+        npmCommand += ' --registry ' + bosco.config.get('npm:registry');
+      }
+      npmCommand += ' install';
+
+      exec(npmCommand, {
+        cwd: repoPath,
+      }, function(err, stdout, stderr) {
+        if (progressbar) bar.tick();
+        if (err) {
+          if (progressbar) bosco.console.log('');
+          bosco.error(repoPath.blue + ' >> ' + stderr);
+        } else {
+          if (!progressbar) {
+            if (!stdout) {
+              bosco.log('NPM install for ' + repoPath.blue + ': ' + 'No changes'.green);
+            } else {
+              bosco.log('NPM install for ' + repoPath.blue);
+              bosco.console.log(stdout);
+              if (stderr) {
+                bosco.error(stderr);
+              }
+            }
+          }
+        }
+        next();
+      });
+    });
+  }
 }
 
 function cmd(bosco, args, next) {
@@ -97,7 +128,6 @@ function cmd(bosco, args, next) {
 
     async.mapLimit(repos, bosco.concurrency.cpu, function repoStash(repo, repoCb) {
       if (!repo.match(repoRegex)) return repoCb();
-
       var repoPath = bosco.getRepoPath(repo);
       install(bosco, progressbar, bar, repoPath, repo, repoCb);
     }, function() {
