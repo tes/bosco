@@ -1,5 +1,4 @@
 var ch = require('../src/CmdHelper');
-var _ = require('lodash');
 
 module.exports = {
   name: 'branches',
