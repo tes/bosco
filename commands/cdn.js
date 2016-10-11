@@ -84,25 +84,29 @@ function cmd(bosco, args) {
         return response.end();
       }
 
+      var headers = {
+        'Cache-Control': 'no-cache, must-revalidate',
+        'Pragma': 'no-cache',
+        'Expires': 'Sat, 21 May 1952 00:00:00 GMT',
+        'Access-Control-Allow-Origin': '*',
+      };
+
       var pathname = url.parse(request.url).pathname;
       if (pathname === '/repos') {
-        response.writeHead(200, {'Content-Type': 'text/html'});
+        headers['Content-Type'] = 'text/html';
+        response.writeHead(200, headers);
         return response.end(staticRepos.formattedRepos);
       }
 
       var asset = getAsset(pathname);
       if (!asset) {
-        response.writeHead(404, {'Content-Type': 'text/html'});
+        headers['Content-Type'] = 'text/html';
+        response.writeHead(404, headers);
         return response.end(staticAssets.formattedAssets);
       }
 
-      response.writeHead(200, {
-        'Content-Type': asset.mimeType,
-        'Cache-Control': 'no-cache, must-revalidate',
-        'Pragma': 'no-cache',
-        'Expires': 'Sat, 21 May 1952 00:00:00 GMT',
-        'Access-Control-Allow-Origin': '*',
-      });
+      headers['Content-Type'] = asset.mimeType;
+      response.writeHead(200, headers);
 
       if (isWatchedFile(asset.path)) {
         fs.readFile(asset.path, function(err, content) {
