@@ -82,7 +82,8 @@ function cmd(bosco, args, allDone) {
     var alreadyRunning = 0;
 
     function runService(runConfig, cb) {
-      if (runConfig.service && runConfig.service.type === 'docker') {
+      var type = runConfig.service && runConfig.service.type;
+      if (type === 'docker') {
         if (_.includes(runningServices, runConfig.name)) {
           if (bosco.options.verbose) {
             bosco.warn('Service ' + runConfig.name.green + ' is already running ...');
@@ -97,14 +98,14 @@ function cmd(bosco, args, allDone) {
         return DockerRunner.start(runConfig, cb);
       }
 
-      if (runConfig.service && runConfig.service.type === 'docker-compose') {
+      if (type === 'docker-compose') {
         if (bosco.options.verbose) {
           bosco.log('Running docker-compose ' + runConfig.name.green + ' ...');
         }
         return DockerComposeRunner.start(runConfig, cb);
       }
 
-      if (runConfig.service && runConfig.service.type === 'node') {
+      if (type === 'node') {
         if (_.includes(runningServices, runConfig.name)) {
           if (bosco.options.verbose) {
             bosco.warn('Service ' + runConfig.name.green + ' is already running ...');
@@ -118,6 +119,18 @@ function cmd(bosco, args, allDone) {
         }
         return NodeRunner.start(runConfig, cb);
       }
+
+      if (_.includes(runningServices, runConfig.name)) {
+        if (bosco.options.verbose) {
+          bosco.warn('Service ' + runConfig.name.green + ' is already running ...');
+        } else {
+          alreadyRunning++;
+        }
+        return cb();
+      }
+
+      bosco.warn('Service ' + runConfig.name.orange + ' could not be run because its type is "' + type.red + '"');
+
       return cb();
     }
 
