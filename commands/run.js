@@ -132,7 +132,7 @@ function cmd(bosco, args, allDone) {
       async.mapLimit(runList.services, runList.limit, function(runConfig, asyncMapCb) {
         if (runConfig.service.type === 'remote') {
           RunListHelper.getServiceConfigFromGithub(bosco, runConfig.name, function(err, svcConfig) {
-            if (err || !svcConfig || !svcConfig.type || svcConfig.type === 'node') {
+            if (err || !svcConfig || !svcConfig.service || !svcConfig.service.type || svcConfig.service.type === 'node') {
               missingDependencies.push(runConfig.name);
               return asyncMapCb();
             }
