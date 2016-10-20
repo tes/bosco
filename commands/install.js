@@ -12,12 +12,6 @@ module.exports = {
   description: 'Runs npm install against all repos',
   usage: '[-r <repoPattern>]',
   requiresNvm: true,
-  options: [{
-    name: 'yarn',
-    alias: 'y',
-    type: 'boolean',
-    desc: 'Use yarn instead of npm install',
-  }],
 };
 
 function install(bosco, progressbar, bar, repoPath, repo, next) {
@@ -26,7 +20,9 @@ function install(bosco, progressbar, bar, repoPath, repo, next) {
     if (progressbar) bar.tick();
     return next();
   }
-  if (bosco.options.yarn) {
+
+  var yarnrcFile = [repoPath, '.yarnrc'].join('/');
+  if (bosco.exists(yarnrcFile)) {
     var yarnComamnd = 'yarn';
     exec(yarnComamnd, {
       cwd: repoPath,
