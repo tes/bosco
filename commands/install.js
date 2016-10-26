@@ -25,9 +25,6 @@ function install(bosco, progressbar, bar, repoPath, repo, next) {
   var yarnLockFile = [repoPath, 'yarn.lock'].join('/');
   if (bosco.exists(yarnrcFile) || bosco.exists(yarnLockFile)) {
     var yarnComamnd = 'yarn';
-    if (bosco.config.get('npm:registry')) {
-      yarnComamnd = 'yarn config set registry ' + bosco.config.get('npm:registry') + '; ' + yarnComamnd;
-    }
     exec(yarnComamnd, {
       cwd: repoPath,
     }, function(err, stdout, stderr) {
