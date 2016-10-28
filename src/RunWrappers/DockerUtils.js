@@ -218,7 +218,7 @@ function locateImage(docker, repoTag, callback) {
     if (err) return callback(err);
 
     for (var i = 0, len = list.length; i < len; i++) {
-      if (list[i].RepoTags.indexOf(repoTag) !== -1) {
+      if (list[i].RepoTags && list[i].RepoTags.indexOf(repoTag) !== -1) {
         return callback(null, docker.getImage(list[i].Id));
       }
     }
