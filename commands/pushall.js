@@ -7,7 +7,7 @@ var exec = require('child_process').exec;
 
 module.exports = {
   name: 'pushall',
-  description: 'Will push any changes across all repos - useful for batch updates, typicall used after bosco commit',
+  description: 'Will push any changes across all repos - useful for batch updates, typically used after bosco commit',
   usage: '[-r <repoPattern>]',
 };
 
