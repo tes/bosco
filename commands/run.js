@@ -175,14 +175,16 @@ function cmd(bosco, args, allDone) {
     getRunList(function(err, runList) {
       if (err) return next(err);
       var dockerServices = _.filter(runList, function(i) { return i.service.type === 'docker' || i.service.type === 'remote'; });
+      var dockerComposeServices = _.filter(runList, function(i) { return i.service.type === 'docker-compose'; });
       var nodeServices = _.filter(runList, function(i) { return i.service.type === 'node' && _.startsWith('service-', i.name); });
       var nodeApps = _.filter(runList, function(i) { return i.service.type === 'node' && !_.startsWith('service-', i.name); });
-      var unknownServices = _.filter(runList, function(i) { return !_.includes(['docker', 'node', 'remote'], i.service.type); });
+      var unknownServices = _.filter(runList, function(i) { return !_.includes(['docker', 'docker-compose', 'node', 'remote'], i.service.type); });
       if (unknownServices.length > 0) {
         bosco.error('Unable to run services of un-recognised type: ' + _.map(unknownServices, 'name').join(', ').cyan + '. Check their bosco-service.json configuration.');
       }
       async.mapSeries([
           {services: dockerServices, type: 'docker', limit: bosco.concurrency.cpu},
+          {services: dockerComposeServices, type: 'docker-compose', limit: bosco.concurrency.cpu},
           {services: nodeServices, type: 'service', limit: bosco.concurrency.cpu},
           {services: nodeApps, type: 'app', limit: bosco.concurrency.cpu},
       ], runServices, next);
