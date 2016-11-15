@@ -102,7 +102,7 @@ function cmd(bosco, args) {
       if (!asset) {
         headers['Content-Type'] = 'text/html';
         response.writeHead(404, headers);
-        return response.end(staticAssets.formattedAssets);
+        return staticAssets ? response.end(staticAssets.formattedAssets) : response.end();
       }
 
       headers['Content-Type'] = asset.mimeType;
