@@ -168,10 +168,8 @@ module.exports = function(bosco) {
           return next();
         }
 
-        if (!options.minify) return createAssetHtmlFiles(staticAssets, next);
-
-        // Now go and minify
-        minify(staticAssets, function(err, minifiedAssets) {
+        var concatenateOnly = !options.minify;
+        minify(staticAssets, concatenateOnly, function(err, minifiedAssets) {
           if (err && !ignoreFailure) return next(err);
           createAssetHtmlFiles(minifiedAssets, next);
         });

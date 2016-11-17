@@ -6,7 +6,7 @@ var CleanCSS = require('clean-css');
 module.exports = function(bosco) {
   var createKey = require('./AssetHelper')(bosco).createKey;
 
-  function compileJs(staticAssets, jsAssets, next) {
+  function compileJs(staticAssets, jsAssets, concatenateOnly, next) {
     var bundleKeys = _.uniq(_.map(jsAssets, 'bundleKey'));
     var err;
     _.forEach(bundleKeys, function(bundleKey) {
@@ -46,7 +46,7 @@ module.exports = function(bosco) {
         staticAssets.push(mapItem);
       }
 
-      function addMinifiedJs(content) {
+      function addMinifiedJs(content, sourceFiles) {
         if (!content) return;
         var minifiedKey = createKey(serviceName, buildNumber, tag, null, 'js', 'js');
         var minifiedItem = {};
@@ -60,19 +60,32 @@ module.exports = function(bosco) {
         minifiedItem.type = 'js';
         minifiedItem.mimeType = 'application/javascript';
         minifiedItem.content = content;
+        minifiedItem.sourceFiles = sourceFiles;
         staticAssets.push(minifiedItem);
       }
 
       // If a bundle is already minified it can only have a single item
-      if (minificationConfig.alreadyMinified) {
-        bosco.log('Adding already minified ' + bundleKey.blue + ' JS assets ...');
+      if (minificationConfig.alreadyMinified || concatenateOnly) {
+        if (!concatenateOnly) {
+          bosco.log('Adding already minified ' + bundleKey.blue + ' JS assets ...');
+        }
+        var sourceMapContent = '';
+        var jsContent = '';
+        var sourceFiles = [];
         _.forEach(items, function(item) {
           if (item.extname === minificationConfig.sourceMapExtension) {
-            addSourceMap(item.content);
+            sourceMapContent += item.content;
           } else {
-            addMinifiedJs(item.content);
+            jsContent += item.content;
+            sourceFiles.push(item.path);
           }
         });
+        if (sourceMapContent) {
+          addSourceMap(sourceMapContent);
+        }
+        if (jsContent) {
+          addMinifiedJs(jsContent, sourceFiles);
+        }
       } else {
         bosco.log('Compiling ' + _.size(items) + ' ' + bundleKey.blue + ' JS assets ...');
 
@@ -104,7 +117,7 @@ module.exports = function(bosco) {
     next(err, staticAssets);
   }
 
-  function compileCss(staticAssets, cssAssets, next) {
+  function compileCss(staticAssets, cssAssets, concatenateOnly, next) {
     var bundleKeys = _.uniq(_.map(cssAssets, 'bundleKey'));
 
     _.forEach(bundleKeys, function(bundleKey) {
@@ -113,6 +126,7 @@ module.exports = function(bosco) {
       var serviceName;
       var buildNumber;
       var tag;
+      var sourceFiles = [];
 
       if (items.length === 0) { return; }
 
@@ -123,16 +137,22 @@ module.exports = function(bosco) {
         tag = firstItem.tag;
       }
 
-      bosco.log('Compiling ' + _.size(items) + ' ' + bundleKey.blue + ' CSS assets ...');
+      if (!concatenateOnly) {
+        bosco.log('Compiling ' + _.size(items) + ' ' + bundleKey.blue + ' CSS assets ...');
+      }
 
       _.forEach(items, function(file) {
         cssContent += fs.readFileSync(file.path);
+        sourceFiles.push(file.path);
       });
 
-      var cleanCssConfig = bosco.config.get('css:clean');
-      if (cleanCssConfig && cleanCssConfig.enabled) {
-        cssContent = new CleanCSS(cleanCssConfig.options).minify(cssContent).styles;
+      if (!concatenateOnly) {
+        var cleanCssConfig = bosco.config.get('css:clean');
+        if (cleanCssConfig && cleanCssConfig.enabled) {
+          cssContent = new CleanCSS(cleanCssConfig.options).minify(cssContent).styles;
+        }
       }
+
       if (cssContent.length === 0) {
         next({message: 'No css for tag ' + tag});
         return;
@@ -151,22 +171,22 @@ module.exports = function(bosco) {
       minifiedItem.type = 'css';
       minifiedItem.mimeType = 'text/css';
       minifiedItem.content = cssContent;
+      minifiedItem.sourceFiles = sourceFiles;
       staticAssets.push(minifiedItem);
     });
 
     next(null, staticAssets);
   }
 
-  function minify(staticAssets, next) {
+  function minify(staticAssets, concatenateOnly, next) {
     var jsAssets = _.filter(staticAssets, {type: 'js'});
     var cssAssets = _.filter(staticAssets, {type: 'css'});
     var remainingAssets = _.filter(staticAssets, function(item) {
       return item.type !== 'js' && item.type !== 'css';
     });
-
-    compileJs(remainingAssets, jsAssets, function(err, minifiedStaticAssets) {
+    compileJs(concatenateOnly ? staticAssets : remainingAssets, jsAssets, concatenateOnly, function(err, minifiedStaticAssets) {
       if (err) { return next(err); }
-      compileCss(minifiedStaticAssets, cssAssets, next);
+      compileCss(minifiedStaticAssets, cssAssets, concatenateOnly, next);
     });
   }
 

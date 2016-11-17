@@ -98,7 +98,7 @@ module.exports = function(bosco) {
 
     var allStaticAssets = _.union(_.values(htmlAssets), staticAssets);
 
-    allStaticAssets.formattedAssets = formattedAssets(staticAssets);
+    allStaticAssets.formattedAssets = formattedAssets(allStaticAssets);
 
     next(null, allStaticAssets);
   }
