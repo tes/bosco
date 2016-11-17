@@ -57,7 +57,9 @@ function cmd(bosco, args) {
   }
 
   function startServer(staticAssets, staticRepos, serverPort) {
-    var isWatchedFile = function(assetPath) {
+    var isWatchedFile = function(asset) {
+      var hasSourceFiles = asset.sourceFiles && asset.sourceFiles.length > 0;
+      var assetPath = hasSourceFiles ? asset.sourceFiles[0] : asset.path;
       var watched;
       try {
         watched = assetPath && !fs.lstatSync(assetPath).isDirectory() && assetPath.match(watchRegex);
@@ -108,10 +110,22 @@ function cmd(bosco, args) {
       headers['Content-Type'] = asset.mimeType;
       response.writeHead(200, headers);
 
-      if (isWatchedFile(asset.path)) {
-        fs.readFile(asset.path, function(err, content) {
-          response.end(content);
-        });
+      var hasSourceFiles = asset.sourceFiles && asset.sourceFiles.length > 0;
+
+      if (isWatchedFile(asset)) {
+        if (hasSourceFiles && !minify) {
+          async.reduce(asset.sourceFiles, '', function(memo, item, callback) {
+            fs.readFile(item, function(err, content) {
+              callback(null, memo + content);
+            });
+          }, function(err, content) {
+            response.end(content);
+          });
+        } else {
+          fs.readFile(asset.path, function(err, content) {
+            response.end(content);
+          });
+        }
       } else {
         response.end(asset.data || asset.content);
       }
