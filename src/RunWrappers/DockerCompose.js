@@ -10,7 +10,7 @@ Runner.prototype.init = function(bosco, next) {
 
 Runner.prototype.list = function(options, next) {
   var installed = true;
-  spawn('docker-compose', ['--version'], { stdio: 'ignore' })
+  spawn('docker-compose', ['--version'], { cwd: options.cwd, stdio: 'ignore' })
   .on('error', function() {
     installed = false;
     return next(null, []);
