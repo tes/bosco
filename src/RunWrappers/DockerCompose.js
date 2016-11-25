@@ -10,6 +10,7 @@ Runner.prototype.init = function(bosco, next) {
 };
 
 Runner.prototype.hasConfig = function(cwd) {
+  if (!cwd) { return false; }
   return this.bosco.exists(path.join(cwd, 'docker-compose.yml')) || this.bosco.exists(path.join(cwd, 'docker-compose.yaml'));
 };
 
