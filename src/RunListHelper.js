@@ -2,6 +2,7 @@
 var _ = require('lodash');
 var github = require('octonode');
 var async = require('async');
+var treeify = require('treeify');
 
 function getRunConfig(bosco, repo, watchRegex) {
   var repoPath = bosco.getRepoPath(repo);
@@ -47,8 +48,9 @@ function getRunConfig(bosco, repo, watchRegex) {
   return svcConfig;
 }
 
-function getRunList(bosco, repos, repoRegex, watchRegex, repoTag) {
+function getRunList(bosco, repos, repoRegex, watchRegex, repoTag, displayOnly) {
   var configs = {};
+  var tree = {};
 
   function isCurrentService(repo) {
     return (bosco.options.inService && repo === bosco.options.inServiceRepo);
@@ -64,7 +66,8 @@ function getRunList(bosco, repos, repoRegex, watchRegex, repoTag) {
   }
 
   function matchesRegexOrTag(repo, tags) {
-    return (!repoTag && repo.match(repoRegex)) || (repoTag && _.includes(tags, repoTag));
+    var isModule = repo.indexOf('module-') >= 0;
+    return !isModule && (!repoTag && repo.match(repoRegex)) || (repoTag && _.includes(tags, repoTag));
   }
 
   function notCurrentService(repo) {
@@ -88,13 +91,46 @@ function getRunList(bosco, repos, repoRegex, watchRegex, repoTag) {
     return config.order || (_.includes(['docker', 'docker-compose'], config.service.type) ? 100 : 500);
   }
 
-  return _.chain(repos)
+  function createTree(parent, repo) {
+    var repoConfig = getCachedConfig(repo);
+    var isService = repo.indexOf('service-') >= 0;
+    var isApp = repo.indexOf('app-') >= 0;
+    var isRemote = repoConfig.service.type === 'remote';
+    var repoName = isRemote ? repo + '*' : repo;
+
+    if (isRemote && (isService || isApp)) {
+      // Not typical to have remote services or apps
+      repoName = repoName.red;
+    } else if (isRemote) {
+      repoName = repoName.grey;
+    } else if (isApp && !isRemote) {
+      repoName = repoName.green;
+    } else if (isService && !isRemote) {
+      repoName = repoName.blue;
+    }
+    parent[repoName] = {};
+    return _.map(getCachedConfig(repo).service.dependsOn, _.curry(createTree)(parent[repoName]));
+  }
+
+  var runList = _.chain(repos)
     .filter(matchingRepo)
     .reduce(addDependencies, [])
     .filter(notCurrentService)
     .map(getCachedConfig)
     .sortBy(getOrder)
     .value();
+
+  if (displayOnly) {
+    _.chain(repos)
+      .filter(matchingRepo)
+      .map(_.curry(createTree)(tree))
+      .value();
+    /* eslint-disable no-console */
+    console.log(treeify.asTree(tree));
+    /* eslint-disable no-enable */
+  } else {
+    return runList;
+  }
 }
 
 function getRepoRunList(/* Same arguments as above */) {

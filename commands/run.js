@@ -41,6 +41,11 @@ module.exports = {
       type: 'boolean',
       desc: 'Only start the dependencies of the current repo, not itself',
     },
+    {
+      name: 'show',
+      type: 'boolean',
+      desc: 'Display the dependency tree but do not start the services',
+    },
   ],
 };
 
@@ -75,7 +80,7 @@ function cmd(bosco, args, allDone) {
   }
 
   function getRunList(next) {
-    RunListHelper.getRunList(bosco, repos, repoRegex, watchRegex, repoTag, next);
+    RunListHelper.getRunList(bosco, repos, repoRegex, watchRegex, repoTag, false, next);
   }
 
   function startRunnableServices(next) {
@@ -227,6 +232,11 @@ function cmd(bosco, args, allDone) {
     }, function(err) {
       next(err);
     });
+  }
+
+  if (bosco.options.show) {
+    bosco.log('Dependency tree for current repo filter:');
+    return RunListHelper.getRunList(bosco, repos, repoRegex, watchRegex, repoTag, true, done);
   }
 
   bosco.log('Run each microservice ... ');

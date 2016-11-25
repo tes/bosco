@@ -80,7 +80,7 @@ function cmd(bosco, args, done) {
 
   function stopRunningServices(cb) {
     var missingDependencies = [];
-    RunListHelper.getRunList(bosco, repos, repoRegex, null, repoTag, function(err, services) {
+    RunListHelper.getRunList(bosco, repos, repoRegex, null, repoTag, false, function(err, services) {
       async.mapLimit(services, bosco.concurrency.network, function(boscoService, next) {
         var repo = boscoService.name;
         if (!repo.match(repoRegex)) return next();
