@@ -202,8 +202,7 @@ describe('s3push', function() {
       return localBosco.staticUtils.oldGetStaticAssets(options, function(err, staticAssets) {
         staticData = _.filter(_.map(staticAssets, function(val) {
           var isEmpty = !(val.data || val.content);
-          if(val.assetKey === 'formattedAssets') { return; }
-          if(isEmpty) { return; }
+          if (isEmpty || val.assetKey === 'formattedAssets') return;
           return {path: 'test/' + val.assetKey, content: val.content};
         }));
         next(err, staticAssets);

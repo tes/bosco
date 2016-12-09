@@ -16,6 +16,10 @@ module.exports = function(bosco) {
     return asset.type === 'css';
   }
 
+  function isMinified(asset) {
+    return asset.path === ('minified-js' || 'minified-css');
+  }
+
   function formattedAssets(staticAssets) {
     var assets = {services: []};
     var templateContent = fs.readFileSync(__dirname + '/../templates/assetList.html');
@@ -83,17 +87,15 @@ module.exports = function(bosco) {
         extraFiles: asset.extraFiles,
       };
 
-      var isMinifiedAsset = function(file) {
-        return file.path === ('minified-js' || 'minified-css');
-      };
+      if (isMinified(asset)) return;
 
-      if (isJavascript(asset) && !isMinifiedAsset(asset)) {
+      if (isJavascript(asset)) {
         htmlAssets[htmlFile].content += _.template('<script src="<%= url %>"></script>\n')({
           'url': bosco.getAssetCdnUrl(asset.assetKey),
         });
       }
 
-      if (isStylesheet(asset) && !isMinifiedAsset(asset)) {
+      if (isStylesheet(asset)) {
         htmlAssets[htmlFile].content += _.template('<link rel="stylesheet" href="<%=url %>" type="text/css" media="all" />\n')({
           'url': bosco.getAssetCdnUrl(asset.assetKey),
         });
