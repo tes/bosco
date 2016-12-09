@@ -83,13 +83,17 @@ module.exports = function(bosco) {
         extraFiles: asset.extraFiles,
       };
 
-      if (isJavascript(asset)) {
+      var isMinifiedAsset = function(file) {
+        return file.path === ('minified-js' || 'minified-css');
+      };
+
+      if (isJavascript(asset) && !isMinifiedAsset(asset)) {
         htmlAssets[htmlFile].content += _.template('<script src="<%= url %>"></script>\n')({
           'url': bosco.getAssetCdnUrl(asset.assetKey),
         });
       }
 
-      if (isStylesheet(asset)) {
+      if (isStylesheet(asset) && !isMinifiedAsset(asset)) {
         htmlAssets[htmlFile].content += _.template('<link rel="stylesheet" href="<%=url %>" type="text/css" media="all" />\n')({
           'url': bosco.getAssetCdnUrl(asset.assetKey),
         });
