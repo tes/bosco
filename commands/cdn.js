@@ -134,7 +134,7 @@ function cmd(bosco, args) {
     server.listen(serverPort);
 
     if (bosco.options['browser-sync']) {
-      var assets = _.filter(_.map(staticAssets, 'path'), isWatchedFile);
+      var assets = _.map(_.filter(staticAssets, isWatchedFile), 'path');
       var extraFiles = _.filter(_.uniq(_.flattenDeep(_.map(staticAssets, 'extraFiles'))));
       var assetsToWatch = _.union(assets, extraFiles);
       bs.init({
