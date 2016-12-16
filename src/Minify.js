@@ -184,7 +184,11 @@ module.exports = function(bosco) {
     var remainingAssets = _.filter(staticAssets, function(item) {
       return item.type !== 'js' && item.type !== 'css';
     });
-    compileJs(concatenateOnly ? staticAssets : remainingAssets, jsAssets, concatenateOnly, function(err, minifiedStaticAssets) {
+    var noCssAssets = _.filter(staticAssets, function(item) {
+      return item.type !== 'css';
+    });
+
+    compileJs(concatenateOnly ? noCssAssets : remainingAssets, jsAssets, concatenateOnly, function(err, minifiedStaticAssets) {
       if (err) { return next(err); }
       compileCss(minifiedStaticAssets, cssAssets, concatenateOnly, next);
     });
