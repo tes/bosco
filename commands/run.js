@@ -171,7 +171,8 @@ function cmd(bosco, args, allDone) {
           bosco.log('Did not start ' + ('' + alreadyRunning).cyan + ' services that were already running.  Use --verbose to see more detail.');
         }
         if (missingDependencies.length > 0) {
-          bosco.error('Unable to start dependencies: ' + missingDependencies.join(',').cyan);
+          bosco.error('Unable to locate dependencies: ' + missingDependencies.join(',').cyan);
+          bosco.error('Typically this means that you need to add these dependencies to your github team.');
         }
         cb(err);
       });
