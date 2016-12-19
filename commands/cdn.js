@@ -127,7 +127,13 @@ function cmd(bosco, args) {
           });
         }
       } else {
-        response.end(asset.data || asset.content);
+        if (asset.minified) {
+          response.end(asset.data || asset.content);
+        } else {
+          fs.readFile(asset.path, function(err, content) {
+            response.end(content);
+          });
+        }
       }
     });
 
