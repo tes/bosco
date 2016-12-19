@@ -180,9 +180,9 @@ describe('ExternalBuild', function() {
       name: 'service',
       repoPath: localBosco.getRepoPath(''),
       build: {
-        command: 'echo hello; sleep 1',
+        command: 'echo hello; sleep 5',
         watch: {
-          timeout: 1
+          timeout: 100
         }
       }
     };
