@@ -14,6 +14,10 @@ module.exports = {
 };
 
 function checkCurrentBranch(bosco, repoPath, next) {
+  if (!bosco.exists(repoPath)) {
+    return next();
+  }
+
   if (!bosco.exists([repoPath, '.git'].join('/'))) {
     bosco.warn('Doesn\'t seem to be a git repo: ' + repoPath.blue);
     return next();
