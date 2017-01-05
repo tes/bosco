@@ -46,6 +46,11 @@ module.exports = {
       type: 'boolean',
       desc: 'Display the dependency tree but do not start the services',
     },
+    {
+      name: 'docker-only',
+      type: 'boolean',
+      desc: 'Only start docker dependency',
+    },
   ],
 };
 

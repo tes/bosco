@@ -74,6 +74,10 @@ function getRunList(bosco, repos, repoRegex, watchRegex, repoTag, displayOnly) {
     return !(bosco.options['deps-only'] && isCurrentService(repo));
   }
 
+  function isType(repo) {
+    return (bosco.options['docker-only'] && isCurrentService(repo));
+  }
+
   function matchingRepo(repo) {
     var config = getCachedConfig(repo);
     return matchesRegexOrTag(repo, config.tags);
@@ -116,6 +120,7 @@ function getRunList(bosco, repos, repoRegex, watchRegex, repoTag, displayOnly) {
     .filter(matchingRepo)
     .reduce(addDependencies, [])
     .filter(notCurrentService)
+    .filter(isType)
     .map(getCachedConfig)
     .sortBy(getOrder)
     .value();
