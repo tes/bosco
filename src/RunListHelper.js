@@ -56,6 +56,10 @@ function getRunList(bosco, repos, repoRegex, watchRegex, repoTag, displayOnly) {
     return (bosco.options.inService && repo === bosco.options.inServiceRepo);
   }
 
+  function notCurrentService(repo) {
+    return !isCurrentService(repo);
+  }
+
   function getCachedConfig(repo) {
     var config = configs[repo];
     if (config) {
@@ -70,12 +74,17 @@ function getRunList(bosco, repos, repoRegex, watchRegex, repoTag, displayOnly) {
     return !isModule && (!repoTag && repo.match(repoRegex)) || (repoTag && _.includes(tags, repoTag));
   }
 
-  function notCurrentService(repo) {
-    return !(bosco.options['deps-only'] && isCurrentService(repo));
+  function isType(type) {
+    return function(repo) {
+      return getCachedConfig(repo).service.type === type;
+    };
   }
 
-  function isType(repo) {
-    return (bosco.options['docker-only'] && isCurrentService(repo));
+  function boscoOptionFilter(option, fn) {
+    if (bosco.options[option]) return fn;
+    return function() {
+      return true;
+    };
   }
 
   function matchingRepo(repo) {
@@ -119,8 +128,8 @@ function getRunList(bosco, repos, repoRegex, watchRegex, repoTag, displayOnly) {
   var runList = _.chain(repos)
     .filter(matchingRepo)
     .reduce(addDependencies, [])
-    .filter(notCurrentService)
-    .filter(isType)
+    .filter(boscoOptionFilter('deps-only', notCurrentService))
+    .filter(boscoOptionFilter('docker-only', isType('remote')))
     .map(getCachedConfig)
     .sortBy(getOrder)
     .value();

@@ -49,7 +49,7 @@ module.exports = {
     {
       name: 'docker-only',
       type: 'boolean',
-      desc: 'Only start docker dependency',
+      desc: 'Only start docker dependencies',
     },
   ],
 };
