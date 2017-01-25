@@ -61,8 +61,9 @@ module.exports = {
         _.forEach(remoteConfig.modules, function(version, module) {
           var repoModuleVersion = pkgJson.dependencies[module] || pkgJson.devDependencies[module];
           if (repoModuleVersion && repoModuleVersion !== 'latest') {
-            var satisfies = semver.gt(repoModuleVersion.replace('^', ''), version.replace('^', ''));
+            var satisfies = !semver.lt(repoModuleVersion.replace('^', ''), version.replace('^', ''));
             if (!satisfies) {
+              localProblems = true;
               bosco.warn('Module problem in ' + repo.cyan + ' with ' + module.green + ', please upgrade ' + repoModuleVersion.yellow + ' >> ' + version.yellow);
             }
           }
