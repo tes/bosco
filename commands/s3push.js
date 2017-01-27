@@ -46,7 +46,7 @@ function cmd(bosco, args, callback) {
   noprompt = bosco.options.noprompt;
 
   var maxAge = bosco.config.get('aws:maxage');
-  if (typeof maxAge !== 'number') maxAge = 31536000; // Default to one year
+  if (typeof maxAge !== 'number') maxAge = 365000000;
 
   bosco.log('Compile front end assets across services ' + (tag ? 'for tag: ' + tag.blue : ''));
 
@@ -125,7 +125,7 @@ function cmd(bosco, args, callback) {
       var headers = {
         'Content-Type': file.mimeType,
         'Content-Encoding': 'gzip',
-        'Cache-Control': ('max-age=' + (maxAge === 0 ? '0, must-revalidate' : maxAge)),
+        'Cache-Control': ('max-age=' + (maxAge === 0 ? '0, must-revalidate' : maxAge) + ', immutable'),
       };
       bosco.knox.putBuffer(buffer, file.path, headers, function(error, res) {
         var err = error;
