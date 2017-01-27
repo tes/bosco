@@ -10,9 +10,9 @@ module.exports = {
   cmd: function(bosco) {
     // The attached is unashamedly default TES config, you need to replace it with your own in the bosco.config
     var defaultConfig = {
-      localConfigurationFiles: ['default.json', 'local.json'],
-      likelyHostConfig: '(host)',
-      localConnectionString: '(local|127\.0\.0\.1|0\.0\.0\.0)',
+      localConfigurationFiles: ['default.json', 'local.json', 'test.json'],
+      likelyHostConfig: '([^v]host|url)',
+      notLocalConnectionString: '(development|staging|live)',
       modules: {
         'module-tsl-logger': '^0.2.41',
         'electric-metrics': '^0.0.15',
@@ -42,7 +42,7 @@ module.exports = {
         var currentPath = this.path.join('.');
         if (currentPath.match(remoteConfig.likelyHostConfig)) {
           if (typeof item === 'string') {
-            if (!item.match(remoteConfig.localConnectionString)) {
+            if (item.match(remoteConfig.notLocalConnectionString)) {
               localProblems = true;
               bosco.warn('Host problem in ' + repo.cyan + ' at config ' + currentPath.green + ' of ' + item.yellow);
             }
@@ -59,7 +59,7 @@ module.exports = {
       if (bosco.exists(packageJsonPath)) {
         var pkgJson = require(packageJsonPath);
         _.forEach(remoteConfig.modules, function(version, module) {
-          var repoModuleVersion = pkgJson.dependencies[module] || pkgJson.devDependencies[module];
+          var repoModuleVersion = pkgJson.dependencies && pkgJson.dependencies[module] || pkgJson.devDependencies && pkgJson.devDependencies[module];
           if (repoModuleVersion && repoModuleVersion !== 'latest') {
             var satisfies = !semver.lt(repoModuleVersion.replace('^', ''), version.replace('^', ''));
             if (!satisfies) {
