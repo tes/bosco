@@ -346,7 +346,7 @@ This would contain a fragment that has script tags for all of the JS tagged in t
 
 You can view all assets that are being tracked by `bosco cdn` by going to any url once the `bosco cdn` command is running and using the cdn port (i.e: 127.0.0.1:7334). You can also see a list of repos by going to /repos on the `bosco cdn` server (i.e: 127.0.0.1:7334/repos).
 
-#### Example of bosco CDN with watch.
+#### Example of bosco CDN with watch
 You can use any part of the service name. For example if we have ```service1, service2, service3```
 
 To watch all 3 services:
@@ -356,6 +356,13 @@ bosco cdn -w "service"
 and to watch **service1** and **service2** only:
 ```
 bosco cdn -w "service1|service2"
+```
+
+#### Start up CDN for specified services only
+You might have 15 repos in your bosco team folder but you only need assets served for two of them, for example the app you're currently working on plus one other serving shared assets. You can use the -r flag to specify that CDN starts for only those services, making the CDN startup time much quicker:
+
+```
+bosco cdn -r "service1|service2"
 ```
 
 ### S3 Push
@@ -477,26 +484,6 @@ var minify = _.contains(args, 'minify');
 ```
 
 ## Troubleshooting
-
-### Docker services don't start
-
-If you run bosco start and then docker service(s) don't start eg.
-
-```
-[09:50:50] Bosco: Running docker service infra-nginx-gateway ...
-```
-
-Then boot2docker has stopped running. Confirm this with
-
-```
-boot2docker status
-```
-
-then restart with
-
-```
-boot2docker start
-```
 
 ### You switch Node versions
 
