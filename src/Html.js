@@ -16,10 +16,6 @@ module.exports = function(bosco) {
     return asset.type === 'css';
   }
 
-  function isMinified(asset) {
-    return asset.path === ('minified-js' || 'minified-css');
-  }
-
   function formattedAssets(staticAssets) {
     var assets = {services: []};
     var templateContent = fs.readFileSync(__dirname + '/../templates/assetList.html');
@@ -81,13 +77,13 @@ module.exports = function(bosco) {
         assetType: asset.type,
         assetKey: htmlFile,
         relativePath: 'cx-html-fragment',
-        isMinifiedFragment: true,
+        minified: true,
         mimeType: 'text/html',
         extname: '.html',
         extraFiles: asset.extraFiles,
       };
 
-      if (isMinified(asset)) return;
+      if (asset.minified) return;
 
       if (isJavascript(asset)) {
         htmlAssets[htmlFile].content += _.template('<script src="<%= url %>"></script>\n')({

@@ -6,6 +6,14 @@ var CleanCSS = require('clean-css');
 module.exports = function(bosco) {
   var createKey = require('./AssetHelper')(bosco).createKey;
 
+  function warnOnDuplicateAsset(staticAssets, key) {
+    _.map(staticAssets, function(item) {
+      if (item.assetKey === key) {
+        bosco.warn('You should use ' + '\'alreadyMinified: true\''.yellow + ' for the bundle: ' + item.assetKey.cyan);
+      }
+    });
+  }
+
   function compileJs(staticAssets, jsAssets, concatenateOnly, next) {
     var bundleKeys = _.uniq(_.map(jsAssets, 'bundleKey'));
     var err;
@@ -33,6 +41,7 @@ module.exports = function(bosco) {
         if (!content) return;
         var mapKey = createKey(serviceName, buildNumber, tag, 'js', 'js', 'map');
         var mapItem = {};
+        mapItem.minified = !minificationConfig.alreadyMinified;
         mapItem.assetKey = mapKey;
         mapItem.serviceName = serviceName;
         mapItem.buildNumber = buildNumber;
@@ -49,7 +58,9 @@ module.exports = function(bosco) {
       function addMinifiedJs(content, sourceFiles) {
         if (!content) return;
         var minifiedKey = createKey(serviceName, buildNumber, tag, null, 'js', 'js');
+        warnOnDuplicateAsset(staticAssets, minifiedKey);
         var minifiedItem = {};
+        minifiedItem.minified = !minificationConfig.alreadyMinified;
         minifiedItem.assetKey = minifiedKey;
         minifiedItem.serviceName = serviceName;
         minifiedItem.buildNumber = buildNumber;
@@ -159,8 +170,10 @@ module.exports = function(bosco) {
       }
 
       var assetKey = createKey(serviceName, buildNumber, tag, null, 'css', 'css');
+      warnOnDuplicateAsset(staticAssets, assetKey);
 
       var minifiedItem = {};
+      minifiedItem.minified = true;
       minifiedItem.assetKey = assetKey;
       minifiedItem.serviceName = serviceName;
       minifiedItem.buildNumber = buildNumber;
