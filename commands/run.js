@@ -105,7 +105,13 @@ function cmd(bosco, args, allDone) {
         if (bosco.options.verbose) {
           bosco.log('Running docker service ' + runConfig.name.green + ' ...');
         }
-        return DockerRunner.start(runConfig, cb);
+        return DockerRunner.start(runConfig, function(err) {
+          // Log errors from docker but do not stop all tasks
+          if (err) {
+            bosco.error('There was an error running ' + runConfig.name + ': ' + err);
+          }
+          cb();
+        });
       }
 
       if (type === 'docker-compose') {
@@ -156,8 +162,8 @@ function cmd(bosco, args, allDone) {
         if (runConfig.service.type === 'remote') {
           RunListHelper.getServiceConfigFromGithub(bosco, runConfig.name, function(err, svcConfig) {
             if (err || !svcConfig || !svcConfig.service || !svcConfig.service.type || svcConfig.service.type !== 'docker') {
-              missingDependencies.push(runConfig.name);
-              return asyncMapCb();
+              // Create psuedo service config
+              svcConfig.service = RunListHelper.getServiceDockerConfig(runConfig, svcConfig);
             }
             // Do not allow build in this mode, so default to run
             if (svcConfig.service && svcConfig.service.build) {

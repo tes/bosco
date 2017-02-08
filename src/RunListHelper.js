@@ -165,22 +165,62 @@ function getServiceConfigFromGithub(bosco, repo, next) {
     next(null, cachedConfig);
   } else {
     var ghrepo = client.repo(githubRepo);
-    ghrepo.contents('bosco-service.json', function(err, contents) {
+    ghrepo.contents('bosco-service.json', function(err, boscoSvc) {
       if (err) {
         return next(err);
       }
-      var content = new Buffer(contents.content, 'base64');
-      var config = JSON.parse(content.toString());
-      bosco.config.set(configKey, config);
-      bosco.config.save(function() {
-        next(null, config);
+      var boscoSvcContent = new Buffer(boscoSvc.content, 'base64');
+      var boscoSvcConfig = JSON.parse(boscoSvcContent.toString());
+      ghrepo.contents('config/default.json', function(err, defaultCfg) {
+        if (!err || defaultCfg) {
+          var defaultCfgContent = new Buffer(defaultCfg.content, 'base64');
+          var defaultCfgConfig = JSON.parse(defaultCfgContent.toString());
+          boscoSvcConfig.server = defaultCfgConfig.server || {};
+        }
+        bosco.config.set(configKey, boscoSvcConfig);
+        bosco.config.save(function() {
+          next(null, boscoSvcConfig);
+        });
       });
     });
   }
+}
+
+function getServiceDockerConfig(runConfig, svcConfig) {
+  var dockerConfig;
+  // apologies this is TES specific in short term while we figure out if it works and make it configurable
+  var defaultConfig = {
+    type: 'docker',
+    name: runConfig.name,
+    registry: 'docker-registry.tescloud.com',
+    username: 'tescloud',
+    version: 'latest',
+    docker: {
+      Config: {
+        Env: ['TSL_ENV=local'],
+      },
+      HostConfig: {
+        ExposedPorts: {},
+        PortBindings: {},
+      },
+    },
+  };
+
+  if (svcConfig.server && svcConfig.server.port) {
+    var exposedPort = svcConfig.server.port + '/tcp';
+    dockerConfig = _.clone(defaultConfig);
+    dockerConfig.docker.HostConfig.ExposedPorts[exposedPort] = {};
+    dockerConfig.docker.HostConfig.PortBindings[exposedPort] = [{
+      HostIp: '0.0.0.0',
+      HostPort: '' + svcConfig.server.port,
+    }];
+  }
+  return dockerConfig;
 }
 
 module.exports = {
   getRunList: async.asyncify(getRunList),
   getRepoRunList: async.asyncify(getRepoRunList),
   getServiceConfigFromGithub: getServiceConfigFromGithub,
+  getServiceDockerConfig: getServiceDockerConfig,
 };

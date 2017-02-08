@@ -74,7 +74,6 @@ function cmd(bosco, args, done) {
         return NodeRunner.stop({name: repo}, cb);
       }
     }
-
     return cb();
   }
 
@@ -88,9 +87,8 @@ function cmd(bosco, args, done) {
           return stopService(repo, boscoService, runningServices, next);
         }
         RunListHelper.getServiceConfigFromGithub(bosco, boscoService.name, function(err, svcConfig) {
-          if (err || !svcConfig || svcConfig.type === 'node') {
-            missingDependencies.push(boscoService.name);
-            return next();
+          if (err || !svcConfig || !svcConfig.service || !svcConfig.service.type || svcConfig.service.type !== 'docker') {
+            svcConfig.service = RunListHelper.getServiceDockerConfig(boscoService, svcConfig);
           }
           if (!svcConfig.name) svcConfig.name = boscoService.name;
           stopService(repo, svcConfig, runningServices, next);
