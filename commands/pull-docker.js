@@ -36,7 +36,9 @@ function dockerPullRemote(bosco, repos, runConfig, next) {
 
   RunListHelper.getServiceConfigFromGithub(bosco, runConfig.name, function(err, svcConfig) {
     if (err) return next();
-
+    if (err || !svcConfig || !svcConfig.service || !svcConfig.service.type || svcConfig.service.type !== 'docker') {
+      svcConfig.service = RunListHelper.getServiceDockerConfig(runConfig, svcConfig);
+    }
     if (!svcConfig.name) svcConfig.name = runConfig.name;
 
     dockerPullService(bosco, svcConfig, next);
