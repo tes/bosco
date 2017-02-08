@@ -191,7 +191,7 @@ function getServiceDockerConfig(runConfig, svcConfig) {
   // apologies this is TES specific in short term while we figure out if it works and make it configurable
   var defaultConfig = {
     type: 'docker',
-    name: runConfig.name,
+    name: (svcConfig.service && svcConfig.service.name) || runConfig.name,
     registry: 'docker-registry.tescloud.com',
     username: 'tescloud',
     version: 'latest',
@@ -215,6 +215,7 @@ function getServiceDockerConfig(runConfig, svcConfig) {
       HostPort: '' + svcConfig.server.port,
     }];
   }
+
   return dockerConfig;
 }
 

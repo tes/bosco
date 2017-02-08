@@ -145,7 +145,7 @@ function cmd(bosco, args, allDone) {
         return cb();
       }
 
-      bosco.warn('Service ' + runConfig.name.orange + ' could not be run because its type is "' + type.red + '"');
+      bosco.warn('Service ' + runConfig.name.orange + ' could not be run because its type is "' + (type ? type.red : 'unknown') + '"');
 
       return cb();
     }

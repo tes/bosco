@@ -3,6 +3,7 @@ var async = require('async');
 var fs = require('fs');
 var http = require('http');
 var url = require('url');
+var requestLib = require('request');
 var browserSync = require('browser-sync');
 var RunListHelper = require('../src/RunListHelper');
 var CmdHelper = require('../src/CmdHelper');
@@ -98,6 +99,14 @@ function cmd(bosco, args) {
         headers['Content-Type'] = 'text/html';
         response.writeHead(200, headers);
         return response.end(staticRepos.formattedRepos);
+      }
+
+      var notLocalAsset = pathname.indexOf('/local/') < 0;
+      if (notLocalAsset) {
+        // We should proxy to the CDN
+        var baseCdn = bosco.config && bosco.config.cdn && bosco.config.cdn.url || 'https://duqxiy1o2cbw6.cloudfront.net/tes';
+        var cdnUrl = baseCdn + pathname;
+        return requestLib(cdnUrl).pipe(response);
       }
 
       var asset = getAsset(pathname);
