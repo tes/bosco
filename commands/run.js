@@ -93,6 +93,12 @@ function cmd(bosco, args, allDone) {
 
     function runService(runConfig, cb) {
       var type = runConfig.service && runConfig.service.type;
+
+      if (!type) {
+        bosco.warn('Service ' + runConfig.name.orange + ' could not be run because I was unable to find any run configuration.');
+        return cb();
+      }
+
       if (type === 'docker') {
         if (_.includes(runningServices, runConfig.name)) {
           if (bosco.options.verbose) {
@@ -145,7 +151,7 @@ function cmd(bosco, args, allDone) {
         return cb();
       }
 
-      bosco.warn('Service ' + runConfig.name.orange + ' could not be run because its type is "' + (type ? type.red : 'unknown') + '"');
+      bosco.warn('Service ' + runConfig.name.orange + ' could not be run because it was of an unknown type: ' + type.red);
 
       return cb();
     }
