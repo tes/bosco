@@ -387,7 +387,6 @@ Bosco.prototype.getRepos = function() {
   if (team === 'no-team') {
     return [path.relative('..', '.')];
   }
-
   return self.config.get('teams:' + team).repos;
 };
 

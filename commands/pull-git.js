@@ -71,7 +71,9 @@ function cmd(bosco, args, next) {
   var repoRegex = new RegExp(repoPattern);
   var watchNothing = '$a';
 
+  CmdHelper.checkInService(bosco);
   var repos = bosco.getRepos();
+
   if (!repos) return bosco.error('You are repo-less :( You need to initialise bosco first, try \'bosco clone\'.');
 
   bosco.log('Running ' + 'git pull --rebase'.blue + ' across all repos ...');
@@ -90,7 +92,6 @@ function cmd(bosco, args, next) {
     async.mapLimit(repos, bosco.concurrency.network, function repoStash(repo, repoCb) {
       if (!repo) return repoCb();
       if (!repo.match(repoRegex)) return repoCb();
-
       var repoPath = bosco.getRepoPath(repo);
       checkCurrentBranch(bosco, repoPath, function() {
         pull(bosco, progressbar, bar, repoPath, repoCb);
@@ -129,7 +130,8 @@ function cmd(bosco, args, next) {
     RunListHelper.getRepoRunList(bosco, bosco.getRepos(), repoRegex, watchNothing, null, function(err, runRepos) {
       repos = _.chain(runRepos)
                 .filter(function(repo) { return repo.type !== 'remote'; })
-                .map('name');
+                .map('name')
+                .value();
       cb(err);
     });
   }

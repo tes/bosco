@@ -2,6 +2,8 @@ var async = require('async');
 var _ = require('lodash');
 var DockerRunner = require('../src/RunWrappers/Docker');
 var RunListHelper = require('../src/RunListHelper');
+var CmdHelper = require('../src/CmdHelper');
+
 var green = '\u001b[42m \u001b[0m';
 var red = '\u001b[41m \u001b[0m';
 
@@ -59,6 +61,7 @@ function cmd(bosco, args, next) {
   var watchNothing = '$a';
   var noRemote = bosco.options.noremote;
 
+  CmdHelper.checkInService(bosco);
   var repos = bosco.getRepos();
   if (!repos) return bosco.error('You are repo-less :( You need to initialise bosco first, try \'bosco clone\'.');
 
