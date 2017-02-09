@@ -51,6 +51,11 @@ module.exports = {
       type: 'boolean',
       desc: 'Only start docker dependencies',
     },
+    {
+      name: 'nocache',
+      type: 'boolean',
+      desc: 'Do not use the remote config cache',
+    },
   ],
 };
 
@@ -161,29 +166,9 @@ function cmd(bosco, args, allDone) {
         cb();
         return;
       }
-
       bosco.log('Launching ' + (runList.services.length + '').green + ' ' + runList.type.cyan + ' processes with parallel limit of ' + (runList.limit + '').cyan + ' ...');
       var missingDependencies = [];
-      async.mapLimit(runList.services, runList.limit, function(runConfig, asyncMapCb) {
-        if (runConfig.service.type === 'remote') {
-          RunListHelper.getServiceConfigFromGithub(bosco, runConfig.name, function(err, svcConfig) {
-            if (err || !svcConfig || !svcConfig.service || !svcConfig.service.type || svcConfig.service.type !== 'docker') {
-              // Create psuedo service config
-              svcConfig.service = RunListHelper.getServiceDockerConfig(runConfig, svcConfig);
-            }
-            // Do not allow build in this mode, so default to run
-            if (svcConfig.service && svcConfig.service.build) {
-              delete svcConfig.service.build;
-            }
-            if (!svcConfig.name) {
-              svcConfig.name = runConfig.name;
-            }
-            runService(svcConfig, asyncMapCb);
-          });
-        } else {
-          runService(runConfig, asyncMapCb);
-        }
-      }, function(err) {
+      async.mapLimit(runList.services, runList.limit, runService, function(err) {
         if (alreadyRunning > 0 && !bosco.options.verbose) {
           bosco.log('Did not start ' + ('' + alreadyRunning).cyan + ' services that were already running.  Use --verbose to see more detail.');
         }
@@ -196,10 +181,10 @@ function cmd(bosco, args, allDone) {
 
     getRunList(function(err, runList) {
       if (err) return next(err);
-      var dockerServices = _.filter(runList, function(i) { return i.service.type === 'docker' || i.service.type === 'remote'; });
+      var dockerServices = _.filter(runList, function(i) { return i.service.type === 'docker' && _.startsWith(i.name, 'infra-'); });
       var dockerComposeServices = _.filter(runList, function(i) { return i.service.type === 'docker-compose'; });
-      var nodeServices = _.filter(runList, function(i) { return i.service.type === 'node' && _.startsWith('service-', i.name); });
-      var nodeApps = _.filter(runList, function(i) { return i.service.type === 'node' && !_.startsWith('service-', i.name); });
+      var nodeServices = _.filter(runList, function(i) { return _.startsWith(i.name, 'service-'); });
+      var nodeApps = _.filter(runList, function(i) { return _.startsWith(i.name, 'app-'); });
       var unknownServices = _.filter(runList, function(i) { return !_.includes(['docker', 'docker-compose', 'node', 'remote'], i.service.type); });
       if (unknownServices.length > 0) {
         bosco.error('Unable to run services of un-recognised type: ' + _.map(unknownServices, 'name').join(', ').cyan + '. Check their bosco-service.json configuration.');
