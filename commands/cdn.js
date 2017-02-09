@@ -101,7 +101,7 @@ function cmd(bosco, args) {
         return response.end(staticRepos.formattedRepos);
       }
 
-      var notLocalAsset = pathname.indexOf('/local/') < 0;
+      var notLocalAsset = pathname !== '/' && pathname.indexOf('/local/') < 0;
       if (notLocalAsset) {
         // We should proxy to the CDN
         var baseCdn = bosco.config && bosco.config.cdn && bosco.config.cdn.url || 'https://duqxiy1o2cbw6.cloudfront.net/tes';
