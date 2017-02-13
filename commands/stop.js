@@ -88,7 +88,7 @@ function cmd(bosco, args, done) {
         }
         RunListHelper.getServiceConfigFromGithub(bosco, boscoService.name, function(err, svcConfig) {
           if (err || !svcConfig || !svcConfig.service || !svcConfig.service.type || svcConfig.service.type !== 'docker') {
-            svcConfig.service = RunListHelper.getServiceDockerConfig(boscoService, svcConfig);
+            svcConfig = { service: RunListHelper.getServiceDockerConfig(boscoService, svcConfig) };
           }
           if (!svcConfig.name) svcConfig.name = boscoService.name;
           stopService(repo, svcConfig, runningServices, next);
