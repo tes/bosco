@@ -169,7 +169,8 @@ function cmd(bosco, args, allDone) {
           RunListHelper.getServiceConfigFromGithub(bosco, runConfig.name, function(err, svcConfig) {
             if (err || !svcConfig || !svcConfig.service || !svcConfig.service.type || svcConfig.service.type !== 'docker') {
               // Create psuedo service config
-              svcConfig = { service: RunListHelper.getServiceDockerConfig(runConfig, svcConfig) };
+              svcConfig = {};
+              svcConfig.service = RunListHelper.getServiceDockerConfig(runConfig, svcConfig);
             }
             // Do not allow build in this mode, so default to run
             if (svcConfig.service && svcConfig.service.build) {
