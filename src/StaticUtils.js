@@ -171,7 +171,7 @@ module.exports = function(bosco) {
         var concatenateOnly = !options.minify;
         minify(staticAssets, concatenateOnly, function(err, minifiedAssets) {
           if (err && !ignoreFailure) return next(err);
-          createAssetHtmlFiles(minifiedAssets, next);
+          createAssetHtmlFiles(minifiedAssets, options.isCdn, next);
         });
       });
     });

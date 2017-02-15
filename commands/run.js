@@ -167,10 +167,18 @@ function cmd(bosco, args, allDone) {
       async.mapLimit(runList.services, runList.limit, function(runConfig, asyncMapCb) {
         if (runConfig.service.type === 'remote') {
           RunListHelper.getServiceConfigFromGithub(bosco, runConfig.name, function(err, svcConfig) {
-            if (err || !svcConfig || !svcConfig.service || !svcConfig.service.type || svcConfig.service.type !== 'docker') {
-              // Create psuedo service config
-              svcConfig = {};
-              svcConfig.service = RunListHelper.getServiceDockerConfig(runConfig, svcConfig);
+            if (err || !svcConfig) {
+              missingDependencies.push(runConfig.name);
+              return asyncMapCb();
+            }
+            if (!svcConfig.service || !svcConfig.service.type || svcConfig.service.type !== 'docker') {
+              var psuedoServiceConfig = RunListHelper.getServiceDockerConfig(runConfig, svcConfig);
+              if (psuedoServiceConfig) {
+                svcConfig.service = psuedoServiceConfig;
+              } else {
+                missingDependencies.push(runConfig.name);
+                return asyncMapCb();
+              }
             }
             // Do not allow build in this mode, so default to run
             if (svcConfig.service && svcConfig.service.build) {

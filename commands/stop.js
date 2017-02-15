@@ -87,9 +87,18 @@ function cmd(bosco, args, done) {
           return stopService(repo, boscoService, runningServices, next);
         }
         RunListHelper.getServiceConfigFromGithub(bosco, boscoService.name, function(err, svcConfig) {
-          if (err || !svcConfig || !svcConfig.service || !svcConfig.service.type || svcConfig.service.type !== 'docker') {
-            svcConfig = {};
-            svcConfig.service = RunListHelper.getServiceDockerConfig(boscoService, svcConfig);
+          if (err || !svcConfig) {
+            missingDependencies.push(boscoService.name);
+            return next();
+          }
+          if (!svcConfig.service || !svcConfig.service.type || svcConfig.service.type !== 'docker') {
+            var psuedoServiceConfig = RunListHelper.getServiceDockerConfig(boscoService, svcConfig);
+            if (psuedoServiceConfig) {
+              svcConfig.service = psuedoServiceConfig;
+            } else {
+              missingDependencies.push(boscoService.name);
+              return next();
+            }
           }
           if (!svcConfig.name) svcConfig.name = boscoService.name;
           stopService(repo, svcConfig, runningServices, next);

@@ -215,6 +215,7 @@ function cmd(bosco, args, callback) {
       tagFilter: tag,
       watchBuilds: false,
       reloadOnly: false,
+      isCdn: false,
     };
 
     bosco.staticUtils.getStaticAssets(options, function(err, staticAssets) {
