@@ -20,44 +20,45 @@ function getCachedConfig(bosco, repo) {
 
 function getServiceDockerConfig(runConfig, svcConfig) {
   var dockerConfig;
-  // apologies this is TES specific in short term while we figure out if it works and make it configurable
-  var defaultConfig = {
-    type: 'docker',
-    name: runConfig.name,
-    registry: 'docker-registry.tescloud.com',
-    username: 'tescloud',
-    version: 'latest',
-    docker: {
-      Config: {
-        Env: ['TSL_ENV=local'],
+  if (runConfig && svcConfig) {
+    // apologies this is TES specific in short term while we figure out if it works and make it configurable
+    var defaultConfig = {
+      type: 'docker',
+      name: runConfig.name,
+      registry: 'docker-registry.tescloud.com',
+      username: 'tescloud',
+      version: 'latest',
+      docker: {
+        Config: {
+          Env: ['TSL_ENV=local'],
+        },
+        HostConfig: {
+          ExposedPorts: {},
+          PortBindings: {},
+          Links: [],
+        },
       },
-      HostConfig: {
-        ExposedPorts: {},
-        PortBindings: {},
-        Links: [],
-      },
-    },
-  };
+    };
 
-  if (svcConfig.server && svcConfig.server.port) {
-    var exposedPort = svcConfig.server.port + '/tcp';
-    dockerConfig = _.clone(defaultConfig);
-    dockerConfig.docker.HostConfig.ExposedPorts[exposedPort] = {};
-    dockerConfig.docker.HostConfig.PortBindings[exposedPort] = [{
-      HostIp: '0.0.0.0',
-      HostPort: '' + svcConfig.server.port,
-    }];
-    if (svcConfig.service) {
-      dockerConfig.name = svcConfig.service.name;
-    }
-    if (svcConfig.service.dependsOn) {
-      var infra = _.filter(svcConfig.service.dependsOn, function(i) { return _.startsWith(i, 'infra-'); });
-      infra.forEach(function(i) {
-        dockerConfig.docker.HostConfig.Links.push(i + ':' + i);
-      });
+    if (svcConfig.server && svcConfig.server.port) {
+      var exposedPort = svcConfig.server.port + '/tcp';
+      dockerConfig = _.clone(defaultConfig);
+      dockerConfig.docker.HostConfig.ExposedPorts[exposedPort] = {};
+      dockerConfig.docker.HostConfig.PortBindings[exposedPort] = [{
+        HostIp: '0.0.0.0',
+        HostPort: '' + svcConfig.server.port,
+      }];
+      if (svcConfig.service) {
+        dockerConfig.name = svcConfig.service.name;
+      }
+      if (svcConfig.service.dependsOn) {
+        var infra = _.filter(svcConfig.service.dependsOn, function(i) { return _.startsWith(i, 'infra-'); });
+        infra.forEach(function(i) {
+          dockerConfig.docker.HostConfig.Links.push(i + ':' + i);
+        });
+      }
     }
   }
-
   return dockerConfig;
 }
 

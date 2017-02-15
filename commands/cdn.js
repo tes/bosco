@@ -177,6 +177,7 @@ function cmd(bosco, args) {
       repoRegex: repoRegex,
       repoTag: repoTag,
       watchCallback: watchCallback,
+      isCdn: true,
     };
 
     var executeAsync = {

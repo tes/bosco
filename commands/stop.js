@@ -83,7 +83,6 @@ function cmd(bosco, args, done) {
   }
 
   function stopRunningServices(cb) {
-    var missingDependencies = [];
     RunListHelper.getRunList(bosco, repos, repoRegex, null, repoTag, false, function(err, services) {
       async.mapLimit(services, bosco.concurrency.network, function(boscoService, next) {
         var repo = boscoService.name;
@@ -92,9 +91,6 @@ function cmd(bosco, args, done) {
           return stopService(repo, boscoService, runningServices, next);
         }
       }, function() {
-        if (missingDependencies.length > 0) {
-          bosco.warn('Unable to stop dependencies: ' + missingDependencies.join(',').cyan);
-        }
         // Special case for bosco-cdn, room for improvement to make this
         // generic for all custom bosco services.
         if (!_.includes(runningServices, 'bosco-cdn')) return cb();

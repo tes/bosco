@@ -167,13 +167,9 @@ function cmd(bosco, args, allDone) {
         return;
       }
       bosco.log('Launching ' + (runList.services.length + '').green + ' ' + runList.type.cyan + ' processes with parallel limit of ' + (runList.limit + '').cyan + ' ...');
-      var missingDependencies = [];
       async.mapLimit(runList.services, runList.limit, runService, function(err) {
         if (alreadyRunning > 0 && !bosco.options.verbose) {
           bosco.log('Did not start ' + ('' + alreadyRunning).cyan + ' services that were already running.  Use --verbose to see more detail.');
-        }
-        if (missingDependencies.length > 0) {
-          bosco.error('Unable to start dependencies: ' + missingDependencies.join(',').cyan);
         }
         cb(err);
       });
