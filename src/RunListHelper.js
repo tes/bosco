@@ -18,7 +18,7 @@ function getCachedConfig(bosco, repo) {
   return cachedConfig || { name: repo, service: { type: 'unknown' } };
 }
 
-function getServiceDockerConfig(runConfig, svcConfig) {
+function getServiceDockerConfig(bosco, runConfig, svcConfig) {
   var dockerConfig;
   if (runConfig && svcConfig) {
     // apologies this is TES specific in short term while we figure out if it works and make it configurable
@@ -35,7 +35,7 @@ function getServiceDockerConfig(runConfig, svcConfig) {
         HostConfig: {
           ExposedPorts: {},
           PortBindings: {},
-          Links: [],
+          ExtraHosts: ['local.tescloud.com:' + bosco.options.ip ],
         },
       },
     };
@@ -50,12 +50,6 @@ function getServiceDockerConfig(runConfig, svcConfig) {
       }];
       if (svcConfig.service) {
         dockerConfig.name = svcConfig.service.name;
-      }
-      if (svcConfig.service.dependsOn) {
-        var infra = _.filter(svcConfig.service.dependsOn, function(i) { return _.startsWith(i, 'infra-'); });
-        infra.forEach(function(i) {
-          dockerConfig.docker.HostConfig.Links.push(i + ':' + i);
-        });
       }
     }
   }
@@ -88,7 +82,7 @@ function getServiceConfigFromGithub(bosco, repo, svcConfig, next) {
           boscoSvcConfig.server = defaultCfgConfig.server || {};
         }
         if (!boscoSvcConfig.service || boscoSvcConfig.service.type !== 'docker') {
-          boscoSvcConfig.service = _.defaults(boscoSvcConfig.service, getServiceDockerConfig(svcConfig, boscoSvcConfig));
+          boscoSvcConfig.service = _.defaults(boscoSvcConfig.service, getServiceDockerConfig(bosco, svcConfig, boscoSvcConfig));
         }
         bosco.config.set(configKey, boscoSvcConfig);
         bosco.config.save(function() {

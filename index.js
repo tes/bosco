@@ -16,6 +16,7 @@ var request = require('request');
 var semver = require('semver');
 var sf = require('sf');
 var util = require('util');
+var ip = require('ip');
 
 prompt.message = 'Bosco'.green;
 
@@ -46,6 +47,7 @@ Bosco.prototype.init = function(options) {
   self.options.nvmInstall = self.options.nvmSh + 'nvm install';
 
   self.options.cpus = require('os').cpus().length;
+  self.options.ip = ip.address();
   self.options.inService = false;
   self.options.fileTypesWhitelist = ['js', 'css', 'img', 'html', 'swf', 'fonts', 'pdf', 'json'];
 
