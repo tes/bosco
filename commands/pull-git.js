@@ -19,7 +19,6 @@ function checkCurrentBranch(bosco, repoPath, next) {
   }
 
   if (!bosco.exists([repoPath, '.git'].join('/'))) {
-    bosco.warn('Doesn\'t seem to be a git repo: ' + repoPath.blue);
     return next();
   }
 
@@ -42,7 +41,6 @@ function checkCurrentBranch(bosco, repoPath, next) {
 
 function pull(bosco, progressbar, bar, repoPath, next) {
   if (!bosco.exists([repoPath, '.git'].join('/'))) {
-    bosco.warn('Doesn\'t seem to be a git repo: ' + repoPath.blue);
     return next();
   }
 
@@ -127,7 +125,7 @@ function cmd(bosco, args, next) {
       return cb();
     }
 
-    RunListHelper.getRepoRunList(bosco, bosco.getRepos(), repoRegex, watchNothing, null, function(err, runRepos) {
+    RunListHelper.getRepoRunList(bosco, bosco.getRepos(), repoRegex, watchNothing, null, false, function(err, runRepos) {
       repos = _.chain(runRepos)
                 .filter(function(repo) { return repo.type !== 'remote'; })
                 .map('name')
