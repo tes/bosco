@@ -15,7 +15,7 @@ function getCachedConfig(bosco, repo) {
   var githubRepo = getGithubRepo(bosco, repo);
   var configKey = 'cache:github:' + githubRepo;
   var cachedConfig = bosco.config.get(configKey);
-  return cachedConfig || { name: repo, service: { type: 'unknown' } };
+  return cachedConfig;
 }
 
 function getServiceDockerConfig(bosco, runConfig, svcConfig) {

@@ -29,11 +29,6 @@ module.exports = {
       type: 'boolean',
       desc: 'Only start the dependencies of the current repo, not itself',
     },
-    {
-      name: 'nocache',
-      type: 'boolean',
-      desc: 'Do not use the remote config cache',
-    },
   ],
 };
 

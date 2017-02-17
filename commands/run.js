@@ -51,11 +51,6 @@ module.exports = {
       type: 'boolean',
       desc: 'Only start docker dependencies',
     },
-    {
-      name: 'nocache',
-      type: 'boolean',
-      desc: 'Do not use the remote config cache',
-    },
   ],
 };
 
