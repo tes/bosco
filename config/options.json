@@ -69,5 +69,10 @@
     "type": "boolean",
     "default": false,
     "desc": "Verbose output"
+  },
+  {
+    "name": "nocache",
+    "type": "boolean",
+    "desc": "Do not use the remote config cache"
   }
 ]

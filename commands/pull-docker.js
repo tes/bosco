@@ -21,7 +21,6 @@ module.exports = {
 
 function dockerPullService(bosco, definition, next) {
   if (!definition.service || definition.service.type !== 'docker') return next();
-
   DockerRunner.update(definition, function(err) {
     if (err) {
       var errMessage = err.reason ? err.reason : err;
@@ -32,19 +31,9 @@ function dockerPullService(bosco, definition, next) {
 }
 
 function dockerPullRemote(bosco, repos, runConfig, next) {
-  var isRemoteService = !runConfig.service || !runConfig.service.type || runConfig.service.type === 'remote';
   var isLocalRepo = _.includes(repos, runConfig.name);
-  if (!isRemoteService || isLocalRepo) return next();
-
-  RunListHelper.getServiceConfigFromGithub(bosco, runConfig.name, function(err, svcConfig) {
-    if (err) return next();
-    if (err || !svcConfig || !svcConfig.service || !svcConfig.service.type || svcConfig.service.type !== 'docker') {
-      svcConfig.service = RunListHelper.getServiceDockerConfig(runConfig, svcConfig);
-    }
-    if (!svcConfig.name) svcConfig.name = runConfig.name;
-
-    dockerPullService(bosco, svcConfig, next);
-  });
+  if (isLocalRepo) return next();
+  dockerPullService(bosco, runConfig, next);
 }
 
 function dockerPull(bosco, progressbar, bar, repoPath, repo, next) {
@@ -94,7 +83,7 @@ function cmd(bosco, args, next) {
       return cb();
     }
     bosco.log('Checking for remote docker images to pull ...');
-    RunListHelper.getRunList(bosco, repos, repoRegex, watchNothing, null, function(err, services) {
+    RunListHelper.getRunList(bosco, repos, repoRegex, watchNothing, null, false, function(err, services) {
       if (err) {
         return next(err);
       }

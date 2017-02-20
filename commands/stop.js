@@ -62,7 +62,7 @@ function cmd(bosco, args, done) {
 
   function stopService(repo, boscoService, services, cb) {
     if (boscoService.service && boscoService.service.type === 'docker') {
-      if (_.includes(services, repo)) {
+      if (_.includes(services, boscoService.service.name)) {
         return DockerRunner.stop(boscoService, cb);
       }
     } else if (boscoService.service && boscoService.service.type === 'docker-compose') {
@@ -70,7 +70,7 @@ function cmd(bosco, args, done) {
         return DockerComposeRunner.stop(boscoService, cb);
       }
     } else {
-      if (_.includes(services, repo)) {
+      if (_.includes(services, boscoService.service.name)) {
         return NodeRunner.stop({name: repo}, cb);
       }
     }
@@ -78,35 +78,14 @@ function cmd(bosco, args, done) {
   }
 
   function stopRunningServices(cb) {
-    var missingDependencies = [];
     RunListHelper.getRunList(bosco, repos, repoRegex, null, repoTag, false, function(err, services) {
       async.mapLimit(services, bosco.concurrency.network, function(boscoService, next) {
         var repo = boscoService.name;
         if (!repo.match(repoRegex)) return next();
-        if (boscoService.service && boscoService.service.type !== 'remote') {
+        if (boscoService.service) {
           return stopService(repo, boscoService, runningServices, next);
         }
-        RunListHelper.getServiceConfigFromGithub(bosco, boscoService.name, function(err, svcConfig) {
-          if (err || !svcConfig) {
-            missingDependencies.push(boscoService.name);
-            return next();
-          }
-          if (!svcConfig.service || !svcConfig.service.type || svcConfig.service.type !== 'docker') {
-            var psuedoServiceConfig = RunListHelper.getServiceDockerConfig(boscoService, svcConfig);
-            if (psuedoServiceConfig) {
-              svcConfig.service = psuedoServiceConfig;
-            } else {
-              missingDependencies.push(boscoService.name);
-              return next();
-            }
-          }
-          if (!svcConfig.name) svcConfig.name = boscoService.name;
-          stopService(repo, svcConfig, runningServices, next);
-        });
       }, function() {
-        if (missingDependencies.length > 0) {
-          bosco.warn('Unable to stop dependencies: ' + missingDependencies.join(',').cyan);
-        }
         // Special case for bosco-cdn, room for improvement to make this
         // generic for all custom bosco services.
         if (!_.includes(runningServices, 'bosco-cdn')) return cb();
