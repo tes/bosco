@@ -116,6 +116,7 @@ You can use a number of parameters to control the behaviour of Bosco.  Parameter
 |-n, --noprompt|Do not prompt for confirmation|false|
 |-f, --force|Force over ride of any files|false|
 |-s, --service|Inside single service|false|
+|--nocache|Ignore local cache for github projects|false|
 
 To see all possible commands and parameters, just type 'bosco'.
 
