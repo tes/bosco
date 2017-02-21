@@ -81,15 +81,17 @@ function cmd(bosco, args) {
       return _.find(staticAssets, {assetKey: key});
     }
 
+    var corsHeaders = {
+      'Access-Control-Allow-Origin': '*',
+      'Access-Control-Allow-Methods': 'POST, GET, PUT, DELETE, OPTIONS',
+      'Access-Control-Allow-Credentials': true,
+      'Access-Control-Max-Age': '86400', // 24 hours
+      'Access-Control-Allow-Headers': 'X-Requested-With, Access-Control-Allow-Origin, X-HTTP-Method-Override, Content-Type, Authorization, Accept',
+    };
+
     var server = http.createServer(function(request, response) {
       if (request.method === 'OPTIONS') {
-        response.writeHead(200, {
-          'Access-Control-Allow-Origin': '*',
-          'Access-Control-Allow-Methods': 'POST, GET, PUT, DELETE, OPTIONS',
-          'Access-Control-Allow-Credentials': true,
-          'Access-Control-Max-Age': '86400', // 24 hours
-          'Access-Control-Allow-Headers': 'X-Requested-With, Access-Control-Allow-Origin, X-HTTP-Method-Override, Content-Type, Authorization, Accept',
-        });
+        response.writeHead(200, corsHeaders);
         return response.end();
       }
 
@@ -115,7 +117,11 @@ function cmd(bosco, args) {
         // We should proxy to the CDN
         var baseCdn = bosco.config && bosco.config.cdn && bosco.config.cdn.url || 'https://duqxiy1o2cbw6.cloudfront.net/tes';
         var cdnUrl = baseCdn + pathname;
-        return requestLib(cdnUrl).pipe(response);
+        return requestLib.get({uri: cdnUrl, gzip: true}, function(err, cdnResponse, body) {
+          var responseHeaders = _.defaults(_.pick(cdnResponse.headers, ['content-type']), corsHeaders);
+          response.writeHead(200, responseHeaders);
+          response.end(body.toString());
+        });
       }
 
       var asset = getAsset(pathname);
