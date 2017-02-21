@@ -11,11 +11,12 @@ function getGithubRepo(bosco, repo) {
   return githubRepo;
 }
 
-function getCachedConfig(bosco, repo) {
+function getCachedConfig(bosco, repo, returnDefault) {
+  var unknownDefault = { name: repo, service: { name: repo, type: 'unknown' } };
   var githubRepo = getGithubRepo(bosco, repo);
   var configKey = 'cache:github:' + githubRepo;
   var cachedConfig = bosco.config.get(configKey);
-  return cachedConfig;
+  return cachedConfig || (returnDefault && unknownDefault);
 }
 
 function getServiceDockerConfig(bosco, runConfig, svcConfig) {
@@ -60,7 +61,7 @@ function getServiceDockerConfig(bosco, runConfig, svcConfig) {
 function getServiceConfigFromGithub(bosco, repo, svcConfig, next) {
   var client = github.client(bosco.config.get('github:authToken'), {hostname: bosco.config.get('github:apiHostname')});
   var githubRepo = getGithubRepo(bosco, repo);
-  var cachedConfig = getCachedConfig(bosco, repo);
+  var cachedConfig = getCachedConfig(bosco, repo, false);
   var configKey = 'cache:github:' + githubRepo;
   var nocache = bosco.options.nocache;
   if (cachedConfig && !nocache) {
@@ -188,7 +189,10 @@ function getRunList(bosco, repos, repoRegex, watchRegex, repoTag, displayOnly, n
       }
       memo.push(repo);
       getRunConfig(bosco, repo, watchRegex, function(err, svcConfig) {
-        if (err) { return cb2(err); }
+        if (err) {
+          bosco.error('There was a problem retrieving config for: ' + repo.cyan + ', ' + err.body.message);
+          return cb2(null, memo);
+        }
         configs[repo] = svcConfig;
         if (svcConfig && svcConfig.service && svcConfig.service.dependsOn) {
           resolveDependencies(svcConfig.service.dependsOn, memo, cb2);
@@ -206,10 +210,10 @@ function getRunList(bosco, repos, repoRegex, watchRegex, repoTag, displayOnly, n
   }
 
   function createTree(parent, repo) {
-    var repoConfig = getCachedConfig(bosco, repo);
+    var repoConfig = getCachedConfig(bosco, repo, true);
     var isService = repo.indexOf('service-') >= 0;
     var isApp = repo.indexOf('app-') >= 0;
-    var isRemote = repoConfig.service.type === 'remote';
+    var isRemote = repoConfig && repoConfig.service && repoConfig.service.type === 'remote';
     var repoName = isRemote ? repo + '*' : repo;
 
     if (isRemote && (isService || isApp)) {
@@ -223,7 +227,7 @@ function getRunList(bosco, repos, repoRegex, watchRegex, repoTag, displayOnly, n
       repoName = repoName.blue;
     }
     parent[repoName] = {};
-    return _.map(getCachedConfig(bosco, repo).service.dependsOn, _.curry(createTree)(parent[repoName]));
+    return _.map(getCachedConfig(bosco, repo, true).service.dependsOn, _.curry(createTree)(parent[repoName]));
   }
 
   resolveDependencies(repos, [], function(err, repoList) {
