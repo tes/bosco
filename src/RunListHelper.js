@@ -3,11 +3,20 @@ var _ = require('lodash');
 var github = require('octonode');
 var async = require('async');
 var treeify = require('treeify');
+var teamWarning = false;
 
 function getGithubRepo(bosco, repo) {
   var team = bosco.getTeam();
   var organisation = team === 'no-team' ? bosco.config.get('github:org') : team.split('/')[0];
-  var githubRepo = organisation + '/' + repo;
+  var githubRepo;
+  if (!organisation) {
+    if (!teamWarning) {
+      bosco.warn('Ensure you are in a team, or have a github:org set, e.g. ' + 'bosco config set github:org tes'.yellow);
+      teamWarning = true;
+    }
+  } else {
+    githubRepo = organisation + '/' + repo;
+  }
   return githubRepo;
 }
 
@@ -57,13 +66,15 @@ function getServiceDockerConfig(bosco, runConfig, svcConfig) {
   return dockerConfig;
 }
 
-
 function getServiceConfigFromGithub(bosco, repo, svcConfig, next) {
   var client = github.client(bosco.config.get('github:authToken'), {hostname: bosco.config.get('github:apiHostname')});
   var githubRepo = getGithubRepo(bosco, repo);
   var cachedConfig = getCachedConfig(bosco, repo, false);
   var configKey = 'cache:github:' + githubRepo;
   var nocache = bosco.options.nocache;
+  if (!githubRepo) {
+    return next();
+  }
   if (cachedConfig && !nocache) {
     next(null, cachedConfig);
   } else {
@@ -108,6 +119,7 @@ function getRunConfig(bosco, repo, watchRegex, next) {
   };
   var pkg;
   var svc;
+  var repoExistsLocally = bosco.exists(repoPath);
 
   if (bosco.exists(packageJson)) {
     pkg = require(packageJson);
@@ -135,7 +147,7 @@ function getRunConfig(bosco, repo, watchRegex, next) {
 
   svcConfig.service.type = svcConfig.service.type || 'remote';
 
-  if (svcConfig.service.type === 'remote') {
+  if (!repoExistsLocally) {
     getServiceConfigFromGithub(bosco, repo, svcConfig, next);
   } else {
     next(null, svcConfig);
@@ -189,8 +201,8 @@ function getRunList(bosco, repos, repoRegex, watchRegex, repoTag, displayOnly, n
       }
       memo.push(repo);
       getRunConfig(bosco, repo, watchRegex, function(err, svcConfig) {
-        if (err) {
-          bosco.error('There was a problem retrieving config for: ' + repo.cyan + ', ' + err.body.message);
+        if (err || !svcConfig) {
+          bosco.error('Unable to retrieve config from github for: ' + repo.cyan);
           return cb2(null, memo);
         }
         configs[repo] = svcConfig;
