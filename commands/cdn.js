@@ -107,11 +107,10 @@ function cmd(bosco, args) {
         return response.end(staticRepos.formattedRepos);
       }
 
-      var isLibraryAsset = pathname !== '/' && pathname.indexOf('/vendor/library/') >= 0;
-      var isLocalAsset = pathname !== '/' && pathname.indexOf('/local/') >= 0;
-      var isNotRoot = pathname !== '/';
-      var isntLibraryOrLocal = !(isLibraryAsset || isLocalAsset);
-      var serveRemoteAsset = isNotRoot && (isLibraryAsset && !bosco.options.localVendor || isntLibraryOrLocal);
+      var isLibraryAsset = pathname.indexOf('/vendor/library/') >= 0;
+      // Path matches something that is service-name/build e.g. /app-home/720/css/logged-in.css
+      var isRemoteAsset = pathname.match(/^\/(.*)\/(\d+)\//);
+      var serveRemoteAsset = isRemoteAsset || (isLibraryAsset && !bosco.options.localVendor);
       if (serveRemoteAsset) {
         // We should proxy to the CDN
         var baseCdn = bosco.config && bosco.config.cdn && bosco.config.cdn.url || 'https://duqxiy1o2cbw6.cloudfront.net/tes';
