@@ -31,8 +31,7 @@ function getCachedConfig(bosco, repo, returnDefault) {
 function getServiceDockerConfig(bosco, runConfig, svcConfig) {
   var dockerConfig;
   if (runConfig && svcConfig) {
-    // apologies this is TES specific in short term while we figure out if it works and make it configurable
-    var defaultConfig = {
+    var defaultConfig = bosco.config.get('docker:defaults') || {
       type: 'docker',
       name: runConfig.name,
       registry: 'docker-registry.tescloud.com',
@@ -45,10 +44,12 @@ function getServiceDockerConfig(bosco, runConfig, svcConfig) {
         HostConfig: {
           ExposedPorts: {},
           PortBindings: {},
-          ExtraHosts: ['local.tescloud.com:' + bosco.options.ip ],
+          ExtraHosts: [],
         },
       },
     };
+    var defaultLocalHost = bosco.config.get('docker:localhost') || 'local.tescloud.com';
+    defaultConfig.docker.HostConfig.ExtraHosts.push(defaultLocalHost + ':' + bosco.options.ip);
 
     if (svcConfig.server && svcConfig.server.port) {
       var exposedPort = svcConfig.server.port + '/tcp';
