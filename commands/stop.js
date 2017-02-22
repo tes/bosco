@@ -70,7 +70,7 @@ function cmd(bosco, args, done) {
         return DockerComposeRunner.stop(boscoService, cb);
       }
     } else {
-      if (_.includes(services, boscoService.service.name)) {
+      if (_.includes(services, repo)) {
         return NodeRunner.stop({name: repo}, cb);
       }
     }

@@ -72,8 +72,14 @@ function getServiceConfigFromGithub(bosco, repo, svcConfig, next) {
   var cachedConfig = getCachedConfig(bosco, repo, false);
   var configKey = 'cache:github:' + githubRepo;
   var nocache = bosco.options.nocache;
+  var isInfraRepo = repo.indexOf('infra-') >= 0;
+  var skipRemoteRepo = bosco.options.teamOnly && !isInfraRepo;
   if (!githubRepo) {
-    return next();
+    return next(null);
+  }
+  if (skipRemoteRepo) {
+    svcConfig.service.type = 'skip';
+    return next(null, svcConfig);
   }
   if (cachedConfig && !nocache) {
     next(null, cachedConfig);
@@ -120,8 +126,10 @@ function getRunConfig(bosco, repo, watchRegex, next) {
   var pkg;
   var svc;
   var repoExistsLocally = bosco.exists(repoPath);
+  var hasPackageJson = bosco.exists(packageJson);
+  var hasBoscoService = bosco.exists(boscoService);
 
-  if (bosco.exists(packageJson)) {
+  if (hasPackageJson) {
     pkg = require(packageJson);
     var packageConfig = {};
     if (pkg.scripts && pkg.scripts.start) {
@@ -134,7 +142,7 @@ function getRunConfig(bosco, repo, watchRegex, next) {
     svcConfig.service = packageConfig;
   }
 
-  if (bosco.exists(boscoService)) {
+  if (hasBoscoService) {
     svc = require(boscoService);
     svcConfig = _.extend(svcConfig, {
       tags: svc.tags,
@@ -145,12 +153,14 @@ function getRunConfig(bosco, repo, watchRegex, next) {
     }
   }
 
-  svcConfig.service.type = svcConfig.service.type || 'remote';
+  if (repoExistsLocally && !hasBoscoService) {
+    svcConfig.service.type = 'skip';
+  }
 
-  if (!repoExistsLocally) {
+  if (!repoExistsLocally && next) {
     getServiceConfigFromGithub(bosco, repo, svcConfig, next);
   } else {
-    next(null, svcConfig);
+    return next && next(null, svcConfig) || svcConfig;
   }
 }
 
@@ -179,7 +189,7 @@ function getRunList(bosco, repos, repoRegex, watchRegex, repoTag, displayOnly, n
   }
 
   function getConfig(repo) {
-    return configs[repo] || { name: repo, service: { type: 'unknown' } };
+    return configs[repo] || { name: repo, service: { name: repo, type: 'unknown' } };
   }
 
   function isType(type) {
@@ -201,8 +211,11 @@ function getRunList(bosco, repos, repoRegex, watchRegex, repoTag, displayOnly, n
       }
       memo.push(repo);
       getRunConfig(bosco, repo, watchRegex, function(err, svcConfig) {
-        if (err || !svcConfig) {
+        if (err) {
           bosco.error('Unable to retrieve config from github for: ' + repo.cyan);
+          return cb2(null, memo);
+        }
+        if (!svcConfig) {
           return cb2(null, memo);
         }
         configs[repo] = svcConfig;
@@ -222,20 +235,27 @@ function getRunList(bosco, repos, repoRegex, watchRegex, repoTag, displayOnly, n
   }
 
   function createTree(parent, repo) {
-    var repoConfig = getCachedConfig(bosco, repo, true);
+    var repoConfig = getRunConfig(bosco, repo);
+    if (!repoConfig.service.type) {
+      repoConfig = getCachedConfig(bosco, repo, true);
+    }
+    var isInfra = repo.indexOf('infra-') >= 0;
     var isService = repo.indexOf('service-') >= 0;
     var isApp = repo.indexOf('app-') >= 0;
-    var isRemote = repoConfig && repoConfig.service && repoConfig.service.type === 'remote';
-    var repoName = isRemote ? repo + '*' : repo;
-
-    if (isRemote && (isService || isApp)) {
-      // Not typical to have remote services or apps
-      repoName = repoName.red;
-    } else if (isRemote) {
+    var isDocker = repoConfig.service.type === 'docker';
+    var isNonTeamServiceOrApp = isDocker && (isService || isApp);
+    var skipRemoteRepo = bosco.options.teamOnly && isNonTeamServiceOrApp;
+    if (skipRemoteRepo) {
+      return [];
+    }
+    var repoName = isNonTeamServiceOrApp ? repo + '*' : repo;
+    if (isNonTeamServiceOrApp) {
       repoName = repoName.grey;
-    } else if (isApp && !isRemote) {
+    } else if (isApp && !isNonTeamServiceOrApp) {
       repoName = repoName.green;
-    } else if (isService && !isRemote) {
+    } else if (isService && !isNonTeamServiceOrApp) {
+      repoName = repoName.cyan;
+    } else if (isInfra) {
       repoName = repoName.blue;
     }
     parent[repoName] = {};

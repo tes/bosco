@@ -51,6 +51,11 @@ module.exports = {
       type: 'boolean',
       desc: 'Only start docker dependencies',
     },
+    {
+      name: 'team-only',
+      type: 'boolean',
+      desc: 'Only start app or service dependencies in the current team',
+    },
   ],
 };
 
@@ -94,8 +99,7 @@ function cmd(bosco, args, allDone) {
     function runService(runConfig, cb) {
       var type = runConfig.service && runConfig.service.type;
 
-      if (!type) {
-        bosco.warn('Service ' + runConfig.name.orange + ' could not be run because I was unable to find any run configuration.');
+      if (!type || type === 'unknown' || type === 'skip') {
         return cb();
       }
 
@@ -174,9 +178,9 @@ function cmd(bosco, args, allDone) {
       if (err) return next(err);
       var dockerServices = _.filter(runList, function(i) { return i.service.type === 'docker' && _.startsWith(i.name, 'infra-'); });
       var dockerComposeServices = _.filter(runList, function(i) { return i.service.type === 'docker-compose'; });
-      var nodeServices = _.filter(runList, function(i) { return _.startsWith(i.name, 'service-'); });
-      var nodeApps = _.filter(runList, function(i) { return _.startsWith(i.name, 'app-'); });
-      var unknownServices = _.filter(runList, function(i) { return !_.includes(['docker', 'docker-compose', 'node', 'remote'], i.service.type); });
+      var nodeServices = _.filter(runList, function(i) { return _.startsWith(i.name, 'service-') && i.service.type !== 'skip'; });
+      var nodeApps = _.filter(runList, function(i) { return _.startsWith(i.name, 'app-') && i.service.type !== 'skip'; });
+      var unknownServices = _.filter(runList, function(i) { return !_.includes(['docker', 'docker-compose', 'node', 'skip'], i.service.type); });
       if (unknownServices.length > 0) {
         bosco.error('Unable to run services of un-recognised type: ' + _.map(unknownServices, 'name').join(', ').cyan + '. Check their bosco-service.json configuration.');
       }
