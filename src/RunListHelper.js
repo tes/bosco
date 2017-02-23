@@ -263,9 +263,10 @@ function getRunList(bosco, repos, repoRegex, watchRegex, repoTag, displayOnly, n
     return _.map(getCachedConfig(bosco, repo, true).service.dependsOn, _.curry(createTree)(parent[repoName]));
   }
 
-  resolveDependencies(repos, [], function(err, repoList) {
+  var filteredRepos = _.filter(repos, matchingRepo);
+
+  resolveDependencies(filteredRepos, [], function(err, repoList) {
     var runList = _.chain(repoList)
-      .filter(matchingRepo)
       .filter(boscoOptionFilter('deps-only', notCurrentService))
       .filter(boscoOptionFilter('docker-only', isType('remote')))
       .map(getConfig)
@@ -274,7 +275,6 @@ function getRunList(bosco, repos, repoRegex, watchRegex, repoTag, displayOnly, n
 
     if (displayOnly) {
       _.chain(repoList)
-        .filter(matchingRepo)
         .map(_.curry(createTree)(tree))
         .value();
       /* eslint-disable no-console */
