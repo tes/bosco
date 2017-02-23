@@ -24,7 +24,7 @@ function install(bosco, progressbar, bar, repoPath, repo, next) {
   var yarnrcFile = [repoPath, '.yarnrc'].join('/');
   var yarnLockFile = [repoPath, 'yarn.lock'].join('/');
   if (bosco.exists(yarnrcFile) || bosco.exists(yarnLockFile)) {
-    var yarnComamnd = 'yarn';
+    var yarnComamnd = 'yarn --pure-lockfile';
     exec(yarnComamnd, {
       cwd: repoPath,
     }, function(err, stdout, stderr) {
