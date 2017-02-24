@@ -279,7 +279,7 @@ function getRunList(bosco, repos, repoRegex, watchRegex, repoTag, displayOnly, n
         .value();
       /* eslint-disable no-console */
       console.log(treeify.asTree(tree));
-      /* eslint-disable no-enable */
+      /* eslint-enable no-console */
       next();
     } else {
       next(null, runList);

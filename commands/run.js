@@ -184,10 +184,12 @@ function cmd(bosco, args, allDone) {
       if (unknownServices.length > 0) {
         bosco.error('Unable to run services of un-recognised type: ' + _.map(unknownServices, 'name').join(', ').cyan + '. Check their bosco-service.json configuration.');
         bosco.error('This may be due to either out of date cached content, or missing github org configuration, try the following:');
+        /* eslint-disable no-console */
         console.log('');
         console.log('bosco config set github:org tes');
         console.log('bosco run --nocache');
         console.log('');
+        /* eslint-enable no-console */
       }
       async.mapSeries([
           {services: dockerServices, type: 'docker', limit: bosco.concurrency.cpu},
