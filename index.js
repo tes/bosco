@@ -219,6 +219,7 @@ Bosco.prototype._cmd = function() {
   var self = this;
   var args = self.options.args;
   var command = args.shift();
+  self.command = command;
   var globalCommandModule = [self.getGlobalCommandFolder(), command, '.js'].join('');
   var localCommandModule = [self.getLocalCommandFolder(), command, '.js'].join('');
   var commandModule;

@@ -1,6 +1,7 @@
 var _ = require('lodash');
 var async = require('async');
 var fs = require('fs');
+var path = require('path');
 var http = require('http');
 var url = require('url');
 var requestLib = require('request');
@@ -114,14 +115,40 @@ function cmd(bosco, args) {
       var isRemoteAsset = pathname.match(/^\/(.*)\/(\d+)\//);
       var serveRemoteAsset = isRemoteAsset || (isLibraryAsset && !bosco.options.localVendor);
       if (serveRemoteAsset) {
-        // We should proxy to the CDN
         var baseCdn = bosco.config && bosco.config.cdn && bosco.config.cdn.url || 'https://duqxiy1o2cbw6.cloudfront.net/tes';
         var cdnUrl = baseCdn + pathname;
-        return requestLib.get({uri: cdnUrl, gzip: true}, function(err, cdnResponse, body) {
-          var responseHeaders = _.defaults(_.pick(cdnResponse.headers, ['content-type']), corsHeaders);
-          response.writeHead(200, responseHeaders);
-          response.end(body.toString());
-        });
+        var localCacheFolder = path.join(bosco.findConfigFolder(), 'cache');
+        var localCacheFile = path.join(localCacheFolder, pathname.replace(/\//g, '_') + '.json');
+
+        // Ensure local cache folder exists
+        if (!fs.existsSync(localCacheFolder)) {
+          fs.mkdirSync(localCacheFolder);
+        }
+
+        var useLocalCacheFile = !bosco.options.nocache && fs.existsSync(localCacheFile);
+
+        if (useLocalCacheFile) {
+          var cacheContent = require(localCacheFile);
+          response.writeHead(200, cacheContent.headers);
+          response.end(cacheContent.body);
+        } else {
+          requestLib.get({uri: cdnUrl, gzip: true, timeout: 1000}, function(err, cdnResponse, body) {
+            if (err) {
+              bosco.error('Error proxying asset for: ' + cdnUrl + ', Error: ' + err.message);
+              response.writeHead(500);
+              return response.end();
+            }
+            var responseHeaders = _.defaults(_.pick(cdnResponse.headers, ['content-type']), corsHeaders);
+            response.writeHead(200, responseHeaders);
+            response.end(body.toString());
+            var cacheContentToSave = {
+              headers: responseHeaders,
+              body: body.toString(),
+            };
+            fs.writeSync(fs.openSync(localCacheFile, 'w'), JSON.stringify(cacheContentToSave, null, 2));
+          });
+        }
+        return 'served-remote';
       }
 
       var asset = getAsset(pathname);

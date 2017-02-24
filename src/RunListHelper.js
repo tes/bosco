@@ -74,7 +74,7 @@ function getServiceConfigFromGithub(bosco, repo, svcConfig, next) {
   var configKey = 'cache:github:' + githubRepo;
   var nocache = bosco.options.nocache;
   var isInfraRepo = repo.indexOf('infra-') >= 0;
-  var skipRemoteRepo = bosco.options.teamOnly && !isInfraRepo;
+  var skipRemoteRepo = (bosco.options.teamOnly && !isInfraRepo) || bosco.command === 'cdn';
   if (!githubRepo) {
     return next(null);
   }
