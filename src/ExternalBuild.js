@@ -13,7 +13,7 @@ module.exports = function(bosco) {
     var verbose = bosco.options.verbose;
     var watchingService = options.watchBuilds && !!service.name.match(options.watchRegex);
     var command = buildUtils.createCommand(service.build, interpreter, watchingService);
-    var cwd = {cwd: service.repoPath};
+    var cwd = {cwd: service.repoPath, shell: process.env.SHELL};
     var firstBuildCalledBack = false;
 
     function buildFinishedExec(err, stdout, stderr) {

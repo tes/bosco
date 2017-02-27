@@ -53,13 +53,16 @@ Runner.prototype.getInterpreter = function(bosco, options, next) {
   var found = false;
   var hasNvmRc = bosco.exists(path.join(options.cwd, '.nvmrc'));
   if (hasNvmRc) {
-    var e = exec(bosco.options.nvmWhich, {cwd: options.cwd});
+    var e = exec(bosco.options.nvmWhich, {cwd: options.cwd, shell: process.env.SHELL });
     e.stdout.setEncoding('utf8');
     e.stderr.setEncoding('utf8');
 
     e.stdout.on('data', function(data) {
       if (data.indexOf('Found') === 0) {
         found = true;
+        if (data.trim().split('\n').length > 1) {
+          interpreter = data.trim().split('\n').pop();
+        }
       } else {
         if (found) {
           interpreter = data.replace('\n', '');

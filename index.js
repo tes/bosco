@@ -40,7 +40,7 @@ Bosco.prototype.init = function(options) {
   self.options.defaultsConfigFile = [self.options.configPath, 'defaults.json'].join('/');
 
   // NVM presets
-  self.options.nvmSh = '. ${NVM_DIR:-$HOME/.nvm}/nvm.sh && ';
+  self.options.nvmSh = process.env.SHELL.match('fish') ? 'fenv source $NVM_DIR/nvm.sh ;' : '. ${NVM_DIR:-$HOME/.nvm}/nvm.sh && ';
   self.options.nvmUse = self.options.nvmSh + 'nvm use;';
   self.options.nvmUseDefault = self.options.nvmSh + 'nvm use default;';
   self.options.nvmWhich = self.options.nvmSh + 'nvm which';
