@@ -3,16 +3,17 @@ var _ = require('lodash');
 var github = require('octonode');
 var async = require('async');
 var treeify = require('treeify');
-var teamWarning = false;
+var warnOrganisationMissing = true;
 
 function getGithubRepo(bosco, repo) {
   var team = bosco.getTeam();
-  var organisation = team === 'no-team' ? bosco.config.get('github:org') : team.split('/')[0];
+  var organisation = !team ? bosco.config.get('github:org') : team.split('/')[0];
   var githubRepo;
   if (!organisation) {
-    if (!teamWarning) {
-      bosco.warn('Ensure you are in a team, or have a github:org set, e.g. ' + 'bosco config set github:org tes'.yellow);
-      teamWarning = true;
+    if (warnOrganisationMissing) {
+      bosco.warn('Ensure you configured your github organisation: ' + 'bosco config set github:org <organisation>'.yellow);
+      bosco.warn('Ensure you configured your team: ' + 'bosco team setup'.yellow);
+      warnOrganisationMissing = false;
     }
   } else {
     githubRepo = organisation + '/' + repo;

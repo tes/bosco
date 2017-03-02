@@ -161,7 +161,7 @@ function fetch(bosco, team, repos, repoRegex, args, next) {
 function cmd(bosco, args, next) {
   var repoPattern = bosco.options.repo;
   var repoRegex = new RegExp(repoPattern);
-  var team = bosco.getTeam();
+  var team = bosco.getTeam() || 'no-team';
   var teamConfig = bosco.config.get('teams:' + team);
 
   var client = github.client(bosco.config.get('github:authToken'), {hostname: bosco.config.get('github:apiHostname') });

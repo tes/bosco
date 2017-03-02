@@ -132,7 +132,13 @@ function cmd(bosco, args, next) {
   if (action === 'ls') { return showTeams(bosco); }
   if (action === 'ln') { return linkTeam(bosco, args.shift(), args.shift(), next); }
   if (action === 'setup') { return setupInitialLink(bosco, next); }
-  bosco.log('You are in team: ' + (bosco.getTeam() ? bosco.getTeam().cyan : 'Not in a workspace!'.red));
+
+  var teamName = bosco.getTeam();
+  if (!teamName) {
+    bosco.log('Not in a team!'.red);
+  } else {
+    bosco.log('You are in team: ' + teamName.cyan);
+  }
 }
 
 module.exports.cmd = cmd;
