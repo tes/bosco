@@ -183,13 +183,10 @@ function cmd(bosco, args, allDone) {
       var unknownServices = _.filter(runList, function(i) { return !_.includes(['docker', 'docker-compose', 'node', 'skip'], i.service.type); });
       if (unknownServices.length > 0) {
         bosco.error('Unable to run services of un-recognised type: ' + _.map(unknownServices, 'name').join(', ').cyan + '. Check their bosco-service.json configuration.');
-        bosco.error('This may be due to either out of date cached content, or missing github configuration for your organisation, try the following:');
-        /* eslint-disable no-console */
-        console.log('');
-        console.log('bosco config set github:org <organisation>');
-        console.log('bosco run --nocache');
-        console.log('');
-        /* eslint-enable no-console */
+        bosco.warn('This may be due to either:');
+        bosco.warn('- Team not being configured: ' + 'bosco team setup'.yellow);
+        bosco.warn('- Out of date cached content: ' + 'bosco run --nocache'.yellow);
+        bosco.warn('- Missing github configuration: ' + 'bosco config set github:org <organisation>'.yellow);
       }
       async.mapSeries([
           {services: dockerServices, type: 'docker', limit: bosco.concurrency.cpu},

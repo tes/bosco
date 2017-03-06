@@ -112,8 +112,12 @@ Bosco.prototype.run = function(options) {
 
     self.checkInService();
 
-    var teamDesc = self.getTeam() || 'Outside workspace!';
-    self.log('Initialised using [' + self.options.configFile.magenta + '] in environment [' + self.options.environment.green + '] with team [' + teamDesc.cyan + ']');
+    var teamDesc = self.getTeam();
+    self.log(
+      'Initialised using [' + self.options.configFile.magenta + '] ' +
+      'in environment [' + self.options.environment.green + '] ' +
+      (teamDesc ? 'with team [' + teamDesc.cyan + ']' : 'without a team!'.red)
+    );
     self._cmd();
   });
 };
@@ -375,19 +379,19 @@ Bosco.prototype.getWorkspacePath = function() {
 Bosco.prototype.getTeam = function() {
   var self = this;
   var teamConfig = self.config.get('teams');
-  var currentTeam;
+  var currentTeam = null;
   _.keys(teamConfig).forEach(function(team) {
     if (self.options.workspace.indexOf(teamConfig[team].path) >= 0) {
       currentTeam = team;
     }
   });
-  return currentTeam || 'no-team';
+  return currentTeam;
 };
 
 Bosco.prototype.getRepos = function() {
   var self = this;
   var team = self.getTeam();
-  if (team === 'no-team') {
+  if (!team) {
     return [path.relative('..', '.')];
   }
   return self.config.get('teams:' + team).repos;
