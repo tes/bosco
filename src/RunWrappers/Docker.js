@@ -81,6 +81,12 @@ Runner.prototype.start = function(options, next) {
   var docker = self.docker;
   var dockerFqn = self.getFqn(options);
 
+  var defaultLocalHost = self.bosco.config.get('docker:localhost') || 'local.tescloud.com';
+  if (options.service.docker.HostConfig) {
+    options.service.docker.HostConfig.ExtraHosts = options.service.docker.HostConfig.ExtraHosts || [];
+    options.service.docker.HostConfig.ExtraHosts.push(defaultLocalHost + ':' + self.bosco.options.ip);
+  }
+
   DockerUtils.prepareImage(self.bosco, docker, dockerFqn, options, function(err) {
     if (err) return next(err);
 
