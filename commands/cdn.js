@@ -132,18 +132,24 @@ function cmd(bosco, args) {
           response.writeHead(200, cacheContent.headers);
           response.end(cacheContent.body);
         } else {
-          requestLib.get({uri: cdnUrl, gzip: true, timeout: 1000}, function(err, cdnResponse, body) {
+          requestLib.get({uri: cdnUrl, gzip: true, timeout: 5000}, function(err, cdnResponse, body) {
             if (err) {
               bosco.error('Error proxying asset for: ' + cdnUrl + ', Error: ' + err.message);
               response.writeHead(500);
               return response.end();
             }
+            var responseContent = body.toString();
+
+            // We want to convert all of the in content urls to local bosco ones to take advantage of offline caching
+            // For the js / css files contained within the html fragments for remote services
+            responseContent = responseContent.replace(new RegExp(baseCdn, 'g'), 'http://localhost:7334');
+
             var responseHeaders = _.defaults(_.pick(cdnResponse.headers, ['content-type']), corsHeaders);
             response.writeHead(200, responseHeaders);
-            response.end(body.toString());
+            response.end(responseContent);
             var cacheContentToSave = {
               headers: responseHeaders,
-              body: body.toString(),
+              body: responseContent,
             };
             fs.writeSync(fs.openSync(localCacheFile, 'w'), JSON.stringify(cacheContentToSave, null, 2));
           });
