@@ -34,7 +34,6 @@ Bosco.prototype.init = function(options) {
   self.options = _.defaults(_.clone(options), self._defaults);
 
   // Load base bosco config from home folder unless over ridden with path
-  self.options.configPathSet = options.configPath ? true : false;
   self.options.configPath = options.configPath ? path.resolve(options.configPath) : self.findConfigFolder();
   self.options.configFile = options.configFile ? path.resolve(options.configFile) : [self.options.configPath, 'bosco.json'].join('/');
   self.options.defaultsConfigFile = [self.options.configPath, 'defaults.json'].join('/');
