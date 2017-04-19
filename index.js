@@ -311,6 +311,10 @@ Bosco.prototype._checkVersion = function() {
       var version = jsonBody['dist-tags'].latest;
       if (semver.lt(self.options.version, version)) {
         self.error('There is a newer version (Local: ' + self.options.version.yellow + ' < Remote: ' + version.green + ') of Bosco available, you should upgrade!');
+        if (self.config.get('ensureLatestVersion')) {
+          self.error("Bosco is not up to date - exiting. Please upgrade Bosco or disable the 'ensureLatestVersion' option to continue.");
+          process.exit(1);
+        }
         self.console.log('\r');
       }
     }
