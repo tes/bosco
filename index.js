@@ -34,7 +34,6 @@ Bosco.prototype.init = function(options) {
   self.options = _.defaults(_.clone(options), self._defaults);
 
   // Load base bosco config from home folder unless over ridden with path
-  self.options.configPathSet = options.configPath ? true : false;
   self.options.configPath = options.configPath ? path.resolve(options.configPath) : self.findConfigFolder();
   self.options.configFile = options.configFile ? path.resolve(options.configFile) : [self.options.configPath, 'bosco.json'].join('/');
   self.options.defaultsConfigFile = [self.options.configPath, 'defaults.json'].join('/');
@@ -312,6 +311,10 @@ Bosco.prototype._checkVersion = function() {
       var version = jsonBody['dist-tags'].latest;
       if (semver.lt(self.options.version, version)) {
         self.error('There is a newer version (Local: ' + self.options.version.yellow + ' < Remote: ' + version.green + ') of Bosco available, you should upgrade!');
+        if (self.config.get('ensureLatestVersion')) {
+          self.error("Bosco is not up to date - exiting. Please upgrade Bosco or disable the 'ensureLatestVersion' option to continue.");
+          process.exit(1);
+        }
         self.console.log('\r');
       }
     }
