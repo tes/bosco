@@ -213,6 +213,16 @@ function cmd(bosco, args) {
 
   getRunList(function(err, repoList) {
     var repoNames = _.map(repoList, 'name');
+    var remoteAppServiceRepos = _.map(_.filter(repoList, function(repo) {
+      var isInfra = repo.name.indexOf('infra-') >= 0;
+      var isRemote = repo.service.type === 'remote';
+      return isRemote && !isInfra;
+    }), 'name');
+
+    if (remoteAppServiceRepos.length > 0) {
+      bosco.error('Unable to locate dependencies: ' + remoteAppServiceRepos.join(',').cyan);
+      bosco.error('Typically this means that you need to add these dependencies to your github team.');
+    }
     var options = {
       repos: repoNames,
       buildNumber: 'local',
