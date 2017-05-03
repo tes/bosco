@@ -87,7 +87,7 @@ function cmd(bosco, args, next) {
       total: total,
     }) : null;
 
-    async.mapLimit(repos, bosco.concurrency.network, function repoStash(repo, repoCb) {
+    async.mapLimit(repos, 1, function repoStash(repo, repoCb) {
       if (!repo) return repoCb();
       if (!repo.match(repoRegex)) return repoCb();
       var repoPath = bosco.getRepoPath(repo);
