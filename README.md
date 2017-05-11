@@ -144,9 +144,70 @@ If any repository already exists locally it will skip it.  Typically you only us
 
 ## Service Configuration
 
+You can use either a specific configuration file - `bosco-service.json` - or add bosco specific configuration to your `package.json` file, depending on how you prefer to manage per service config.  Anything in the `package.json` will take precedence.
+
+### package.json
+
+You can add the following sections (in addition to others that are typically there):
+
+ - `scripts`: bosco expects there to be a `build` and `build:watch` command if you want bosco to run a build and or watch a build for you.
+ - `service`: this is where you can add configuration related to the service dependencies, or any docker configuration if this service typically starts as a docker container.
+ - `cdn`: this is where you add the bosco cdn configuration to allow it to manage the serve / push of static assets.
+ - `tags`: you can add tags that allow you to control groups of services to run / stop.
+
+```
+{
+  "main": "server.js",
+  "scripts": {
+    "build": "echo 'This is the pseudo output of a build command.'",
+    "build:watch": "echo \"COMPLETA\"; sleep 1"
+  },
+  "tags": [ "testy" , "besty" ],
+  "service": {
+    "dependsOn": [
+      "project1"
+    ]
+  },
+  "cdn": {
+    "ready": "COMPLETA",
+    "timeout": 5000,
+    "libraries": [
+        {
+          "basePath": "src/client/vendor",
+          "glob": "**/**"
+        }
+    ],
+    "assets": {
+      "basePath": "/dist",
+      "alreadyMinified": true,
+      "sourceMapExtension": ".map",
+      "js": {
+        "compiled": [
+          "js/compiled.js",
+          "js/compiled.js.map"
+        ]
+      },
+      "css": {
+        "compiled": [
+          "css/compiled.css"
+        ]
+      }
+    },
+    "files": {
+      "files-top": {
+        "basePath": "/dist",
+        "swf": [
+          "swf/flash.swf"
+        ]
+      }
+    }
+  }
+}
+```
+
 ### bosco-service.json
 
-If services want to take part in the static asset pipeline that Bosco provides, as well as allow bosco to start and stop them, then they need a bosco-service.json config file.
+Alternatively to adding service information to package.json, if services want to take part in the static asset pipeline that Bosco provides, as well as allow bosco to start and stop them, then they need a bosco-service.json config file.
 
 e.g.
 

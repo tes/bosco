@@ -84,5 +84,6 @@ module.exports = function(bosco) {
     wc.stdout.on('data', function(data) { onChildOutput('stdout', data); });
     wc.stderr.on('data', function(data) { onChildOutput('stderr', data); });
     wc.on('exit', onChildExit);
+    wc.on('error', onChildExit);
   };
 };

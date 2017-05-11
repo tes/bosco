@@ -79,7 +79,9 @@ module.exports = function(bosco) {
         next(err);
       }
 
-      if (options.watchCallback) { options.watchCallback(err, service, output); }
+      if (options.watchCallback) {
+        options.watchCallback(err, service, output);
+      }
     }
 
     if (!watchingService) {

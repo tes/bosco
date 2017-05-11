@@ -22,18 +22,45 @@ module.exports = function(bosco) {
     boscoRepo.name = repo;
     boscoRepo.path = repoPath;
     boscoRepo.repoPath = repoPath;
+    boscoRepo.service = {name: repo};
 
     if (bosco.exists(boscoRepoConfig)) {
       boscoConfig = JSON.parse(fs.readFileSync(boscoRepoConfig)) || {};
       boscoRepo = _.merge(boscoRepo, boscoConfig);
       boscoRepo.serviceName = boscoRepo.service && boscoRepo.service.name ? boscoRepo.service.name : repo;
-      if (boscoRepo.assets && boscoRepo.assets.basePath) {
-        boscoRepo.basePath = boscoRepo.assets.basePath;
-      }
     }
 
     if (bosco.exists(repoPackageFile)) {
-      boscoRepo.info = JSON.parse(fs.readFileSync(repoPackageFile) || {});
+      var packageJson = JSON.parse(fs.readFileSync(repoPackageFile) || {});
+      if (packageJson.service) {
+        boscoRepo.service = _.merge(boscoRepo.service, packageJson.service);
+      }
+      if (packageJson.cdn) {
+        if (packageJson.cdn.libraries) {
+          boscoRepo.libraries = packageJson.cdn.libraries;
+        }
+        if (packageJson.cdn.assets) {
+          boscoRepo.assets = packageJson.cdn.assets;
+        }
+        if (packageJson.cdn.files) {
+          boscoRepo.files = packageJson.cdn.files;
+        }
+      }
+      if (packageJson.scripts && packageJson.scripts.build) {
+        boscoRepo.build = boscoRepo.build || {};
+        boscoRepo.build.command = 'npm run build -s';
+      }
+      if (packageJson.scripts && packageJson.scripts['build:watch']) {
+        boscoRepo.build = boscoRepo.build || {};
+        boscoRepo.build.watch = boscoRepo.build.watch || {};
+        boscoRepo.build.watch.command = 'npm run build:watch -s';
+        boscoRepo.build.watch.ready = packageJson.cdn && packageJson.cdn.ready || 'waiting';
+        boscoRepo.build.watch.timeout = packageJson.cdn && packageJson.cdn.timeout || 10000;
+      }
+    }
+
+    if (boscoRepo.assets && boscoRepo.assets.basePath) {
+      boscoRepo.basePath = boscoRepo.assets.basePath;
     }
 
     next(null, boscoRepo);

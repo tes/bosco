@@ -517,8 +517,9 @@ Bosco.prototype.getRepoName = function() {
 
 Bosco.prototype.checkInService = function() {
   var self = this;
-  var cwd = path.resolve('bosco-service.json');
-  if (self.exists(cwd) && self.options.service) {
+  var bs = path.resolve('bosco-service.json');
+  var pkg = path.resolve('package.json');
+  if ((self.exists(bs) || self.exists(pkg)) && self.options.service) {
     self.options.inService = true;
     self.options.inServiceRepo = self.getRepoName();
     // Replace getRepos

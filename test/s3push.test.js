@@ -10,7 +10,7 @@ var s3push = require('../commands/s3push');
 var StaticUtils = require('../src/StaticUtils');
 
 describe('s3push', function() {
-  this.timeout(2000);
+  this.timeout(5000);
   this.slow(500);
 
   it('should fail if the build fails', function(done) {

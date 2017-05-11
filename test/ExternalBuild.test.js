@@ -180,7 +180,7 @@ describe('ExternalBuild', function() {
       name: 'service',
       repoPath: localBosco.getRepoPath(''),
       build: {
-        command: 'echo hello; sleep 5',
+        command: 'echo hello; sleep 1',
         watch: {
           timeout: 100
         }
@@ -190,11 +190,15 @@ describe('ExternalBuild', function() {
       watchBuilds: true,
       watchRegex: /./,
       watchCallback: function(err, service, output) {
-        expect(output.state).to.be('timeout');
-        expect(localBosco.process.stderr._data).to.be.an('array');
-        expect(localBosco.process.stderr._data.length).to.be.greaterThan(0);
-        expect(localBosco.process.stderr._data[0]).to.contain('timed out');
-        done();
+        // Will call watch callback twice - first for timeout, second for child-exit
+        if (output.state === 'timeout') {
+          expect(localBosco.process.stderr._data).to.be.an('array');
+          expect(localBosco.process.stderr._data.length).to.be.greaterThan(0);
+          expect(localBosco.process.stderr._data[0]).to.contain('timed out');
+        } else {
+          expect(output.state).to.be('child-exit');
+          done();
+        }
       }
     };
 
