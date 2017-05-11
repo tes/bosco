@@ -33,7 +33,7 @@ module.exports = function(bosco) {
     if (bosco.exists(repoPackageFile)) {
       var packageJson = JSON.parse(fs.readFileSync(repoPackageFile) || {});
       if (packageJson.service) {
-        boscoRepo.service = _.merge(boscoRepo.service, packageJson.service);
+        boscoRepo.service = packageJson.service;
       }
       if (packageJson.cdn) {
         if (packageJson.cdn.libraries) {
