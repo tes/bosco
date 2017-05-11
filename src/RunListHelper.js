@@ -88,25 +88,37 @@ function getServiceConfigFromGithub(bosco, repo, svcConfig, next) {
   } else {
     bosco.log('Downloading remote service config from github: ' + githubRepo.cyan);
     var ghrepo = client.repo(githubRepo);
+    var downloadedConfig = {};
     ghrepo.contents('bosco-service.json', function(err, boscoSvc) {
-      if (err) {
-        return next(err);
+      if (!err) {
+        var boscoSvcContent = new Buffer(boscoSvc.content, 'base64');
+        var boscoSvcConfig = JSON.parse(boscoSvcContent.toString());
+        downloadedConfig = boscoSvcConfig || {};
+        downloadedConfig.name = boscoSvcConfig.name || repo;
       }
-      var boscoSvcContent = new Buffer(boscoSvc.content, 'base64');
-      var boscoSvcConfig = JSON.parse(boscoSvcContent.toString());
-      boscoSvcConfig.name = boscoSvcConfig.name || repo;
-      ghrepo.contents('config/default.json', function(err, defaultCfg) {
-        if (!err || defaultCfg) {
-          var defaultCfgContent = new Buffer(defaultCfg.content, 'base64');
-          var defaultCfgConfig = JSON.parse(defaultCfgContent.toString());
-          boscoSvcConfig.server = defaultCfgConfig.server || {};
+      ghrepo.contents('package.json', function(err, packageJson) {
+        if (!err) {
+          var pkgContent = new Buffer(packageJson.content, 'base64');
+          var pkgConfig = JSON.parse(pkgContent.toString());
+          downloadedConfig.name = pkgConfig.name || downloadedConfig.name;
+          downloadedConfig.service = pkgConfig.service || downloadedConfig.service;
         }
-        if (!boscoSvcConfig.service || boscoSvcConfig.service.type !== 'docker') {
-          boscoSvcConfig.service = _.defaults(boscoSvcConfig.service, getServiceDockerConfig(bosco, svcConfig, boscoSvcConfig));
+        if (!downloadedConfig.service) {
+          return next(new Error('Unable to find any service config in either bosco-service.json or package.json!'));
         }
-        bosco.config.set(configKey, boscoSvcConfig);
-        bosco.config.save(function() {
-          next(null, boscoSvcConfig);
+        ghrepo.contents('config/default.json', function(err, defaultCfg) {
+          if (!err || defaultCfg) {
+            var defaultCfgContent = new Buffer(defaultCfg.content, 'base64');
+            var defaultCfgConfig = JSON.parse(defaultCfgContent.toString());
+            downloadedConfig.server = defaultCfgConfig.server || {};
+          }
+          if (!downloadedConfig.service || downloadedConfig.service.type !== 'docker') {
+            downloadedConfig.service = _.defaults(downloadedConfig.service, getServiceDockerConfig(bosco, svcConfig, downloadedConfig));
+          }
+          bosco.config.set(configKey, downloadedConfig);
+          bosco.config.save(function() {
+            next(null, downloadedConfig);
+          });
         });
       });
     });
@@ -133,15 +145,16 @@ function getRunConfig(bosco, repo, watchRegex, next) {
 
   if (hasPackageJson) {
     pkg = require(packageJson);
-    var packageConfig = {};
+    var packageServiceConfig = pkg.service || {};
     if (pkg.scripts && pkg.scripts.start) {
-      packageConfig.type = 'node';
-      packageConfig.start = pkg.scripts.start;
+      packageServiceConfig.type = 'node';
+      packageServiceConfig.start = pkg.scripts.start;
     }
     if (pkg.engines && pkg.engines.node) {
-      packageConfig.nodeVersion = pkg.engines.node;
+      packageServiceConfig.nodeVersion = pkg.engines.node;
     }
-    svcConfig.service = packageConfig;
+    svcConfig.service = packageServiceConfig;
+    svcConfig.tags = pkg.tags || [];
   }
 
   if (hasBoscoService) {
