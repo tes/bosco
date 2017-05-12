@@ -2,12 +2,12 @@ var async = require('async');
 var execFile = require('child_process').execFile;
 
 module.exports = {
-  name: 'grep',
-  description: 'runs git log -S across your repos, use -- to separate bosco options from git grep options',
+  name: 'history',
+  description: 'search for mention of <search term> in any previous commit, by running git log -S across your repos, use -- to separate bosco options from git log options',
   usage: '<search term>',
 };
 
-function grepRepo(bosco, args, repo, repoPath, callback) {
+function searchRepoHistory(bosco, args, repo, repoPath, callback) {
   var gitArgs = ['log', '-S'].concat(args);
 
   execFile('git', gitArgs, {
@@ -21,7 +21,7 @@ function grepRepo(bosco, args, repo, repoPath, callback) {
       bosco.log(repo.blue + ':\n' + stdout);
       result = {
         repo: repo,
-        grep: stdout,
+        history: stdout,
       };
     }
 
@@ -38,21 +38,21 @@ function cmd(bosco, args, next) {
 
   bosco.log('Running git log -S across all repos...');
 
-  function grepRepos(callback) {
-    async.mapLimit(repos, bosco.concurrency.network, function(repo, grepCallback) {
-      if (!repo.match(repoRegex)) return grepCallback();
+  function searchRepoHistories(callback) {
+    async.mapLimit(repos, bosco.concurrency.network, function(repo, historyCallback) {
+      if (!repo.match(repoRegex)) return historyCallback();
 
       var repoPath = bosco.getRepoPath(repo);
 
-      grepRepo(bosco, args, repo, repoPath, function(err, result) {
+      searchRepoHistory(bosco, args, repo, repoPath, function(err, result) {
         // err.code is 1 when nothing is found.
         if (err && err.code !== 1) bosco.error(err.message.substring(0, err.message.indexOf('\n')));
-        grepCallback(null, result);
+        historyCallback(null, result);
       });
     }, callback);
   }
 
-  grepRepos(function(err, results) {
+  searchRepoHistories(function(err, results) {
     if (err) bosco.error(err);
     if (next) next(err, results);
   });
