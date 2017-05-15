@@ -34,6 +34,9 @@ module.exports = function(bosco) {
       var packageJson = JSON.parse(fs.readFileSync(repoPackageFile) || {});
       if (packageJson.service) {
         boscoRepo.service = packageJson.service;
+        if (bosco.exists(boscoRepoConfig)) {
+          bosco.warn('You configuration for: ' + repo.cyan + ' in both bosco-service.json and package.json, suggest you pick one to avoid any unexpected behaviour!');
+        }
       }
       if (packageJson.cdn) {
         if (packageJson.cdn.libraries) {
