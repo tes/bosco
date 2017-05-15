@@ -240,7 +240,7 @@ function cmd(bosco, args, allDone) {
     return RunListHelper.getRunList(bosco, repos, repoRegex, watchRegex, repoTag, true, done);
   }
 
-  bosco.log('Run each microservice ... ');
+  bosco.log('Run each microservice, will inject ip into docker: ' + bosco.options.ip.cyan);
 
   async.series([ensurePM2, initialiseRunners, getRunningServices, getStoppedServices, stopNotRunningServices, startRunnableServices, disconnectRunners], function(err) {
     if (err) {

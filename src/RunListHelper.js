@@ -49,9 +49,6 @@ function getServiceDockerConfig(bosco, runConfig, svcConfig) {
         },
       },
     };
-    var defaultLocalHost = bosco.config.get('docker:localhost') || 'local.tescloud.com';
-    defaultConfig.docker.HostConfig.ExtraHosts.push(defaultLocalHost + ':' + bosco.options.ip);
-
     if (svcConfig.server && svcConfig.server.port) {
       var exposedPort = svcConfig.server.port + '/tcp';
       dockerConfig = _.clone(defaultConfig);
