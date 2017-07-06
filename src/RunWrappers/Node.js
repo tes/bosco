@@ -1,6 +1,7 @@
 /**
  * Wrapper to manage services via PM2
  */
+var childProcess = require('child_process');
 var _ = require('lodash');
 var path = require('path');
 var pm2 = require('pm2');
@@ -45,7 +46,6 @@ Runner.prototype.listNotRunning = function(detailed, next) {
 
 Runner.prototype.getInterpreter = function(bosco, options, next) {
   var self = this;
-  var exec = require('child_process').exec;
   var interpreter;
   var hadError;
   var error;
@@ -53,7 +53,7 @@ Runner.prototype.getInterpreter = function(bosco, options, next) {
   var found = false;
   var hasNvmRc = bosco.exists(path.join(options.cwd, '.nvmrc'));
   if (hasNvmRc) {
-    var e = exec(bosco.options.nvmWhich, {cwd: options.cwd});
+    var e = childProcess.exec(bosco.options.nvmWhich, {cwd: options.cwd});
     e.stdout.setEncoding('utf8');
     e.stderr.setEncoding('utf8');
 
@@ -102,16 +102,21 @@ Runner.prototype.getInterpreter = function(bosco, options, next) {
 };
 
 Runner.prototype.installNode = function(bosco, options, next) {
-  var exec = require('child_process').exec;
   bosco.log(options.name + ' installing required node version ...');
   var hasNvmRc = bosco.exists(path.join(options.cwd, '.nvmrc'));
   if (hasNvmRc) {
-    exec(bosco.options.nvmInstall, {cwd: options.cwd}, function(err, stdout, stderr) {
+    childProcess.exec(bosco.options.nvmInstall, {cwd: options.cwd}, function(err, stdout, stderr) {
       next(stderr);
     });
   } else {
     next('You cant install node without an .nvmrc');
   }
+};
+
+Runner.prototype.getVersion = function(bosco, options, next) {
+  childProcess.exec(bosco.options.nvmCurrent, {cwd: options.cwd}, function(err, stdout) {
+    next(err, stdout.toString().replace('\n', ''));
+  });
 };
 
 /**

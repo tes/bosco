@@ -44,6 +44,7 @@ Bosco.prototype.init = function(options) {
   self.options.nvmUseDefault = self.options.nvmSh + 'nvm use default;';
   self.options.nvmWhich = self.options.nvmSh + 'nvm which';
   self.options.nvmInstall = self.options.nvmSh + 'nvm install';
+  self.options.nvmCurrent = self.options.nvmSh + 'nvm current';
 
   self.options.cpus = require('os').cpus().length;
   self.options.ip = ip.address();
