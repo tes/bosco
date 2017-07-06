@@ -7,12 +7,29 @@ var _ = require('lodash');
 var green = '\u001b[42m \u001b[0m';
 var red = '\u001b[41m \u001b[0m';
 
-module.exports = {
-  name: 'install',
-  description: 'Runs npm install against all repos',
-  usage: '[-r <repoPattern>]',
-  requiresNvm: true,
-};
+function isYarnUsed(bosco, repoPath) {
+  var yarnrcFile = [repoPath, '.yarnrc'].join('/');
+  var yarnLockFile = [repoPath, 'yarn.lock'].join('/');
+  return bosco.exists(yarnrcFile) || bosco.exists(yarnLockFile);
+}
+
+function getPackageManager(bosco, repoPath, interpreter) {
+  var nvm = interpreter && bosco.options.nvmUse || bosco.options.nvmUseDefault;
+  var name;
+  var command;
+  if (isYarnUsed(bosco, repoPath)) {
+    name = 'Yarn';
+    command = 'yarn --pure-lockfile';
+  } else {
+    name = 'NPM';
+    command = 'npm';
+    if (bosco.config.get('npm:registry')) {
+      command += ' --registry ' + bosco.config.get('npm:registry');
+    }
+    command += ' install';
+  }
+  return {name: name, command: nvm + command};
+}
 
 function install(bosco, progressbar, bar, repoPath, repo, next) {
   var packageJson = [repoPath, 'package.json'].join('/');
@@ -21,11 +38,14 @@ function install(bosco, progressbar, bar, repoPath, repo, next) {
     return next();
   }
 
-  var yarnrcFile = [repoPath, '.yarnrc'].join('/');
-  var yarnLockFile = [repoPath, 'yarn.lock'].join('/');
-  if (bosco.exists(yarnrcFile) || bosco.exists(yarnLockFile)) {
-    var yarnComamnd = 'yarn --pure-lockfile';
-    exec(yarnComamnd, {
+  NodeRunner.getInterpreter(bosco, {name: repo, cwd: repoPath}, function(err, interpreter) {
+    if (err) {
+      bosco.error(err);
+      return next();
+    }
+
+    var packageManager = getPackageManager(bosco, repoPath, interpreter);
+    exec(packageManager.command, {
       cwd: repoPath,
     }, function(err, stdout, stderr) {
       if (progressbar) bar.tick();
@@ -35,9 +55,9 @@ function install(bosco, progressbar, bar, repoPath, repo, next) {
       } else {
         if (!progressbar) {
           if (!stdout) {
-            bosco.log('Yarn install for ' + repoPath.blue + ': ' + 'No changes'.green);
+            bosco.log(packageManager.name + ' install for ' + repoPath.blue + ': ' + 'No changes'.green);
           } else {
-            bosco.log('Yarn install for ' + repoPath.blue);
+            bosco.log(packageManager.name + ' install for ' + repoPath.blue);
             bosco.console.log(stdout);
             if (stderr) {
               bosco.error(stderr);
@@ -47,47 +67,7 @@ function install(bosco, progressbar, bar, repoPath, repo, next) {
       }
       next();
     });
-  } else {
-    NodeRunner.getInterpreter(bosco, {name: repo, cwd: repoPath}, function(err, interpreter) {
-      if (err) {
-        bosco.error(err);
-        return next();
-      }
-      var npmCommand;
-      if (interpreter) {
-        npmCommand = bosco.options.nvmUse + 'npm';
-      } else {
-        npmCommand = bosco.options.nvmUseDefault + 'npm';
-      }
-      if (bosco.config.get('npm:registry')) {
-        npmCommand += ' --registry ' + bosco.config.get('npm:registry');
-      }
-      npmCommand += ' install';
-
-      exec(npmCommand, {
-        cwd: repoPath,
-      }, function(err, stdout, stderr) {
-        if (progressbar) bar.tick();
-        if (err) {
-          if (progressbar) bosco.console.log('');
-          bosco.error(repoPath.blue + ' >> ' + stderr);
-        } else {
-          if (!progressbar) {
-            if (!stdout) {
-              bosco.log('NPM install for ' + repoPath.blue + ': ' + 'No changes'.green);
-            } else {
-              bosco.log('NPM install for ' + repoPath.blue);
-              bosco.console.log(stdout);
-              if (stderr) {
-                bosco.error(stderr);
-              }
-            }
-          }
-        }
-        next();
-      });
-    });
-  }
+  });
 }
 
 function cmd(bosco, args, next) {
@@ -97,7 +77,7 @@ function cmd(bosco, args, next) {
   var repos = bosco.getRepos();
   if (!repos) return bosco.error('You are repo-less :( You need to initialise bosco first, try \'bosco clone\'.');
 
-  bosco.log('Running npm install across repos ...');
+  bosco.log('Running install across repos ...');
 
   function setRunRepos(cb) {
     if (!CmdHelper.checkInService(bosco)) {
@@ -142,4 +122,10 @@ function cmd(bosco, args, next) {
   });
 }
 
-module.exports.cmd = cmd;
+module.exports = {
+  name: 'install',
+  description: 'Runs npm install against all repos',
+  usage: '[-r <repoPattern>]',
+  requiresNvm: true,
+  cmd: cmd,
+};
