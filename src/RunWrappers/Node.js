@@ -114,8 +114,13 @@ Runner.prototype.installNode = function(bosco, options, next) {
 };
 
 Runner.prototype.getVersion = function(bosco, options, next) {
-  childProcess.exec(bosco.options.nvmCurrent, {cwd: options.cwd}, function(err, stdout) {
-    next(err, stdout.toString().replace('\n', ''));
+  this.getInterpreter(bosco, options, function(err, interpreter) {
+    if (err) { return next(err); }
+    var nvm = interpreter && bosco.options.nvmUse || bosco.options.nvmUseDefault;
+    childProcess.exec(nvm + 'nvm current', {cwd: options.cwd}, function(err, stdout, stderr) {
+      if (err || stderr) { return next(err || stderr); }
+      next(null, (stdout.match(/[^\n]+/g) || []).pop());
+    });
   });
 };
 

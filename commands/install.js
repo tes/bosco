@@ -33,16 +33,30 @@ function getPackageManager(bosco, repoPath, interpreter) {
 
 function cleanModulesIfVersionChanged(bosco, repoPath, repo, next) {
   NodeRunner.getVersion(bosco, {cwd: repoPath}, function(err, currentVersion) {
+    if (err) { return next(err); }
+
     var lastVersion = bosco.config.get('teams:' + bosco.getTeam() + ':nodes:' + repo);
     if (lastVersion && lastVersion !== currentVersion) {
-      bosco.warn('Node version is changed from ' + lastVersion + ' to ' + currentVersion + ', clearing node_modules for ' + repoPath.blue);
-      exec('rm -rf ./node_modules', {cwd: repoPath}, function(err, stdout, stderr) {
-        if (err) {
-          bosco.error('Failed to clear node_modules for ' + repoPath.blue + ' >> ' + stderr);
-        } else {
-          bosco.config.set('teams:' + bosco.getTeam() + ':nodes:' + repo, currentVersion);
+      bosco.prompt.start();
+      bosco.prompt.get({
+        properties: {
+          confirm: {
+            description: ('Looks like node version is changed from ' + lastVersion + ' to ' + currentVersion + ', do you want to clear node_modules for ' + repoPath + ' before continuing (y/N)?').red,
+          },
+        },
+      }, function(err, result) {
+        if (!result || (result.confirm !== 'Y' && result.confirm !== 'y')) {
+          return next();
         }
-        next();
+
+        exec('rm -rf ./node_modules', {cwd: repoPath}, function(err, stdout, stderr) {
+          if (err) {
+            bosco.error('Failed to clear node_modules for ' + repoPath.blue + ' >> ' + stderr);
+          } else {
+            bosco.config.set('teams:' + bosco.getTeam() + ':nodes:' + repo, currentVersion);
+          }
+          next();
+        });
       });
     } else {
       bosco.config.set('teams:' + bosco.getTeam() + ':nodes:' + repo, currentVersion);
@@ -135,9 +149,14 @@ function cmd(bosco, args, next) {
     });
   }
 
+  function saveConfig(cb) {
+    bosco.config.save(cb);
+  }
+
   async.series([
     setRunRepos,
     installRepos,
+    saveConfig,
   ], function() {
     bosco.log('npm install complete');
     if (next) next();
