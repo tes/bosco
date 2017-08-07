@@ -81,10 +81,11 @@ Runner.prototype.start = function(options, next) {
   var docker = self.docker;
   var dockerFqn = self.getFqn(options);
 
-  var defaultLocalHost = self.bosco.config.get('docker:localhost') || 'local.tescloud.com';
+  var defaultLocalHosts = self.bosco.config.get('docker:localhost') || ['local.tescloud.com', 'internal.tes-local.com', 'www.tes-local.com'];
+  if (Object.prototype.toString.call(defaultLocalHosts) !== '[object Array]') defaultLocalHosts = [defaultLocalHosts];
   if (options.service.docker.HostConfig) {
-    options.service.docker.HostConfig.ExtraHosts = options.service.docker.HostConfig.ExtraHosts || [];
-    options.service.docker.HostConfig.ExtraHosts.push(defaultLocalHost + ':' + self.bosco.options.ip);
+    var ExtraHosts = options.service.docker.HostConfig.ExtraHosts || [];
+    options.service.docker.HostConfig.ExtraHosts = ExtraHosts.concat(defaultLocalHosts.map(function(name) { return name + ':' + self.bosco.options.ip; }));
   }
 
   DockerUtils.prepareImage(self.bosco, docker, dockerFqn, options, function(err) {
