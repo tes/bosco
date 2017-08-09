@@ -466,9 +466,7 @@ Bosco.prototype.getCdnUrl = function() {
   }
 
   var cdnPort = this.config.get('cdn:port') || '7334';
-  var cdnHostname = this.config.get('cdn:hostname') || 'localhost';
-
-  return 'http://' + cdnHostname + ':' + cdnPort;
+  return this.config.get('cdn:url') || 'http://localhost:' + cdnPort;
 };
 
 Bosco.prototype.getBaseCdnUrl = function() {

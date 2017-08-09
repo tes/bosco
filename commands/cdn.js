@@ -115,7 +115,7 @@ function cmd(bosco, args) {
       var isRemoteAsset = pathname.match(/^\/(.*)\/(\d+)\//);
       var serveRemoteAsset = isRemoteAsset || (isLibraryAsset && !bosco.options.localVendor);
       if (serveRemoteAsset) {
-        var baseCdn = bosco.config && bosco.config.cdn && bosco.config.cdn.url || 'https://duqxiy1o2cbw6.cloudfront.net/tes';
+        var baseCdn = bosco.config.get('cdn:remoteUrl') || 'https://duqxiy1o2cbw6.cloudfront.net/tes';
         var cdnUrl = baseCdn + pathname;
         var localCacheFolder = path.join(bosco.findConfigFolder(), 'cache');
         var localCacheFile = path.join(localCacheFolder, pathname.replace(/\//g, '_') + '.json');
@@ -132,6 +132,7 @@ function cmd(bosco, args) {
           response.writeHead(200, cacheContent.headers);
           response.end(cacheContent.body);
         } else {
+          var baseBoscoCdnUrl = bosco.getBaseCdnUrl();
           requestLib.get({uri: cdnUrl, gzip: true, timeout: 5000}, function(err, cdnResponse, body) {
             if (err) {
               bosco.error('Error proxying asset for: ' + cdnUrl + ', Error: ' + err.message);
@@ -142,7 +143,7 @@ function cmd(bosco, args) {
 
             // We want to convert all of the in content urls to local bosco ones to take advantage of offline caching
             // For the js / css files contained within the html fragments for remote services
-            responseContent = responseContent.replace(new RegExp(baseCdn, 'g'), 'http://localhost:7334');
+            responseContent = responseContent.replace(new RegExp(baseCdn, 'g'), baseBoscoCdnUrl);
 
             var responseHeaders = _.defaults(_.pick(cdnResponse.headers, ['content-type']), corsHeaders);
             response.writeHead(200, responseHeaders);
