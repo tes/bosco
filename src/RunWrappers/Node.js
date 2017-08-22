@@ -60,6 +60,7 @@ Runner.prototype.getInterpreter = function(bosco, options, next) {
     e.stdout.on('data', function(data) {
       if (data.indexOf('Found') === 0) {
         found = true;
+        interpreter = data.replace(/.*\n/, '').replace('\n', '');
       } else {
         if (found) {
           interpreter = data.replace('\n', '');
