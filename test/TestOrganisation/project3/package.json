@@ -1,0 +1,44 @@
+{
+  "name": "project3",
+  "description": "example project 3",
+  "version": "1.0.0",
+  "main": "server.js",
+  "scripts": {
+    "start": "node ./server.js --server/port=$npm_package_port --server/main=$npm_package_main",
+    "build": "echo 'This is the pseudo output of a build command.'",
+    "build:watch": "echo \"COMPLETA\"; sleep 1"
+  },
+  "tags": [ "testy" , "besty" ],
+  "service": {
+    "dependsOn": [
+      "project1"
+    ]
+  },
+  "cdn": {
+    "ready": "COMPLETA",
+    "assets": {
+      "basePath": "/dist",
+      "alreadyMinified": true,
+      "sourceMapExtension": ".map",
+      "js": {
+        "compiled": [
+          "js/compiled.js",
+          "js/compiled.js.map"
+        ]
+      },
+      "css": {
+        "compiled": [
+          "css/compiled.css"
+        ]
+      }
+    },
+    "files": {
+      "files-top": {
+        "basePath": "/dist",
+        "swf": [
+          "swf/flash.swf"
+        ]
+      }
+    }
+  }
+}
