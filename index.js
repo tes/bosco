@@ -53,6 +53,7 @@ Bosco.prototype.init = function(options) {
   self.config = require('nconf');
   self.prompt = prompt;
   self.Progress = Progress;
+  self.errorStack = [];
 
   self.concurrency = {
     network: self.options.cpus * 4, // network constrained
@@ -535,7 +536,16 @@ Bosco.prototype.log = function(msg, args) {
 };
 
 Bosco.prototype.error = function(msg, args) {
+  this.errorStack.push({msg: msg, args: args});
   this._log('Bosco'.red, msg, args);
+};
+
+Bosco.prototype.logErrorStack = function() {
+  if (this.errorStack.length === 0) return;
+  this._log('Bosco'.red, 'These are all the errors that you may have missed:');
+  this.errorStack.forEach(function(err) {
+    this._log('Bosco'.red, err.msg, err.args);
+  });
 };
 
 Bosco.prototype._log = function(identifier, msg, args) {

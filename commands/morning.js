@@ -34,7 +34,6 @@ function cmd(bosco, args) {
 
   function showActivitySummary(next) {
     args.since = bosco.config.get(lastMorningRunConfigKey); // If it is not set it will default to some value on the activity command
-
     activity.cmd(bosco, args, next);
   }
 
@@ -53,8 +52,10 @@ function cmd(bosco, args) {
     });
   }
 
+
   async.series([executeClone, executePullGit, executeInstall, showActivitySummary, readyToGo, executePullDocker, setConfigKeyForLastMorningRun], function() {
     bosco.log('Morning completed');
+    bosco.logErrorStack();
   });
 }
 
