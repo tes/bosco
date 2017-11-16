@@ -543,8 +543,9 @@ Bosco.prototype.error = function(msg, args) {
 Bosco.prototype.logErrorStack = function() {
   if (this.errorStack.length === 0) return;
   this._log('Bosco'.red, 'These are all the errors that you may have missed:');
+  var self = this;
   this.errorStack.forEach(function(err) {
-    this._log('Bosco'.red, err.msg, err.args);
+    self._log('Bosco'.red, err.msg, err.args);
   });
 };
 
