@@ -4,6 +4,7 @@
 var childProcess = require('child_process');
 var _ = require('lodash');
 var path = require('path');
+var async = require('async');
 var pm2 = require('pm2');
 
 require('colors');
@@ -122,6 +123,19 @@ Runner.prototype.getVersion = function(bosco, options, next) {
       if (err || stderr) { return next(err || stderr); }
       next(null, (stdout.match(/[^\n]+/g) || []).pop());
     });
+  });
+};
+
+Runner.prototype.getHashes = function(bosco, files, options, next) {
+  function getHash(file, cb) {
+    childProcess.exec('git hash-object ' + path.join(options.cwd, file), {cwd: options.cwd}, function(err, stdout, stderr) {
+      if (err || stderr) { return cb(err || stderr); }
+      cb(null, stdout.replace('\n', ''));
+    });
+  }
+
+  async.mapSeries(files, getHash, function(err, hashes) {
+    next(null, hashes.join('.'));
   });
 };
 
