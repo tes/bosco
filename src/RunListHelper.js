@@ -171,7 +171,6 @@ function getRunList(bosco, repos, repoRegex, watchRegex, repoTag, displayOnly, n
     return (bosco.options.inService && repo === bosco.options.inServiceRepo);
   }
 
-
   function notCurrentService(repo) {
     return !isCurrentService(repo);
   }
@@ -196,6 +195,11 @@ function getRunList(bosco, repos, repoRegex, watchRegex, repoTag, displayOnly, n
     return function(repo) {
       return getConfig(repo).service.type === type;
     };
+  }
+
+  function matchingRepo(repo) {
+    var config = getConfig(repo);
+    return matchesRegexOrTag(repo, config.tags);
   }
 
   // in order to understand recursion one must understand recursion
@@ -229,10 +233,7 @@ function getRunList(bosco, repos, repoRegex, watchRegex, repoTag, displayOnly, n
     return config.order || (_.includes(['docker', 'docker-compose'], config.service.type) ? 100 : 500);
   }
 
-  function createTree(parent, depth, repo) {
-    if (depth > 10) {
-      return [];
-    }
+  function createTree(parent, repo) {
     var repoConfig = getRunConfig(bosco, repo);
     if (!repoConfig.service.type) {
       repoConfig = getCachedConfig(bosco, repo, true);
@@ -257,13 +258,13 @@ function getRunList(bosco, repos, repoRegex, watchRegex, repoTag, displayOnly, n
       repoName = repoName.blue;
     }
     parent[repoName] = {};
-    var newDepth = depth + 1;
-    return _.map(getCachedConfig(bosco, repo, true).service.dependsOn, _.curry(createTree)(parent[repoName], newDepth));
+    return _.map(getCachedConfig(bosco, repo, true).service.dependsOn, _.curry(createTree)(parent[repoName]));
   }
 
-  resolveDependencies(repos, [], function(err, repoList) {
+  var filteredRepos = _.filter(repos, matchingRepo);
+
+  resolveDependencies(filteredRepos, [], function(err, repoList) {
     var runList = _.chain(repoList)
-      .filter(boscoOptionFilter('repo', matchesRegexOrTag))
       .filter(boscoOptionFilter('deps-only', notCurrentService))
       .filter(boscoOptionFilter('docker-only', isType('remote')))
       .map(getConfig)
@@ -272,7 +273,7 @@ function getRunList(bosco, repos, repoRegex, watchRegex, repoTag, displayOnly, n
 
     if (displayOnly) {
       _.chain(repoList)
-        .map(_.curry(createTree)(tree, 0))
+        .map(_.curry(createTree)(tree))
         .value();
       /* eslint-disable no-console */
       console.log(treeify.asTree(tree));
