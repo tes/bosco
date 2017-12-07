@@ -165,7 +165,7 @@ function cmd(bosco, args) {
         return staticAssets ? response.end(staticAssets.formattedAssets) : response.end();
       }
 
-      headers['Content-Type'] = asset.mimeType;
+      headers['content-Type'] = asset.mimeType;
       response.writeHead(200, headers);
 
       var hasSourceFiles = asset.sourceFiles && asset.sourceFiles.length > 0;

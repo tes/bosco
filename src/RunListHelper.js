@@ -202,6 +202,11 @@ function getRunList(bosco, repos, repoRegex, watchRegex, repoTag, displayOnly, n
     return matchesRegexOrTag(repo, config.tags);
   }
 
+  function isInfraOnly(repoConfig) {
+    var filter = bosco.options.infra ? /^infra\-/ : /.*/;
+    return repoConfig.name.match(filter);
+  }
+
   // in order to understand recursion one must understand recursion
   function resolveDependencies(repoList, resolved, cb) {
     async.reduce(repoList, resolved, function(memo, repo, cb2) {
@@ -268,6 +273,7 @@ function getRunList(bosco, repos, repoRegex, watchRegex, repoTag, displayOnly, n
       .filter(boscoOptionFilter('deps-only', notCurrentService))
       .filter(boscoOptionFilter('docker-only', isType('remote')))
       .map(getConfig)
+      .filter(isInfraOnly)
       .sortBy(getOrder)
       .value();
 

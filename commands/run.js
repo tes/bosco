@@ -56,6 +56,11 @@ module.exports = {
       type: 'boolean',
       desc: 'Only start app or service dependencies in the current team',
     },
+    {
+      name: 'infra',
+      type: 'boolean',
+      desc: 'Only start infra- dependencies',
+    },
   ],
 };
 

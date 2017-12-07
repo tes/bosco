@@ -21,13 +21,18 @@ module.exports = {
       name: 'list',
       alias: 'l',
       type: 'string',
-      desc: 'Start a list of repos (comma separated)',
+      desc: 'Stop a list of repos (comma separated)',
     },
     {
       name: 'deps-only',
       alias: 'd',
       type: 'boolean',
-      desc: 'Only start the dependencies of the current repo, not itself',
+      desc: 'Only stop the dependencies of the current repo, not itself',
+    },
+    {
+      name: 'infra',
+      type: 'boolean',
+      desc: 'Only stop infra- dependencies',
     },
   ],
 };
