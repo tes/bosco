@@ -8,3 +8,4 @@ tes
 .bosco
 npm-debug.log
 coverage
+package-lock.json
