@@ -68,6 +68,13 @@
     "type": "boolean",
     "default": false,
     "desc": "Verbose output"
+  },
+  {
+    "name": "quiet",
+    "alias": "q",
+    "type": "boolean",
+    "default": false,
+    "desc": "No logging output"
   }, {
     "name": "nocache",
     "type": "boolean",
