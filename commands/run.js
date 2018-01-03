@@ -192,6 +192,7 @@ function cmd(bosco, args, allDone) {
         bosco.warn('- Team not being configured: ' + 'bosco team setup'.yellow);
         bosco.warn('- Out of date cached content: ' + 'bosco run --nocache'.yellow);
         bosco.warn('- Missing github configuration: ' + 'bosco config set github:org <organisation>'.yellow);
+        bosco.warn('Ensure your github auth token has appropriate permissions ...');
       }
       async.mapSeries([
           {services: dockerServices, type: 'docker', limit: bosco.concurrency.cpu},
