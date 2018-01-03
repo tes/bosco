@@ -216,7 +216,7 @@ function getRunList(bosco, repos, repoRegex, watchRegex, repoTag, displayOnly, n
       memo.push(repo);
       getRunConfig(bosco, repo, watchRegex, function(err, svcConfig) {
         if (err) {
-          bosco.error('Unable to retrieve config from github for: ' + repo.cyan);
+          bosco.error('Unable to retrieve config from github for: ' + repo.cyan + ' because: ' + err.message);
           return cb2(null, memo);
         }
         if (!svcConfig) {

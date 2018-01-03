@@ -190,6 +190,7 @@ function cmd(bosco, args, allDone) {
         bosco.error('Unable to run services of un-recognised type: ' + _.map(unknownServices, 'name').join(', ').cyan + '. Check their bosco-service.json configuration.');
         bosco.warn('This may be due to either:');
         bosco.warn('- Team not being configured: ' + 'bosco team setup'.yellow);
+        bosco.warn('- Github oauth token with insufficient priveleges: ' + 'https://github.com/settings/tokens/new'.yellow);
         bosco.warn('- Out of date cached content: ' + 'bosco run --nocache'.yellow);
         bosco.warn('- Missing github configuration: ' + 'bosco config set github:org <organisation>'.yellow);
       }
