@@ -207,6 +207,11 @@ function getRunList(bosco, repos, repoRegex, watchRegex, repoTag, displayOnly, n
     return repoConfig.name.match(filter);
   }
 
+  function exclude(repoConfig) {
+    var filter = bosco.options.exclude ? new RegExp(bosco.options.exclude) : /$a/;
+    return !repoConfig.name.match(filter);
+  }
+
   // in order to understand recursion one must understand recursion
   function resolveDependencies(repoList, resolved, cb) {
     async.reduce(repoList, resolved, function(memo, repo, cb2) {
@@ -274,6 +279,7 @@ function getRunList(bosco, repos, repoRegex, watchRegex, repoTag, displayOnly, n
       .filter(boscoOptionFilter('docker-only', isType('remote')))
       .map(getConfig)
       .filter(isInfraOnly)
+      .filter(exclude)
       .sortBy(getOrder)
       .value();
 

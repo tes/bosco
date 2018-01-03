@@ -61,6 +61,11 @@ module.exports = {
       type: 'boolean',
       desc: 'Only start infra- dependencies',
     },
+    {
+      name: 'exclude',
+      type: 'string',
+      desc: 'Exclude any repositories that match this regex',
+    },
   ],
 };
 

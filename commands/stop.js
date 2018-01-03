@@ -34,6 +34,11 @@ module.exports = {
       type: 'boolean',
       desc: 'Only stop infra- dependencies',
     },
+    {
+      name: 'exclude',
+      type: 'string',
+      desc: 'Exclude any repositories that match this regex',
+    },
   ],
 };
 
