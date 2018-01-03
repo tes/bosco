@@ -235,7 +235,6 @@ function cmd(bosco, args) {
     };
 
     async.parallel(executeAsync, function(err, results) {
-      console.log(results);
       startServer(results.staticAssets, results.staticRepos, port);
     });
   });
