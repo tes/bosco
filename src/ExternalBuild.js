@@ -4,7 +4,7 @@ var ExecBuild = require('./ExternalBuilders/ExecBuild');
 var BuildUtils = require('./ExternalBuilders/utils');
 
 module.exports = function(bosco) {
-  function doBuild(service, options, interpreter, next) {
+  function doBuild(service, options, interpreter, shouldBuild, next) {
     if (!service.build) return next();
 
     var buildUtils = new BuildUtils(bosco);
@@ -15,6 +15,13 @@ module.exports = function(bosco) {
     var command = buildUtils.createCommand(service.build, interpreter, watchingService);
     var cwd = {cwd: service.repoPath};
     var firstBuildCalledBack = false;
+
+    // If we dont need to build and aren't watching the service, lets just use the
+    // files that are already there
+    if (!watchingService && !shouldBuild) {
+      bosco.log('Skipping build for ' + service.name.cyan + ' as assets already exist, add to watch list if you want it compiled.');
+      return next();
+    }
 
     function buildFinishedExec(err, stdout, stderr) {
       var hasError = err || stderr;
@@ -99,10 +106,10 @@ module.exports = function(bosco) {
     return next();
   }
 
-  function doBuildWithInterpreter(service, options, next) {
+  function doBuildWithInterpreter(service, options, shouldBuild, next) {
     NodeRunner.getInterpreter(bosco, {name: service.name, cwd: service.repoPath}, function(err, interpreter) {
       if (err) return next({message: err});
-      doBuild(service, options, interpreter, next);
+      doBuild(service, options, interpreter, shouldBuild, next);
     });
   }
 

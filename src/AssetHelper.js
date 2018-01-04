@@ -61,8 +61,15 @@ module.exports = function(bosco) {
           newAsset.repo = boscoRepo.name;
           newAsset.type = type;
           newAsset.tagType = tag + '.' + type;
-          newAsset.data = fs.readFileSync(newAsset.path);
-          newAsset.content = newAsset.data.toString();
+          try {
+            newAsset.data = fs.readFileSync(newAsset.path);
+            newAsset.content = newAsset.data.toString();
+            newAsset.assetExists = true;
+          } catch (ex) {
+            newAsset.data = '';
+            newAsset.content = '';
+            newAsset.assetExists = false;
+          }
           newAsset.checksum = checksum(newAsset.content, 'sha1', 'hex');
           newAsset.uniqueKey = newAsset.bundleKey + ':' + assetKey;
           newAsset.extraBrowserSyncFiles = getExtraFiles(newAsset.repoPath, boscoRepo.build);

@@ -45,7 +45,7 @@ module.exports = function(bosco) {
     return assets;
   }
 
-  function createAssetList(boscoRepo, buildNumber, minified, tagFilter, next) {
+  function createAssetList(boscoRepo, buildNumber, minified, tagFilter, warnMissing, next) {
     var assetHelper = AssetHelper.getAssetHelper(boscoRepo, tagFilter);
     var fileTypesWhitelist = bosco.options.fileTypesWhitelist;
     var staticAssets = [];
@@ -66,7 +66,7 @@ module.exports = function(bosco) {
             var globbedAssets = globAsset(potentialAsset, path.join(boscoRepo.path, assetBasePath));
             if (globbedAssets.length === 0) {
               var noMatchError = path.join(assetBasePath, potentialAsset) + ': No matching files found.';
-              bosco.error(noMatchError);
+              if (warnMissing) { bosco.warn(noMatchError); }
               assetHelper.addError(staticAssets, tag, noMatchError);
             }
             _.forEach(globbedAssets, function(asset) {
@@ -91,7 +91,7 @@ module.exports = function(bosco) {
             var assets = globAsset(potentialAsset, path.join(boscoRepo.path, assetBasePath));
             if (assets.length === 0) {
               var warning = path.join(assetBasePath, potentialAsset) + ': No matching files found.';
-              bosco.warn(warning);
+              if (warnMissing) { bosco.warn(warning); }
               assetHelper.addError(staticAssets, tag, warning);
             }
             _.forEach(assets, function(asset) {
@@ -116,6 +116,11 @@ module.exports = function(bosco) {
     next(null, staticAssets);
   }
 
+  function shouldBuildService(assets) {
+    var allAssetsExist = _.reduce(_.map(assets, 'assetExists'), function(allExist, exists) { return allExist && exists; }, true);
+    return !allAssetsExist;
+  }
+
   function getStaticAssets(options, next) {
     var repoTag = options.repoTag;
     var ignoreFailure = options.ignoreFailure;
@@ -132,17 +137,20 @@ module.exports = function(bosco) {
       });
 
       async.mapLimit(assetServices, bosco.concurrency.cpu, function(service, cb) {
-        doBuildWithInterpreter(service, options, function(err) {
-          if (err) {
-            if (!ignoreFailure) return cb(err);
-            failedBuilds.push({name: service.name, err: err});
-          }
-          createAssetList(service, options.buildNumber, options.minify, options.tagFilter, function(err, assets) {
+        createAssetList(service, options.buildNumber, options.minify, options.tagFilter, false, function(err, preBuildAssets) {
+          doBuildWithInterpreter(service, options, shouldBuildService(preBuildAssets), function(err) {
             if (err) {
               if (!ignoreFailure) return cb(err);
               failedBuilds.push({name: service.name, err: err});
             }
-            cb(null, assets);
+            // Do this a second time to
+            createAssetList(service, options.buildNumber, options.minify, options.tagFilter, true, function(err, assets) {
+              if (err) {
+                if (!ignoreFailure) return cb(err);
+                failedBuilds.push({name: service.name, err: err});
+              }
+              cb(null, assets);
+            });
           });
         });
       }, function(err, assetList) {

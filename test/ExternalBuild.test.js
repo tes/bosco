@@ -20,7 +20,7 @@ describe('ExternalBuild', function() {
       repoPath: localBosco.getRepoPath('')
     };
 
-    doBuild(service, {}, null, function(err) {
+    doBuild(service, {}, null, true, function(err) {
       if (err) return done(err);
 
       expect(localBosco).to.not.have.property('_log');
@@ -44,7 +44,7 @@ describe('ExternalBuild', function() {
       }
     };
 
-    doBuild(service, {}, null, function(err) {
+    doBuild(service, {}, null, true, function(err) {
       if (err) return done(err);
 
       expect(localBosco.console).to.not.have.property('_log');
@@ -63,7 +63,7 @@ describe('ExternalBuild', function() {
       }
     };
 
-    doBuild(service, {}, null, function(err) {
+    doBuild(service, {}, null, true, function(err) {
       expect(err).to.be.an(Error);
       expect(err).to.have.property('code', 1);
       expect(localBosco.console._log).to.eql(['hi']);
@@ -85,7 +85,7 @@ describe('ExternalBuild', function() {
       }
     };
 
-    doBuild(service, {}, null, function(err) {
+    doBuild(service, {}, null, true, function(err) {
       expect(err).to.be.an(Error);
       expect(err).to.have.property('code', 7);
       done();
@@ -108,7 +108,7 @@ describe('ExternalBuild', function() {
       reloadOnly: true
     };
 
-    doBuild(service, options, null, function(err) {
+    doBuild(service, options, null, true, function(err) {
       if (err) return done(err);
       expect(localBosco).to.not.have.property('_log');
       expect(localBosco).to.not.have.property('_error');
@@ -135,7 +135,7 @@ describe('ExternalBuild', function() {
       watchRegex: /./
     };
 
-    doBuild(service, options, null, function(err) {
+    doBuild(service, options, null, true, function(err) {
       if (err) return done(err);
       expect(localBosco.console).to.not.have.property('_log');
       expect(localBosco._log).to.be.an('array');
@@ -162,7 +162,7 @@ describe('ExternalBuild', function() {
       watchRegex: /./
     };
 
-    doBuild(service, options, null, function(err) {
+    doBuild(service, options, null, true, function(err) {
       expect(err).to.be.an(Error);
       expect(err).to.have.property('code', 0);
       expect(localBosco._error).to.be.an('array');
@@ -198,7 +198,7 @@ describe('ExternalBuild', function() {
       }
     };
 
-    doBuild(service, options, null, function(err) {
+    doBuild(service, options, null, true, function(err) {
       expect(err).to.be(undefined);
     });
   });
@@ -240,7 +240,7 @@ describe('ExternalBuild', function() {
       }
     };
 
-    doBuild(service, options, null, function(err) {
+    doBuild(service, options, null, true, function(err) {
       expect(err).to.be(undefined);
     });
   });
@@ -265,7 +265,7 @@ describe('ExternalBuild', function() {
       watchRegex: /./
     };
 
-    doBuild(service, options, null, function(err) {
+    doBuild(service, options, null, true, function(err) {
       if (err) return done(err);
       expect(localBosco.process.stderr).to.have.property('_data');
       expect(localBosco.process.stderr._data).to.eql(['watch']);
