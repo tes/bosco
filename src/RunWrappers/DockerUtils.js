@@ -77,7 +77,7 @@ function createContainer(docker, fqn, options, next) {
     docker.createContainer(optsCreate, next);
   }
   var container = docker.getContainer(optsCreate.name);
-  if (container) return container.remove(doCreate);
+  if (container) return next(null, container);
   doCreate();
 }
 
