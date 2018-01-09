@@ -25,9 +25,9 @@ function getPackageManager(bosco, repoPath, interpreter) {
     name = 'NPM';
     command = 'npm';
     if (bosco.config.get('npm:registry')) {
-      command += ' --no-package-lock --registry ' + bosco.config.get('npm:registry');
+      command += '--registry ' + bosco.config.get('npm:registry');
     }
-    command += ' install';
+    command += ' --no-package-lock install';
   }
   return {name: name, command: nvm + command};
 }
