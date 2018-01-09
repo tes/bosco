@@ -16,6 +16,11 @@ module.exports = {
     alias: 'nr',
     type: 'boolean',
     desc: 'Do not pull docker images for remote repositories (dependencies)',
+  },
+  {
+    name: 'infra',
+    type: 'boolean',
+    desc: 'Only pull infra- dependencies',
   }],
 };
 
