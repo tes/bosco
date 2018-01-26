@@ -155,8 +155,6 @@ Runner.prototype.start = function(options, next) {
     startArr = startCmd.split(' ');
     startArr.shift();
     start = startArr.join(' ');
-
-    if (!path.extname(start)) start = start + '.js';
   }
 
   // Always execute as a forked process to allow node version selection
@@ -171,6 +169,8 @@ Runner.prototype.start = function(options, next) {
     scriptArgs = start.substring(argumentPos + 4, start.length).split(' ');
     location = start.substring(0, argumentPos);
   }
+
+  if (!path.extname(location)) location = location + '.js';
 
   if (!self.bosco.exists(options.cwd + '/' + location)) {
     self.bosco.error('Can\'t start ' + options.name.red + ', as I can\'t find script: ' + location.red);
