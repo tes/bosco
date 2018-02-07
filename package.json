@@ -5,13 +5,10 @@
   "main": "index.js",
   "scripts": {
     "lint": "eslint .",
-    "test": "f(){ if [ \"$#\" -gt 0 ]; then npm run testonly -- \"$@\"; else npm run check-coverage; fi; };f",
-    "testonly": "mocha",
-    "coverage": "istanbul cover --include-all-sources true _mocha",
-    "check-coverage": "npm run coverage && istanbul check-coverage --statements 16",
-    "coveralls": "npm run coverage && npm run coveralls-after-test",
-    "coveralls-after-test": "cat ./coverage/lcov.info | ./node_modules/coveralls/bin/coveralls.js",
-    "precommit": "npm run lint && npm run test"
+    "pretest": "npm run lint",
+    "test": "nyc mocha",
+    "coverage": "nyc report --reporter=text-lcov | coveralls",
+    "precommit": "npm run test"
   },
   "keywords": [
     "micro",
@@ -109,8 +106,8 @@
     "gulp": "^3.8.7",
     "gulp-marked-man": "^0.3.1",
     "husky": "^0.11.5",
-    "istanbul": "^0.3.2",
     "mocha": "^2.2.1",
+    "nyc": "^11.4.1",
     "sinon": "^1.17.1"
   },
   "config": {
