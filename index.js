@@ -571,15 +571,12 @@ Bosco.prototype.hasNvm = function() {
   var nvmDir = process.env.NVM_DIR || '';
   var homeNvmDir = process.env.HOME ? path.join(process.env.HOME, '.nvm') : '';
 
-  var nvmVersion = '0.0.0';
-  if (nvmDir && this.exists(path.join(nvmDir, 'nvm.sh'))) {
-    nvmVersion = require(path.join(nvmDir, 'package.json')).version;
-  } else if (homeNvmDir && this.exists(path.join(homeNvmDir, 'nvm.sh'))) {
-    nvmVersion = require(path.join(homeNvmDir, 'package.json')).version;
-  } else {
+  var hasNvm = (nvmDir && this.exists(path.join(nvmDir, 'nvm.sh'))) ||
+    (homeNvmDir && this.exists(path.join(homeNvmDir, 'nvm.sh')));
+
+  if (!hasNvm) {
     this.error('Could not find nvm');
-    return false;
   }
 
-  return semver.satisfies(nvmVersion, '>=0.21.0');  // First version with nvm which
+  return hasNvm;
 };
