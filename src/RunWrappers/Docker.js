@@ -82,10 +82,21 @@ Runner.prototype.start = function(options, next) {
   var dockerFqn = self.getFqn(options);
 
   var defaultLocalHosts = self.bosco.config.get('docker:localhost') || ['local.tescloud.com', 'internal.tes-local.com', 'www.tes-local.com'];
+  var defaultDependencyLocalHostDomain = self.bosco.config.get('docker:localhostDomain') || '.service.local.tescloud.com';
+  var dependencyLocalHosts = [];
+  if (options.service.dependsOn && options.service.dependsOn.forEach) {
+    options.service.dependsOn.forEach(function(dep) {
+      dependencyLocalHosts.push(dep + defaultDependencyLocalHostDomain + ':' + self.bosco.options.ip);
+      if (_.startsWith(dep, 'service-')) {
+        dependencyLocalHosts.push(dep.split('service-')[1] + defaultDependencyLocalHostDomain + ':' + self.bosco.options.ip);
+      }
+    });
+  }
+
   if (Object.prototype.toString.call(defaultLocalHosts) !== '[object Array]') defaultLocalHosts = [defaultLocalHosts];
   if (options.service.docker.HostConfig) {
     var ExtraHosts = options.service.docker.HostConfig.ExtraHosts || [];
-    options.service.docker.HostConfig.ExtraHosts = ExtraHosts.concat(defaultLocalHosts.map(function(name) { return name + ':' + self.bosco.options.ip; }));
+    options.service.docker.HostConfig.ExtraHosts = ExtraHosts.concat(defaultLocalHosts.map(function(name) { return name + ':' + self.bosco.options.ip; }), dependencyLocalHosts);
   }
 
   DockerUtils.prepareImage(self.bosco, docker, dockerFqn, options, function(err) {
