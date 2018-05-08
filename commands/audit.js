@@ -1,5 +1,14 @@
 var async = require('async');
-var audit = require('nsp/lib/check');
+var semver = require('semver');
+var nspVersion = require('nsp/package.json').version;
+var audit;
+
+if (semver.gt(nspVersion, '3.2.0')) {
+  audit = require('nsp/lib').check; // nsp > 3.2.0
+} else {
+  audit = require('nsp/lib/check'); // nsp < 3.2.0
+}
+
 var join = require('path').join;
 
 module.exports = {
