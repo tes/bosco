@@ -130,7 +130,7 @@ function cmd(bosco, args) {
         if (useLocalCacheFile) {
           var cacheContent = require(localCacheFile);
           response.writeHead(200, cacheContent.headers);
-          response.end(cacheContent.body);
+          response.end(cacheContent.body, 'binary');
         } else {
           var baseBoscoCdnUrl = bosco.getBaseCdnUrl();
           requestLib.get({uri: cdnUrl, gzip: true, timeout: 5000}, function(err, cdnResponse, body) {
@@ -139,15 +139,31 @@ function cmd(bosco, args) {
               response.writeHead(500);
               return response.end();
             }
-            var responseContent = body.toString();
 
-            // We want to convert all of the in content urls to local bosco ones to take advantage of offline caching
-            // For the js / css files contained within the html fragments for remote services
-            responseContent = responseContent.replace(new RegExp(baseCdn, 'g'), baseBoscoCdnUrl);
+            var contentType = cdnResponse.headers['content-type'];
+            var responseContent = body;
+            var responseHeaders;
 
-            var responseHeaders = _.defaults(_.pick(cdnResponse.headers, ['content-type']), corsHeaders);
+            if (contentType === 'text/css' || contentType === 'application/javascript') {
+              responseContent = body.toString();
+              // We want to convert all of the in content urls to local bosco ones to take advantage of offline caching
+              // For the js / css files contained within the html fragments for remote services
+              responseContent = responseContent.replace(new RegExp(baseCdn, 'g'), baseBoscoCdnUrl);
+              responseHeaders = _.defaults({
+                'content-type': contentType,
+                'content-length': responseContent.length,
+              }, corsHeaders);
+            } else {
+              // All other content we send as binary, where lenght matters
+              responseHeaders = _.defaults({
+                'content-type': contentType,
+                'content-length': cdnResponse.headers['content-length'],
+              }, corsHeaders);
+            }
+
             response.writeHead(200, responseHeaders);
-            response.end(responseContent);
+            response.end(responseContent, 'binary');
+
             var cacheContentToSave = {
               headers: responseHeaders,
               body: responseContent,
