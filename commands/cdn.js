@@ -118,7 +118,8 @@ function cmd(bosco, args) {
         var baseCdn = bosco.config.get('cdn:remoteUrl') || 'https://duqxiy1o2cbw6.cloudfront.net/tes';
         var cdnUrl = baseCdn + pathname;
         var localCacheFolder = path.join(bosco.findConfigFolder(), 'cache');
-        var localCacheFile = path.join(localCacheFolder, pathname.replace(/\//g, '_') + '.json');
+        var cachePrefix = 'v1-';
+        var localCacheFile = path.join(localCacheFolder, cachePrefix + pathname.replace(/\//g, '_') + '.json');
 
         // Ensure local cache folder exists
         if (!fs.existsSync(localCacheFolder)) {
@@ -127,46 +128,42 @@ function cmd(bosco, args) {
 
         var useLocalCacheFile = !bosco.options.nocache && fs.existsSync(localCacheFile);
 
+        var responseContent;
         if (useLocalCacheFile) {
           var cacheContent = require(localCacheFile);
           response.writeHead(200, cacheContent.headers);
-          response.end(cacheContent.body, 'binary');
+          responseContent = cacheContent.isBinary ? Buffer.from(cacheContent.body, 'base64') : cacheContent.body;
+          response.end(responseContent, 'binary');
         } else {
           var baseBoscoCdnUrl = bosco.getBaseCdnUrl();
-          requestLib.get({uri: cdnUrl, gzip: true, timeout: 5000}, function(err, cdnResponse, body) {
+          requestLib.get({uri: cdnUrl, gzip: true, timeout: 5000, encoding: null}, function(err, cdnResponse, body) { // body is a buffer
             if (err) {
               bosco.error('Error proxying asset for: ' + cdnUrl + ', Error: ' + err.message);
               response.writeHead(500);
               return response.end();
             }
-
             var contentType = cdnResponse.headers['content-type'];
-            var responseContent = body;
+            responseContent = body;
             var responseHeaders;
-
             if (contentType === 'text/css' || contentType === 'application/javascript') {
               responseContent = body.toString();
               // We want to convert all of the in content urls to local bosco ones to take advantage of offline caching
               // For the js / css files contained within the html fragments for remote services
               responseContent = responseContent.replace(new RegExp(baseCdn, 'g'), baseBoscoCdnUrl);
-              responseHeaders = _.defaults({
-                'content-type': contentType,
-                'content-length': responseContent.length,
-              }, corsHeaders);
-            } else {
-              // All other content we send as binary, where lenght matters
-              responseHeaders = _.defaults({
-                'content-type': contentType,
-                'content-length': cdnResponse.headers['content-length'],
-              }, corsHeaders);
             }
+
+            responseHeaders = _.defaults({
+              'content-type': contentType,
+              'content-length': responseContent.length,
+            }, corsHeaders);
 
             response.writeHead(200, responseHeaders);
             response.end(responseContent, 'binary');
 
             var cacheContentToSave = {
               headers: responseHeaders,
-              body: responseContent,
+              body: typeof responseContent === 'string' ? responseContent : responseContent.toString('base64'),
+              isBinary: typeof responseContent !== 'string',
             };
             fs.writeSync(fs.openSync(localCacheFile, 'w'), JSON.stringify(cacheContentToSave, null, 2));
           });
