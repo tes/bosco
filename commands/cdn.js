@@ -133,7 +133,7 @@ function cmd(bosco, args) {
           var cacheContent = require(localCacheFile);
           response.writeHead(200, cacheContent.headers);
           responseContent = cacheContent.isBinary ? Buffer.from(cacheContent.body, 'base64') : cacheContent.body;
-          response.end(responseContent, 'binary');
+          response.end(responseContent);
         } else {
           var baseBoscoCdnUrl = bosco.getBaseCdnUrl();
           requestLib.get({uri: cdnUrl, gzip: true, timeout: 5000, encoding: null}, function(err, cdnResponse, body) { // body is a buffer
@@ -158,7 +158,7 @@ function cmd(bosco, args) {
             }, corsHeaders);
 
             response.writeHead(200, responseHeaders);
-            response.end(responseContent, 'binary');
+            response.end(responseContent);
 
             var cacheContentToSave = {
               headers: responseHeaders,
