@@ -1,9 +1,8 @@
 var _ = require('lodash');
 var async = require('async');
-var http = require('http');
-var url = require('url');
 var zlib = require('zlib');
 var mime = require('mime');
+var iltorb = require('iltorb');
 
 module.exports = {
   name: 's3push',
@@ -19,17 +18,6 @@ function getS3Content(file) {
   return file.data || new Buffer(file.content);
 }
 
-// Create a Compoxure cache key for a given S3 url
-function s3cxkey(s3Url) {
-  var key = _.clone(s3Url);
-  key = key.replace('http://', '');
-  key = key.replace(/\./g, '_');
-  key = key.replace(/-/g, '_');
-  key = key.replace(/:/g, '_');
-  key = key.replace(/\//g, '_');
-  return key;
-}
-
 function isContentEmpty(file) {
   return !(file.data || file.content);
 }
@@ -38,11 +26,19 @@ function gzip(content, next) {
   zlib.gzip(content, next);
 }
 
+function brotli(content, next) {
+  iltorb.compress(content)
+    .then(function(output) {
+      next(null, output);
+    }).catch(function(err) {
+      next(err);
+    });
+}
+
 function cmd(bosco, args, callback) {
   if (args.length > 0) tag = args[0];
 
   var cdnUrl = bosco.config.get('aws:cdn') + '/';
-  var compoxureUrl = bosco.config.get('compoxure') ? bosco.config.get('compoxure')[bosco.options.environment] : '';
   noprompt = bosco.options.noprompt;
 
   var maxAge = bosco.config.get('aws:maxage');
@@ -60,90 +56,43 @@ function cmd(bosco, args, callback) {
     return bosco.options.environment + '/' + file;
   }
 
-  function primeCompoxure(htmlUrl, content, next) {
-    var compoxureKey = s3cxkey(htmlUrl);
-    var ttl = 999 * 60 * 60 * 24; // 999 Days
-    var cacheData = {
-      expires: Date.now() + ttl,
-      content: content,
-      ttl: ttl,
-    };
-    var cacheUrl = url.parse(compoxureUrl + compoxureKey);
-    var cacheString = JSON.stringify(cacheData);
-    var headers = {
-      'Content-Type': 'application/json',
-      'Content-Length': cacheString.length,
-    };
-    var calledNext = false;
-
-    var options = {
-      host: cacheUrl.hostname,
-      port: cacheUrl.port,
-      path: cacheUrl.path,
-      method: 'POST',
-      headers: headers,
-    };
-
-    var req = http.request(options, function(res) {
-      res.setEncoding('utf-8');
-      var responseString = '';
-      res.on('data', function(data) {
-        responseString += data;
-      });
-      res.on('end', function() {
-        bosco.log(res.statusCode + ' ' + responseString);
-        if (!calledNext) {
-          calledNext = true;
-          return next();
-        }
-      });
-    });
-
-    req.on('error', function(err) {
-      // TODO: handle error.
-      bosco.error('There was an error posting fragment to Compoxure');
-      if (!calledNext) {
-        calledNext = true;
-        return next(err);
-      }
-    });
-
-    bosco.log('Priming compoxure cache at url: ' + compoxureUrl + compoxureKey);
-    req.write(cacheString);
-    req.end();
-  }
-
   function pushToS3(file, next) {
     if (!bosco.knox) {
       bosco.warn('Knox AWS not configured for environment ' + bosco.options.envrionment + ' - so not pushing ' + file.path + ' to S3.');
       return next(null, {file: file});
     }
 
-    gzip(file.content, function(err, buffer) {
-      if (err) return next(err);
-
+    function upload(encoding, suffix, buffer, cb) {
       var headers = {
         'Content-Type': file.mimeType,
-        'Content-Encoding': 'gzip',
+        'Content-Encoding': encoding,
         'Cache-Control': ('max-age=' + (maxAge === 0 ? '0, must-revalidate' : maxAge) + ', immutable'),
       };
-      bosco.knox.putBuffer(buffer, file.path, headers, function(error, res) {
+      var filePath = file.path + suffix;
+      bosco.knox.putBuffer(buffer, filePath, headers, function(error, res) {
         var err = error;
         if (!err && res.statusCode >= 300) {
           err = new Error('S3 error, code ' + res.statusCode);
           err.statusCode = res.statusCode;
         }
 
+        if (err) return cb(err);
+
+        bosco.log('Pushed to S3: ' + cdnUrl + filePath + ' [' + encoding + ']');
+        return cb();
+      });
+    }
+
+    async.parallel({
+      gzip: async.apply(gzip, file.content),
+      brotli: async.apply(brotli, file.content),
+    }, function(err, compressedContent) {
+      if (err) return next(err);
+      upload('gzip', '', compressedContent.gzip, function(err) {
         if (err) return next(err);
-
-        bosco.log('Pushed to S3: ' + cdnUrl + file.path);
-        if (!compoxureUrl || file.type !== 'html') {
+        upload('br', '.br', compressedContent.brotli, function(err) {
+          if (err) return next(err);
           return next(null, {file: file});
-        }
-
-        primeCompoxure(cdnUrl + file.path, file.content.toString(), function(err) {
-          if (err) bosco.error('Error flushing compoxure');
-          next(err, {file: file});
         });
       });
     });

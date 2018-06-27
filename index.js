@@ -536,7 +536,7 @@ Bosco.prototype.log = function(msg, args) {
 };
 
 Bosco.prototype.error = function(msg, args) {
-  this.errorStack.push({msg: msg, args: args});
+  if (this.errorStack) { this.errorStack.push({msg: msg, args: args}); }
   this._log('Bosco'.red, msg, args);
 };
 
