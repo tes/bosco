@@ -555,7 +555,7 @@ Bosco.prototype._log = function(identifier, msg, args) {
     time: new Date(),
     message: args ? sf(msg, args) : msg,
   };
-  if (!this.options.quiet) {
+  if (this.options && !this.options.quiet) {
     this.console.log(sf('[{time:hh:mm:ss}] {identifier}: {message}', parts));
   }
 };
