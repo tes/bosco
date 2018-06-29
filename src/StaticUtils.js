@@ -113,6 +113,16 @@ module.exports = function(bosco) {
       });
     }
 
+    if (boscoRepo.siteAssets) {
+      _.forEach(boscoRepo.siteAssets, function(siteAsset) {
+        var assets = globAsset(siteAsset.glob, path.join(boscoRepo.path, siteAsset.basePath));
+        _.forEach(assets, function(asset) {
+          assetKey = path.join('asset', asset);
+          assetHelper.addAsset(staticAssets, 'asset', assetKey, asset, 'site', 'asset', siteAsset.basePath, true, {alreadyMinified: true});
+        });
+      });
+    }
+
     next(null, staticAssets);
   }
 

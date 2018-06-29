@@ -119,6 +119,11 @@ function cmd(bosco, args, callback) {
         bosco.log('Uploading ' + filePath + ' ... ');
       }
 
+      // This is useful for testing
+      // bosco.knox.putBuffer = function(buffer, filePath, headers, pcb) {
+      //   pcb(null, {statusCode: 200});
+      // }
+
       bosco.knox.putBuffer(buffer, filePath, headers, function(error, res) {
         var err = error;
         if (!err && res.statusCode >= 300) {
