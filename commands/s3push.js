@@ -3,6 +3,7 @@ var async = require('async');
 var zlib = require('zlib');
 var mime = require('mime');
 var iltorb = require('iltorb');
+var Table = require('cli-table');
 
 module.exports = {
   name: 's3push',
@@ -35,6 +36,22 @@ function brotli(content, next) {
     });
 }
 
+function bytesToSize(bytes) {
+  var sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB'];
+  if (bytes === 0) return 'n/a';
+  var i = parseInt(Math.floor(Math.log(bytes) / Math.log(1024)), 10);
+  if (i === 0) return bytes + ' ' + sizes[i];
+  return (bytes / Math.pow(1024, i)).toFixed(1) + ' ' + sizes[i];
+}
+
+function calcFluidColumnWidth(fixedColumnWidths, numberOfColumns) {
+  var minFluidColWidth = 20;
+  var fluidColWidth = process.stdout.columns - fixedColumnWidths - numberOfColumns - 1;
+  return (fluidColWidth > minFluidColWidth)
+    ? fluidColWidth
+    : minFluidColWidth;
+}
+
 function cmd(bosco, args, callback) {
   if (args.length > 0) tag = args[0];
 
@@ -44,12 +61,29 @@ function cmd(bosco, args, callback) {
   var maxAge = bosco.config.get('aws:maxage');
   if (typeof maxAge !== 'number') maxAge = 365000000;
 
+  var assetLog = {};
+
   bosco.log('Compile front end assets across services ' + (tag ? 'for tag: ' + tag.blue : ''));
 
   var repos = bosco.getRepos();
   if (!repos) {
     bosco.error('You are repo-less :( You need to initialise bosco first, try \'bosco clone\'.');
     return callback(new Error('no repos'));
+  }
+
+  function printAssets(assets) {
+    var table = new Table({
+      chars: {'mid': '', 'left-mid': '', 'mid-mid': '', 'right-mid': ''},
+      head: ['Asset', 'Type', 'Encodings', 'Time', 'Size'],
+      colWidths: [calcFluidColumnWidth(75, 5), 30, 15, 10, 15],
+    });
+
+    _.forEach(assets, function(asset) {
+      table.push([asset.fullPath, asset.mimeType, asset.encodings ? asset.encodings.join(',') : 'raw', asset.duration + ' ms', bytesToSize(asset.fileSize)]);
+    });
+
+    bosco.console.log(table.toString());
+    bosco.console.log('\r');
   }
 
   function getS3Filename(file) {
@@ -62,44 +96,67 @@ function cmd(bosco, args, callback) {
       return next(null, {file: file});
     }
 
+    assetLog[file.path].started = Date.now();
+
     function upload(encoding, suffix, buffer, cb) {
       var headers = {
         'Content-Type': file.mimeType,
-        'Content-Encoding': encoding,
+        'Vary': 'accept-encoding',
         'Cache-Control': ('max-age=' + (maxAge === 0 ? '0, must-revalidate' : maxAge) + ', immutable'),
       };
+
+      if (encoding) {
+        headers['Content-Encoding'] = encoding;
+      }
+
       var filePath = file.path + suffix;
+
+      assetLog[file.path].fullPath = cdnUrl + file.path;
+      assetLog[file.path].encodings.push(encoding);
+      assetLog[file.path].fileSize = buffer.byteLength;
+
+      if (bosco.options.verbose) {
+        bosco.log('Uploading ' + filePath + ' ... ');
+      }
+
       bosco.knox.putBuffer(buffer, filePath, headers, function(error, res) {
         var err = error;
         if (!err && res.statusCode >= 300) {
           err = new Error('S3 error, code ' + res.statusCode);
           err.statusCode = res.statusCode;
         }
-
         if (err) return cb(err);
-
-        bosco.log('Pushed to S3: ' + cdnUrl + filePath + ' [' + encoding + ']');
+        assetLog[file.path].finished = Date.now();
+        assetLog[file.path].duration = assetLog[file.path].finished - assetLog[file.path].started;
         return cb();
       });
     }
 
-    async.parallel({
-      gzip: async.apply(gzip, file.content),
-      brotli: async.apply(brotli, file.content),
-    }, function(err, compressedContent) {
-      if (err) return next(err);
-      upload('gzip', '', compressedContent.gzip, function(err) {
+    var zipTypes = bosco.config.compressFileTypes || ['application/javascript', 'application/json', 'application/xml', 'text/html', 'text/xml', 'text/css', 'text/plain', 'image/svg+xml'];
+    if (zipTypes.includes(file.mimeType)) {
+      async.parallel({
+        gzip: async.apply(gzip, file.content),
+        brotli: async.apply(brotli, file.content),
+      }, function(err, compressedContent) {
         if (err) return next(err);
-        upload('br', '.br', compressedContent.brotli, function(err) {
+        upload('gzip', '', compressedContent.gzip, function(err) {
           if (err) return next(err);
-          return next(null, {file: file});
+          upload('br', '.br', compressedContent.brotli, function(err) {
+            if (err) return next(err);
+            return next(null, {file: file});
+          });
         });
       });
-    });
+    } else {
+      upload('', '', file.content, function() {
+        return next(null, {file: file});
+      });
+    }
   }
 
   function pushAllToS3(staticAssets, next) {
     var toPush = [];
+    bosco.log('Compressing and pushing ' + staticAssets.length + ' assets to S3, here we go ...');
     _.forEach(staticAssets, function(asset) {
       var key = asset.assetKey;
 
@@ -113,7 +170,10 @@ function cmd(bosco, args, callback) {
       var s3Filename = getS3Filename(key);
       var mimeType = asset.mimeType || mime.lookup(key);
 
-      bosco.log('Staging publish: ' + s3Filename.blue + ' (' + mimeType + ')');
+      assetLog[s3Filename] = {
+        mimeType: mimeType,
+        encodings: [],
+      };
 
       toPush.push({
         content: getS3Content(asset),
@@ -189,6 +249,7 @@ function cmd(bosco, args, callback) {
           bosco.error('There was an error: ' + err.message);
           return next(err);
         }
+        printAssets(assetLog);
         bosco.log('Done');
         next();
       });

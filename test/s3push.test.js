@@ -175,13 +175,19 @@ describe('s3push', function() {
     var message = 'This is a test error message';
     var s3Data = [];
     function putBuffer(buffer, path, headers, next) {
-      if (headers['Content-Encoding'] === 'gzip') {
-        zlib.gunzip(buffer, function(err, buf) {
-          if (err) return next(err);
-          s3Data.push({path: path, content: buf.toString()});
+      if (headers['Content-Encoding']) {
+        if (headers['Content-Encoding'] === 'gzip') {
+          zlib.gunzip(buffer, function(err, buf) {
+            if (err) return next(err);
+            s3Data.push({content: buf.toString(), path: path});
+            next(null, {statusCode: 200});
+          });
+        } else {
+          // Test only checks gzip
           next(null, {statusCode: 200});
-        });
+        }
       } else {
+        s3Data.push({content: buffer.toString(), path: path});
         next(null, {statusCode: 200});
       }
     }
