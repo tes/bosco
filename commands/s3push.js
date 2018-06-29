@@ -72,18 +72,20 @@ function cmd(bosco, args, callback) {
   }
 
   function printAssets(assets) {
-    var table = new Table({
-      chars: {'mid': '', 'left-mid': '', 'mid-mid': '', 'right-mid': ''},
-      head: ['Asset', 'Type', 'Encodings', 'Time', 'Size'],
-      colWidths: [calcFluidColumnWidth(75, 5), 30, 15, 10, 15],
-    });
+    if (!bosco.options.quiet) {
+      var table = new Table({
+        chars: {'mid': '', 'left-mid': '', 'mid-mid': '', 'right-mid': ''},
+        head: ['Asset', 'Type', 'Encodings', 'Time', 'Size'],
+        colWidths: [calcFluidColumnWidth(75, 5), 30, 15, 10, 15],
+      });
 
-    _.forEach(assets, function(asset) {
-      table.push([asset.fullPath, asset.mimeType, asset.encodings ? asset.encodings.join(',') : 'raw', asset.duration + ' ms', bytesToSize(asset.fileSize)]);
-    });
+      _.forEach(assets, function(asset) {
+        table.push([asset.fullPath, asset.mimeType, asset.encodings ? asset.encodings.join(',') : 'raw', asset.duration + ' ms', bytesToSize(asset.fileSize)]);
+      });
 
-    bosco.console.log(table.toString());
-    bosco.console.log('\r');
+      bosco.console.log(table.toString());
+      bosco.console.log('\r');
+    }
   }
 
   function getS3Filename(file) {
