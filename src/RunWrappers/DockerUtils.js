@@ -43,6 +43,18 @@ function processCmdVars(optsCreate, name, cwd) {
   }
 }
 
+function stopAndRemoveContainer(container, callback) {
+  container.inspect().then(function(data) {
+    if (data.State.Running) {
+      container.stop().then(function() {
+        container.remove(callback);
+      });
+    } else {
+      container.remove(callback);
+    }
+  });
+}
+
 function createContainer(docker, fqn, options, next) {
   var optsCreate = {
     'name': options.service.name,
@@ -77,8 +89,8 @@ function createContainer(docker, fqn, options, next) {
     docker.createContainer(optsCreate, next);
   }
   var container = docker.getContainer(optsCreate.name);
-  if (container) return container.remove(doCreate);
-  doCreate();
+  if (container) stopAndRemoveContainer(container, doCreate);
+  else doCreate();
 }
 
 /**
