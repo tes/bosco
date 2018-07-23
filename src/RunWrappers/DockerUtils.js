@@ -89,8 +89,11 @@ function createContainer(docker, fqn, options, next) {
     docker.createContainer(optsCreate, next);
   }
   var container = docker.getContainer(optsCreate.name);
-  if (container) stopAndRemoveContainer(container, doCreate);
-  else doCreate();
+  container.inspect(function(err, data) {
+    if (err) return doCreate();
+    if (data && data.Id) stopAndRemoveContainer(container, doCreate);
+    else doCreate();
+  });
 }
 
 /**

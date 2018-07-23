@@ -99,9 +99,9 @@ Runner.prototype.start = function(options, next) {
     options.service.docker.HostConfig.ExtraHosts = ExtraHosts.concat(defaultLocalHosts.map(function(name) { return name + ':' + self.bosco.options.ip; }), dependencyLocalHosts);
   }
 
+
   DockerUtils.prepareImage(self.bosco, docker, dockerFqn, options, function(err) {
     if (err) return next(err);
-
     DockerUtils.createContainer(docker, dockerFqn, options, function(err, container) {
       if (err) return next(err);
       DockerUtils.startContainer(self.bosco, docker, dockerFqn, options, container, next);
