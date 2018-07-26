@@ -200,7 +200,7 @@ describe('s3push', function() {
       environment: 'test',
       service: true,
       knox: {putBuffer: putBuffer},
-      fileTypesWhitelist: ['js', 'css', 'img', 'html', 'swf', 'fonts', 'pdf']
+      fileTypesWhitelist: ['js', 'css', 'img', 'swf', 'fonts', 'pdf']
     };
     options.options = options;
     var localBosco = boscoMock(options);
@@ -212,6 +212,7 @@ describe('s3push', function() {
         staticData = _.filter(_.map(staticAssets, function(val) {
           var isEmpty = !(val.data || val.content);
           if (isEmpty || val.assetKey === 'formattedAssets') return;
+          if (val.type === 'html') return;
           return {path: 'test/' + val.assetKey, content: val.content};
         }));
         next(err, staticAssets);

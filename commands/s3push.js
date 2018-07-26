@@ -3,7 +3,7 @@ var async = require('async');
 var zlib = require('zlib');
 var mime = require('mime');
 var iltorb = require('iltorb');
-var Table = require('cli-table');
+var Table = require('tty-table');
 
 module.exports = {
   name: 's3push',
@@ -44,14 +44,6 @@ function bytesToSize(bytes) {
   return (bytes / Math.pow(1024, i)).toFixed(1) + ' ' + sizes[i];
 }
 
-function calcFluidColumnWidth(fixedColumnWidths, numberOfColumns) {
-  var minFluidColWidth = 20;
-  var fluidColWidth = process.stdout.columns - fixedColumnWidths - numberOfColumns - 1;
-  return (fluidColWidth > minFluidColWidth)
-    ? fluidColWidth
-    : minFluidColWidth;
-}
-
 function cmd(bosco, args, callback) {
   if (args.length > 0) tag = args[0];
 
@@ -72,20 +64,32 @@ function cmd(bosco, args, callback) {
   }
 
   function printAssets(assets) {
-    if (!bosco.options.quiet) {
-      var table = new Table({
-        chars: {'mid': '', 'left-mid': '', 'mid-mid': '', 'right-mid': ''},
-        head: ['Asset', 'Type', 'Encodings', 'Time', 'Size'],
-        colWidths: [calcFluidColumnWidth(75, 5), 30, 15, 10, 15],
-      });
+    var header = [
+      { value: 'path', headerColor: 'cyan', headerAlign: 'left', align: 'left' },
+      { value: 'mime type', headerColor: 'cyan' },
+      { value: 'encoding', headerColor: 'cyan', align: 'left' },
+      { value: 'duration', headerColor: 'cyan' },
+      { value: 'size', headerColor: 'cyan' },
+    ];
 
-      _.forEach(assets, function(asset) {
-        table.push([asset.fullPath, asset.mimeType, asset.encodings ? asset.encodings.join(',') : 'raw', asset.duration + ' ms', bytesToSize(asset.fileSize)]);
-      });
+    var rows = [];
+    var options = {};
+    var imageCount = 0;
 
-      bosco.console.log(table.toString());
-      bosco.console.log('\r');
-    }
+    _.forEach(assets, function(asset) {
+      if (asset.mimeType.includes('image') || asset.mimeType.includes('font')) {
+        imageCount++;
+        return;
+      }
+      rows.push([asset.fullPath, asset.mimeType, asset.encodings ? asset.encodings.join(',') : 'raw', asset.duration + ' ms', bytesToSize(asset.fileSize)]);
+    });
+
+    rows.push(['Uploaded ' + imageCount + ' images or fonts', 'image/font', '', '', '']);
+
+    var table = new Table(header, rows, options);
+
+    bosco.console.log(table.render());
+    bosco.console.log('\r');
   }
 
   function getS3Filename(file) {
@@ -171,6 +175,10 @@ function cmd(bosco, args, callback) {
       if (tag && tag !== asset.tag) return;
       if (isContentEmpty(asset)) {
         bosco.log('Skipping asset: ' + key.blue + ' (content empty)');
+        return;
+      }
+      if (asset.type === 'html') {
+        // No longer upload html to S3
         return;
       }
 
