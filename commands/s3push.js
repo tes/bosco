@@ -66,14 +66,13 @@ function cmd(bosco, args, callback) {
   function printAssets(assets) {
     var header = [
       { value: 'path', headerColor: 'cyan', headerAlign: 'left', align: 'left' },
-      { value: 'mime type', headerColor: 'cyan' },
       { value: 'encoding', headerColor: 'cyan', align: 'left' },
       { value: 'duration', headerColor: 'cyan' },
       { value: 'size', headerColor: 'cyan' },
     ];
 
     var rows = [];
-    var options = {};
+    var options = {compact: true, borderStyle: 0};
     var imageCount = 0;
 
     _.forEach(assets, function(asset) {
@@ -81,10 +80,10 @@ function cmd(bosco, args, callback) {
         imageCount++;
         return;
       }
-      rows.push([asset.fullPath, asset.mimeType, asset.encodings ? asset.encodings.join(',') : 'raw', asset.duration + ' ms', bytesToSize(asset.fileSize)]);
+      rows.push([asset.fullPath, asset.encodings ? asset.encodings.join(',') : 'raw', asset.duration + ' ms', bytesToSize(asset.fileSize)]);
     });
 
-    rows.push(['Uploaded ' + imageCount + ' images or fonts', 'image/font', '', '', '']);
+    rows.push(['Uploaded ' + imageCount + ' images or fonts', '', '', '']);
 
     var table = new Table(header, rows, options);
 
