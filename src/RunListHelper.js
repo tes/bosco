@@ -176,8 +176,7 @@ function getRunList(bosco, repos, repoRegex, watchRegex, repoTag, displayOnly, n
   }
 
   function matchesRegexOrTag(repo, tags) {
-    var isModule = repo.indexOf('module-') >= 0;
-    return !isModule && (!repoTag && repo.match(repoRegex)) || (repoTag && _.includes(tags, repoTag));
+    return (!repoTag && repo.match(repoRegex)) || (repoTag && _.includes(tags, repoTag));
   }
 
   function boscoOptionFilter(option, fn) {
