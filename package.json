@@ -71,7 +71,7 @@
     "handlebars": "^4.0.3",
     "highland": "^2.2.0",
     "iltorb": "^2.3.2",
-    "inquirer": "^1.1.2",
+    "inquirer": "^1.2.3",
     "ip": "^1.1.4",
     "json2csv": "^3.7.3",
     "knox": "^0.9.0",
