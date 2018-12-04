@@ -100,7 +100,7 @@
     "yargs": "^4.8.1"
   },
   "devDependencies": {
-    "coveralls": "^2.11.1",
+    "coveralls": "^3.0.2",
     "eslint": "^1.10.2",
     "eslint-config-airbnb": "^0.1.0",
     "expect.js": "^0.3.1",
