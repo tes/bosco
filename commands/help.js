@@ -3,14 +3,14 @@ var spawn = require('child_process').spawn;
 module.exports = {
   name: 'help',
   description: 'Shows help about a Bosco command',
-  usage: '<command>',
+  usage: '<command>'
 };
 
 // Shamelessly stolen from npm
 function viewMan(man, cb) {
   var env = {};
 
-  Object.keys(process.env).forEach(function(i) {
+  Object.keys(process.env).forEach(function (i) {
     env[i] = process.env[i];
   });
 
@@ -24,7 +24,7 @@ function cmd(bosco, args) {
   if (!cmdName) return bosco.error('You need to provide a command name. e.g: bosco help ' + module.exports.usage);
 
   var man = 'bosco-' + cmdName;
-  viewMan(man, function() {});
+  viewMan(man, function () {});
 }
 
 module.exports.cmd = cmd;

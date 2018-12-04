@@ -40,14 +40,14 @@ function getServiceDockerConfig(bosco, runConfig, svcConfig) {
       version: 'latest',
       docker: {
         Config: {
-          Env: ['TSL_ENV=local'],
+          Env: ['TSL_ENV=local']
         },
         HostConfig: {
           ExposedPorts: {},
           PortBindings: {},
-          ExtraHosts: [],
-        },
-      },
+          ExtraHosts: []
+        }
+      }
     };
     if (svcConfig.server && svcConfig.server.port) {
       var exposedPort = svcConfig.server.port + '/tcp';
@@ -55,7 +55,7 @@ function getServiceDockerConfig(bosco, runConfig, svcConfig) {
       dockerConfig.docker.HostConfig.ExposedPorts[exposedPort] = {};
       dockerConfig.docker.HostConfig.PortBindings[exposedPort] = [{
         HostIp: '0.0.0.0',
-        HostPort: '' + svcConfig.server.port,
+        HostPort: '' + svcConfig.server.port
       }];
       if (svcConfig.service) {
         dockerConfig.name = svcConfig.service.name;
@@ -66,7 +66,7 @@ function getServiceDockerConfig(bosco, runConfig, svcConfig) {
 }
 
 function getServiceConfigFromGithub(bosco, repo, svcConfig, next) {
-  var client = github.client(bosco.config.get('github:authToken'), {hostname: bosco.config.get('github:apiHostname')});
+  var client = github.client(bosco.config.get('github:authToken'), { hostname: bosco.config.get('github:apiHostname') });
   var githubRepo = getGithubRepo(bosco, repo);
   var cachedConfig = getCachedConfig(bosco, repo, false);
   var configKey = 'cache:github:' + githubRepo;
@@ -85,14 +85,14 @@ function getServiceConfigFromGithub(bosco, repo, svcConfig, next) {
   } else {
     bosco.log('Downloading remote service config from github: ' + githubRepo.cyan);
     var ghrepo = client.repo(githubRepo);
-    ghrepo.contents('bosco-service.json', function(err, boscoSvc) {
+    ghrepo.contents('bosco-service.json', function (err, boscoSvc) {
       if (err) {
         return next(err);
       }
       var boscoSvcContent = new Buffer(boscoSvc.content, 'base64');
       var boscoSvcConfig = JSON.parse(boscoSvcContent.toString());
       boscoSvcConfig.name = boscoSvcConfig.name || repo;
-      ghrepo.contents('config/default.json', function(err, defaultCfg) {
+      ghrepo.contents('config/default.json', function (err, defaultCfg) {
         if (!err || defaultCfg) {
           var defaultCfgContent = new Buffer(defaultCfg.content, 'base64');
           var defaultCfgConfig = JSON.parse(defaultCfgContent.toString());
@@ -102,7 +102,7 @@ function getServiceConfigFromGithub(bosco, repo, svcConfig, next) {
           boscoSvcConfig.service = _.defaults(boscoSvcConfig.service, getServiceDockerConfig(bosco, svcConfig, boscoSvcConfig));
         }
         bosco.config.set(configKey, boscoSvcConfig);
-        bosco.config.save(function() {
+        bosco.config.save(function () {
           next(null, boscoSvcConfig);
         });
       });
@@ -112,7 +112,7 @@ function getServiceConfigFromGithub(bosco, repo, svcConfig, next) {
 
 function getRunConfig(bosco, repo, watchRegex, next) {
   var repoPath = bosco.getRepoPath(repo);
-  var watch = repo.match(watchRegex) ? true : false;
+  var watch = !!repo.match(watchRegex);
   var packageJson = [repoPath, 'package.json'].join('/');
   var boscoService = [repoPath, 'bosco-service.json'].join('/');
   var svcConfig = {
@@ -120,7 +120,7 @@ function getRunConfig(bosco, repo, watchRegex, next) {
     cwd: repoPath,
     watch: watch,
     order: 50,
-    service: {},
+    service: {}
   };
   var pkg;
   var svc;
@@ -145,7 +145,7 @@ function getRunConfig(bosco, repo, watchRegex, next) {
     svc = require(boscoService);
     svcConfig = _.extend(svcConfig, {
       tags: svc.tags,
-      order: svc.order,
+      order: svc.order
     });
     if (svc.service) {
       svcConfig.service = _.extend(svcConfig.service, svc.service);
@@ -181,7 +181,7 @@ function getRunList(bosco, repos, repoRegex, watchRegex, repoTag, displayOnly, n
 
   function boscoOptionFilter(option, fn) {
     if (bosco.options[option]) return fn;
-    return function() {
+    return function () {
       return true;
     };
   }
@@ -191,7 +191,7 @@ function getRunList(bosco, repos, repoRegex, watchRegex, repoTag, displayOnly, n
   }
 
   function isType(type) {
-    return function(repo) {
+    return function (repo) {
       return getConfig(repo).service.type === type;
     };
   }
@@ -213,12 +213,12 @@ function getRunList(bosco, repos, repoRegex, watchRegex, repoTag, displayOnly, n
 
   // in order to understand recursion one must understand recursion
   function resolveDependencies(repoList, resolved, cb) {
-    async.reduce(repoList, resolved, function(memo, repo, cb2) {
+    async.reduce(repoList, resolved, function (memo, repo, cb2) {
       if (_.includes(memo, repo)) {
         return cb2(null, memo);
       }
       memo.push(repo);
-      getRunConfig(bosco, repo, watchRegex, function(err, svcConfig) {
+      getRunConfig(bosco, repo, watchRegex, function (err, svcConfig) {
         if (err) {
           bosco.error('Unable to retrieve config from github for: ' + repo.cyan + ' because: ' + err.message);
           return cb2(null, memo);
@@ -233,7 +233,7 @@ function getRunList(bosco, repos, repoRegex, watchRegex, repoTag, displayOnly, n
           cb2(null, memo);
         }
       });
-    }, function(err, result) {
+    }, function (err, result) {
       return cb(null, result);
     });
   }
@@ -272,7 +272,7 @@ function getRunList(bosco, repos, repoRegex, watchRegex, repoTag, displayOnly, n
 
   var filteredRepos = _.filter(repos, matchingRepo);
 
-  resolveDependencies(filteredRepos, [], function(err, repoList) {
+  resolveDependencies(filteredRepos, [], function (err, repoList) {
     var runList = _.chain(repoList)
       .filter(boscoOptionFilter('deps-only', notCurrentService))
       .filter(boscoOptionFilter('docker-only', isType('remote')))
@@ -297,8 +297,8 @@ function getRunList(bosco, repos, repoRegex, watchRegex, repoTag, displayOnly, n
 }
 
 function getRepoRunList(bosco, repos, repoRegex, watchRegex, repoTag, displayOnly, next) {
-  getRunList(bosco, repos, repoRegex, watchRegex, repoTag, displayOnly, function(err, runList) {
-    next(null, _.map(runList, function(repo) { return {name: repo.name, type: repo.service.type}; }));
+  getRunList(bosco, repos, repoRegex, watchRegex, repoTag, displayOnly, function (err, runList) {
+    next(null, _.map(runList, function (repo) { return { name: repo.name, type: repo.service.type }; }));
   });
 }
 
@@ -306,5 +306,5 @@ module.exports = {
   getRunList: getRunList,
   getRepoRunList: getRepoRunList,
   getServiceConfigFromGithub: getServiceConfigFromGithub,
-  getServiceDockerConfig: getServiceDockerConfig,
+  getServiceDockerConfig: getServiceDockerConfig
 };

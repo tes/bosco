@@ -9,7 +9,7 @@ module.exports = {
   name: 's3push',
   description: 'Builds all of the front end assets for each microservice and pushes them to S3 for the current environment',
   usage: '[-e <environment>] [-b <build>] [<tag>]',
-  requiresNvm: true,
+  requiresNvm: true
 };
 
 var tag = '';
@@ -29,9 +29,9 @@ function gzip(content, next) {
 
 function brotli(content, next) {
   iltorb.compress(content)
-    .then(function(output) {
+    .then(function (output) {
       next(null, output);
-    }).catch(function(err) {
+    }).catch(function (err) {
       next(err);
     });
 }
@@ -65,17 +65,19 @@ function cmd(bosco, args, callback) {
 
   function printAssets(assets) {
     var header = [
-      { value: 'path', headerColor: 'cyan', headerAlign: 'left', align: 'left' },
+      {
+        value: 'path', headerColor: 'cyan', headerAlign: 'left', align: 'left'
+      },
       { value: 'encoding', headerColor: 'cyan', align: 'left' },
       { value: 'duration', headerColor: 'cyan' },
-      { value: 'size', headerColor: 'cyan' },
+      { value: 'size', headerColor: 'cyan' }
     ];
 
     var rows = [];
-    var options = {compact: true, borderStyle: 0};
+    var options = { compact: true, borderStyle: 0 };
     var imageCount = 0;
 
-    _.forEach(assets, function(asset) {
+    _.forEach(assets, function (asset) {
       if (asset.mimeType.includes('image') || asset.mimeType.includes('font')) {
         imageCount++;
         return;
@@ -98,7 +100,7 @@ function cmd(bosco, args, callback) {
   function pushToS3(file, next) {
     if (!bosco.knox) {
       bosco.warn('Knox AWS not configured for environment ' + bosco.options.envrionment + ' - so not pushing ' + file.path + ' to S3.');
-      return next(null, {file: file});
+      return next(null, { file: file });
     }
 
     assetLog[file.path].started = Date.now();
@@ -106,8 +108,8 @@ function cmd(bosco, args, callback) {
     function upload(encoding, suffix, buffer, cb) {
       var headers = {
         'Content-Type': file.mimeType,
-        'Vary': 'accept-encoding',
-        'Cache-Control': ('max-age=' + (maxAge === 0 ? '0, must-revalidate' : maxAge) + ', immutable'),
+        Vary: 'accept-encoding',
+        'Cache-Control': ('max-age=' + (maxAge === 0 ? '0, must-revalidate' : maxAge) + ', immutable')
       };
 
       if (encoding) {
@@ -129,7 +131,7 @@ function cmd(bosco, args, callback) {
       //   pcb(null, {statusCode: 200});
       // }
 
-      bosco.knox.putBuffer(buffer, filePath, headers, function(error, res) {
+      bosco.knox.putBuffer(buffer, filePath, headers, function (error, res) {
         var err = error;
         if (!err && res.statusCode >= 300) {
           err = new Error('S3 error, code ' + res.statusCode);
@@ -146,20 +148,20 @@ function cmd(bosco, args, callback) {
     if (zipTypes.includes(file.mimeType)) {
       async.parallel({
         gzip: async.apply(gzip, file.content),
-        brotli: async.apply(brotli, file.content),
-      }, function(err, compressedContent) {
+        brotli: async.apply(brotli, file.content)
+      }, function (err, compressedContent) {
         if (err) return next(err);
-        upload('gzip', '', compressedContent.gzip, function(err) {
+        upload('gzip', '', compressedContent.gzip, function (err) {
           if (err) return next(err);
-          upload('br', '.br', compressedContent.brotli, function(err) {
+          upload('br', '.br', compressedContent.brotli, function (err) {
             if (err) return next(err);
-            return next(null, {file: file});
+            return next(null, { file: file });
           });
         });
       });
     } else {
-      upload('', '', file.content, function() {
-        return next(null, {file: file});
+      upload('', '', file.content, function () {
+        return next(null, { file: file });
       });
     }
   }
@@ -167,7 +169,7 @@ function cmd(bosco, args, callback) {
   function pushAllToS3(staticAssets, next) {
     var toPush = [];
     bosco.log('Compressing and pushing ' + staticAssets.length + ' assets to S3, here we go ...');
-    _.forEach(staticAssets, function(asset) {
+    _.forEach(staticAssets, function (asset) {
       var key = asset.assetKey;
 
       if (key === 'formattedAssets') return;
@@ -186,14 +188,14 @@ function cmd(bosco, args, callback) {
 
       assetLog[s3Filename] = {
         mimeType: mimeType,
-        encodings: [],
+        encodings: []
       };
 
       toPush.push({
         content: getS3Content(asset),
         path: s3Filename,
         type: asset.type,
-        mimeType: mimeType,
+        mimeType: mimeType
       });
     });
 
@@ -203,7 +205,7 @@ function cmd(bosco, args, callback) {
         content: staticAssets.formattedAssets,
         path: getS3Filename('index.html'),
         type: 'html',
-        mimeType: 'text/html',
+        mimeType: 'text/html'
       });
     }
 
@@ -215,11 +217,11 @@ function cmd(bosco, args, callback) {
     bosco.prompt.get({
       properties: {
         confirm: {
-          description: message,
-        },
-      },
-    }, function(err, result) {
-      if (!result) return next({message: 'Did not confirm'});
+          description: message
+        }
+      }
+    }, function (err, result) {
+      if (!result) return next({ message: 'Did not confirm' });
       if (result.confirm === 'Y' || result.confirm === 'y') {
         next(null, true);
       } else {
@@ -238,10 +240,10 @@ function cmd(bosco, args, callback) {
       tagFilter: tag,
       watchBuilds: false,
       reloadOnly: false,
-      isCdn: false,
+      isCdn: false
     };
 
-    bosco.staticUtils.getStaticAssets(options, function(err, staticAssets) {
+    bosco.staticUtils.getStaticAssets(options, function (err, staticAssets) {
       if (err) {
         bosco.error('There was an error: ' + err.message);
         return next(err);
@@ -250,15 +252,15 @@ function cmd(bosco, args, callback) {
         bosco.warn('No assets found to push ...');
         return next();
       }
-      var erroredAssets = _.filter(staticAssets, {type: 'error'});
+      var erroredAssets = _.filter(staticAssets, { type: 'error' });
       if (erroredAssets.length > 0) {
         bosco.error('There were errors encountered above that you must resolve:');
-        erroredAssets.forEach(function(e) {
+        erroredAssets.forEach(function (e) {
           bosco.error(e.message);
         });
         return next(new Error('Errors encountered during build'));
       }
-      pushAllToS3(staticAssets, function(err) {
+      pushAllToS3(staticAssets, function (err) {
         if (err) {
           bosco.error('There was an error: ' + err.message);
           return next(err);
@@ -273,7 +275,7 @@ function cmd(bosco, args, callback) {
   if (noprompt) return go(callback);
 
   var confirmMsg = 'Are you sure you want to publish '.white + (tag ? 'all ' + tag.blue + ' assets in ' : 'ALL'.red + ' assets in ').white + bosco.options.environment.blue + ' (y/N)?'.white;
-  confirm(confirmMsg, function(err, confirmed) {
+  confirm(confirmMsg, function (err, confirmed) {
     if (err) return callback(err);
     if (!confirmed) return callback(new Error('Not confirmed'));
     go(callback);

@@ -4,22 +4,20 @@ var exec = require('child_process').exec;
 module.exports = {
   name: 'upstream',
   description: 'Runs a git fetch and tells you what has changed upstream for all your repos',
-  usage: '[-r <repoPattern>]',
+  usage: '[-r <repoPattern>]'
 };
 
 function upstream(bosco, orgPath, next) {
   exec('git fetch; git log HEAD..origin/master --oneline', {
-    cwd: orgPath,
-  }, function(err, stdout, stderr) {
+    cwd: orgPath
+  }, function (err, stdout, stderr) {
     if (err) {
       bosco.error(stderr);
+    } else if (stdout) {
+      bosco.log('Changes in ' + orgPath.blue);
+      bosco.console.log(stdout);
     } else {
-      if (stdout) {
-        bosco.log('Changes in ' + orgPath.blue);
-        bosco.console.log(stdout);
-      } else {
-        bosco.log(orgPath.blue + ': ' + 'No Change'.green);
-      }
+      bosco.log(orgPath.blue + ': ' + 'No Change'.green);
     }
     next(err);
   });
@@ -37,14 +35,14 @@ function cmd(bosco) {
       var repoPath = bosco.getRepoPath(repo);
       if (!repo.match(repoRegex)) return repoCb();
       upstream(bosco, repoPath, repoCb);
-    }, function() {
+    }, function () {
       cb();
     });
   }
 
   bosco.log('Checking upstream origin for changes, this may take a while ...');
 
-  changedRepos(function() {
+  changedRepos(function () {
     bosco.log('Complete');
   });
 }

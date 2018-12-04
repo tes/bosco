@@ -15,18 +15,18 @@ module.exports = {
     name: 'noremote',
     alias: 'nr',
     type: 'boolean',
-    desc: 'Do not pull docker images for remote repositories (dependencies)',
+    desc: 'Do not pull docker images for remote repositories (dependencies)'
   },
   {
     name: 'infra',
     type: 'boolean',
-    desc: 'Only pull infra- dependencies',
-  }],
+    desc: 'Only pull infra- dependencies'
+  }]
 };
 
 function dockerPullService(bosco, definition, next) {
   if (!definition.service || definition.service.type !== 'docker') return next();
-  DockerRunner.update(definition, function(err) {
+  DockerRunner.update(definition, function (err) {
     if (err) {
       var errMessage = err.reason ? err.reason : err;
       bosco.error('Error pulling ' + definition.name + ', reason: ' + errMessage);
@@ -69,7 +69,7 @@ function cmd(bosco, args, next) {
       complete: green,
       incomplete: red,
       width: 50,
-      total: total,
+      total: total
     }) : null;
 
     // Get the dependencies
@@ -77,7 +77,7 @@ function cmd(bosco, args, next) {
       if (!repo.match(repoRegex)) return repoCb();
       var repoPath = bosco.getRepoPath(repo);
       dockerPull(bosco, progressbar, bar, repoPath, repo, repoCb);
-    }, function() {
+    }, function () {
       cb();
     });
   }
@@ -88,7 +88,7 @@ function cmd(bosco, args, next) {
       return cb();
     }
     bosco.log('Checking for remote docker images to pull ...');
-    RunListHelper.getRunList(bosco, repos, repoRegex, watchNothing, null, false, function(err, services) {
+    RunListHelper.getRunList(bosco, repos, repoRegex, watchNothing, null, false, function (err, services) {
       if (err) {
         return next(err);
       }
@@ -110,8 +110,8 @@ function cmd(bosco, args, next) {
     initialiseRunners,
     pullDockerImages,
     pullDependentDockerImages,
-    disconnectRunners,
-  ], function() {
+    disconnectRunners
+  ], function () {
     bosco.log('Complete!');
     if (next) next();
   });

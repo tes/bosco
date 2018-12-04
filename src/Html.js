@@ -2,7 +2,7 @@ var _ = require('lodash');
 var hb = require('handlebars');
 var fs = require('fs');
 
-module.exports = function(bosco) {
+module.exports = function (bosco) {
   var createKey = require('./AssetHelper')(bosco).createKey;
 
   function isJavascript(asset) {
@@ -21,20 +21,20 @@ module.exports = function(bosco) {
   }
 
   function formattedAssets(staticAssets) {
-    var assets = {services: []};
+    var assets = { services: [] };
     var templateContent = fs.readFileSync(__dirname + '/../templates/assetList.html');
     var template = hb.compile(templateContent.toString());
 
     var assetsByService = _.groupBy(staticAssets, 'serviceName');
 
-    _.forOwn(assetsByService, function(serviceAssets, serviceName) {
-      var service = {serviceName: serviceName, bundles: []};
+    _.forOwn(assetsByService, function (serviceAssets, serviceName) {
+      var service = { serviceName: serviceName, bundles: [] };
       var bundlesByTag = _.groupBy(serviceAssets, 'tag');
-      _.forOwn(bundlesByTag, function(bundleAssets, bundleTag) {
-        _.forEach(bundleAssets, function(asset) {
+      _.forOwn(bundlesByTag, function (bundleAssets, bundleTag) {
+        _.forEach(bundleAssets, function (asset) {
           asset.url = bosco.getAssetCdnUrl(asset.assetKey);
         });
-        var bundle = {bundle: bundleTag, assets: bundleAssets};
+        var bundle = { bundle: bundleTag, assets: bundleAssets };
         service.bundles.push(bundle);
       });
       assets.services.push(service);
@@ -65,7 +65,7 @@ module.exports = function(bosco) {
   function createAssetHtmlFiles(staticAssets, isCdn, next) {
     var htmlAssets = {};
 
-    _.forEach(staticAssets, function(asset) {
+    _.forEach(staticAssets, function (asset) {
       var htmlFile = createKey(asset.serviceName, asset.buildNumber, asset.tag, asset.type, 'html', 'html');
 
       if (!isJavascript(asset) && !isStylesheet(asset)) return;
@@ -84,20 +84,20 @@ module.exports = function(bosco) {
         isMinifiedFragment: true,
         mimeType: 'text/html',
         extname: '.html',
-        extraFiles: asset.extraFiles,
+        extraFiles: asset.extraFiles
       };
 
       if (isCdn && isMinified(asset)) return;
 
       if (isJavascript(asset)) {
         htmlAssets[htmlFile].content += _.template('<script src="<%= url %>"></script>\n')({
-          'url': bosco.getAssetCdnUrl(asset.assetKey),
+          url: bosco.getAssetCdnUrl(asset.assetKey)
         });
       }
 
       if (isStylesheet(asset)) {
         htmlAssets[htmlFile].content += _.template('<link rel="stylesheet" href="<%=url %>" type="text/css" media="all" />\n')({
-          'url': bosco.getAssetCdnUrl(asset.assetKey),
+          url: bosco.getAssetCdnUrl(asset.assetKey)
         });
       }
     });
@@ -111,6 +111,6 @@ module.exports = function(bosco) {
 
   return {
     createAssetHtmlFiles: createAssetHtmlFiles,
-    attachFormattedRepos: attachFormattedRepos,
+    attachFormattedRepos: attachFormattedRepos
   };
 };

@@ -4,7 +4,7 @@ var _ = require('lodash');
 module.exports = {
   name: 'exec',
   description: 'Runs arbitrary commands across all services - take care!',
-  usage: '[-r <repoRegex>] -- <command>',
+  usage: '[-r <repoRegex>] -- <command>'
 };
 
 function cmd(bosco, args) {
@@ -17,15 +17,15 @@ function cmd(bosco, args) {
   var options = ch.createOptions(bosco, {
     cmd: command,
     args: cmdArgs,
-    init: function(innerBosco, child, repoPath) {
+    init: function (innerBosco, child, repoPath) {
       innerBosco.log('Starting output stream for: ' + repoPath.green);
       child.stdin.end();
       child.stdout.pipe(process.stdout);
       child.stderr.pipe(process.stderr);
-    },
+    }
   });
 
-  ch.iterate(bosco, options, function(err) {
+  ch.iterate(bosco, options, function (err) {
     if (err) bosco.error(err);
     bosco.log('Complete');
   });

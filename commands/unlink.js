@@ -13,9 +13,9 @@ module.exports = {
     {
       name: 'dry-run',
       type: 'boolean',
-      desc: 'Print commands without unlinking',
-    },
-  ],
+      desc: 'Print commands without unlinking'
+    }
+  ]
 };
 
 function cmd(bosco, args, done) {
@@ -26,7 +26,7 @@ function cmd(bosco, args, done) {
   var packageRepos = {};
   var dependencyMap = {};
   var dependentsMap = {};
-  var next = done ? done : function(err) { throw err; };
+  var next = done || function (err) { throw err; };
 
   function addDependency(dependency, dependent) {
     if (!(dependency in dependencyMap)) {
@@ -42,7 +42,7 @@ function cmd(bosco, args, done) {
   }
 
   function runCommands(commands) {
-    async.mapSeries(commands, function(commandArgs, cb) {
+    async.mapSeries(commands, function (commandArgs, cb) {
       var packageName = commandArgs[0];
       var command = commandArgs[1];
       var options = commandArgs[2];
@@ -51,7 +51,7 @@ function cmd(bosco, args, done) {
 
       if (bosco.options.program.dryRun) return cb();
 
-      exec(command, options, function(err, stdout, stderr) {
+      exec(command, options, function (err, stdout, stderr) {
         if (err) return cb(err);
 
         process.stdout.write(stdout);
@@ -59,7 +59,7 @@ function cmd(bosco, args, done) {
 
         return cb();
       });
-    }, function(err) {
+    }, function (err) {
       if (err) return next(err);
 
       bosco.log('Complete');
@@ -67,11 +67,11 @@ function cmd(bosco, args, done) {
     });
   }
 
-  async.map(repos, function(repo, cb) {
+  async.map(repos, function (repo, cb) {
     var repoPath = bosco.getRepoPath(repo);
     var repoPackage = path.join(repoPath, 'package.json');
 
-    fs.readFile(path.join(repoPath, 'package.json'), function(err, data) {
+    fs.readFile(path.join(repoPath, 'package.json'), function (err, data) {
       if (err) {
         bosco.log(util.format('skipping %s', repo));
         return cb();
@@ -87,17 +87,17 @@ function cmd(bosco, args, done) {
 
       packageRepos[packageJson.name] = repo;
 
-      _.forOwn(packageJson.dependencies, function(version, dependency) {
+      _.forOwn(packageJson.dependencies, function (version, dependency) {
         addDependency(dependency, packageJson.name);
       });
 
-      _.forOwn(packageJson.devDependencies, function(version, devDependency) {
+      _.forOwn(packageJson.devDependencies, function (version, devDependency) {
         addDependency(devDependency, packageJson.name);
       });
 
       return cb();
     });
-  }, function(err) {
+  }, function (err) {
     if (err) return next(err);
 
     var packageCount = Object.keys(packageRepos).length;
@@ -126,7 +126,7 @@ function cmd(bosco, args, done) {
         dependencyMap[dependency].splice(index, 1);
 
         if (isSelected(dependency)) {
-          commands.push([name, util.format('npm unlink %s', dependency), {cwd: repoPath}]);
+          commands.push([name, util.format('npm unlink %s', dependency), { cwd: repoPath }]);
           return true;
         }
 
@@ -140,20 +140,20 @@ function cmd(bosco, args, done) {
       delete packageRepos[name];
 
       if (isSelected(name)) {
-        commands.push([name, 'npm unlink', {cwd: repoPath}]);
+        commands.push([name, 'npm unlink', { cwd: repoPath }]);
       }
 
       if (name in dependentsMap) {
         var isInstallRequired = _.reduce(dependentsMap[name], removeDependents, false);
 
         if (isInstallRequired) {
-          commands.push([name, 'npm install', {cwd: repoPath}]);
+          commands.push([name, 'npm install', { cwd: repoPath }]);
         }
       }
     }
 
     function processRepos(repoMap) {
-      _.forOwn(repoMap, function(repo, name) {
+      _.forOwn(repoMap, function (repo, name) {
         processPackage(name);
       });
     }

@@ -6,7 +6,7 @@ var Tail = require('tail').Tail;
 module.exports = {
   name: 'tail',
   description: 'Tails the logs from pm2',
-  usage: '[out|err] [-r <repoPattern>]',
+  usage: '[out|err] [-r <repoPattern>]'
 };
 
 function cmd(bosco, args) {
@@ -14,16 +14,16 @@ function cmd(bosco, args) {
   var repoRegex = new RegExp(repoPattern);
 
   // Connect or launch PM2
-  pm2.connect(function(err) {
+  pm2.connect(function (err) {
     if (err) {
       bosco.error(err);
       return;
     }
 
     function describeRunningServices(running) {
-      async.map(running, function(repo, next) {
+      async.map(running, function (repo, next) {
         if (repo.match(repoRegex)) {
-          pm2.describe(repo, function(err, list) {
+          pm2.describe(repo, function (err, list) {
             if (err) {
               bosco.error(err);
               return;
@@ -35,18 +35,18 @@ function cmd(bosco, args) {
             bosco.log('Tailing ' + file);
             var tail = new Tail(file);
 
-            tail.on('line', function(data) {
+            tail.on('line', function (data) {
               bosco.console.log(repo + ' ' + data);
             });
 
-            tail.on('error', function(error) {
+            tail.on('error', function (error) {
               bosco.error(error);
             });
           });
         } else {
           next();
         }
-      }, function(err) {
+      }, function (err) {
         if (err) {
           bosco.error(err);
           process.exit(1);
@@ -56,12 +56,12 @@ function cmd(bosco, args) {
     }
 
     function getRunningServices(next) {
-      pm2.list(function(err, list) {
+      pm2.list(function (err, list) {
         next(err, _.map(list, 'name'));
       });
     }
 
-    getRunningServices(function(err, running) {
+    getRunningServices(function (err, running) {
       describeRunningServices(running);
     });
   });

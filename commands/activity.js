@@ -11,8 +11,8 @@ module.exports = {
     name: 'since',
     alias: 's',
     type: 'string',
-    desc: 'Return all data after a ISO date',
-  }],
+    desc: 'Return all data after a ISO date'
+  }]
 };
 
 var FORMAT = '%C(auto)%h %s %C(yellow)(%Cgreen%aN%C(yellow) %ad)%Creset';
@@ -22,7 +22,7 @@ function makeRepoActivityStdoutFn(bosco) {
     var log = path.blue + ':\n' + stdout;
     var commitCount = log.match(/\n/g).length;
     var revOpts = ['--max-count=' + commitCount + 1, '--no-merges', '--count', 'HEAD'];
-    execFile('git', ['rev-list'].concat(revOpts), {cwd: path}, function(err, cmdStdout, stderr) {
+    execFile('git', ['rev-list'].concat(revOpts), { cwd: path }, function (err, cmdStdout, stderr) {
       if (err) {
         bosco.error(path.blue + ' >> ' + stderr);
         return next(err);
@@ -45,14 +45,14 @@ function cmd(bosco, args, next) {
   var options = ch.createOptions(bosco, {
     cmd: 'git',
     args: ['log', '--date=relative', '--pretty=format:' + FORMAT, '--no-merges', '--since=' + since],
-    guardFn: function(innerBosco, repoPath, guardOptions, cb) {
+    guardFn: function (innerBosco, repoPath, guardOptions, cb) {
       if (innerBosco.exists([repoPath, '.git'].join('/'))) return cb();
       cb(new Error('Doesn\'t seem to be a git repo: ' + repoPath.blue));
     },
-    stdoutFn: makeRepoActivityStdoutFn(bosco),
+    stdoutFn: makeRepoActivityStdoutFn(bosco)
   });
 
-  ch.iterate(bosco, options, function() {
+  ch.iterate(bosco, options, function () {
     bosco.log('Activity complete');
 
     if (next) next();

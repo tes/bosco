@@ -8,11 +8,11 @@ var DockerUtils = require('./DockerUtils');
 function Runner() {
 }
 
-Runner.prototype.init = function(bosco, next) {
+Runner.prototype.init = function (bosco, next) {
   this.bosco = bosco;
 
   function readCert(certPath, certFile) {
-    return fs.readFileSync(certPath + '/' + certFile, {encoding: 'utf-8'});
+    return fs.readFileSync(certPath + '/' + certFile, { encoding: 'utf-8' });
   }
 
   if (process.env.DOCKER_HOST) {
@@ -20,7 +20,7 @@ Runner.prototype.init = function(bosco, next) {
     var dockerUrl = url.parse(process.env.DOCKER_HOST || 'tcp://127.0.0.1:3000');
     var dockerOpts = {
       host: dockerUrl.hostname,
-      port: dockerUrl.port,
+      port: dockerUrl.port
     };
 
     var dockerCertPath = process.env.DOCKER_CERT_PATH;
@@ -29,54 +29,54 @@ Runner.prototype.init = function(bosco, next) {
         protocol: 'https',
         ca: readCert(dockerCertPath, 'ca.pem'),
         cert: readCert(dockerCertPath, 'cert.pem'),
-        key: readCert(dockerCertPath, 'key.pem'),
+        key: readCert(dockerCertPath, 'key.pem')
       });
     }
 
     this.docker = new Docker(dockerOpts);
   } else {
     // Assume we are on linux and so connect on a socket
-    this.docker = new Docker({socketPath: '/var/run/docker.sock'});
+    this.docker = new Docker({ socketPath: '/var/run/docker.sock' });
   }
   next();
 };
 
-Runner.prototype.disconnect = function(next) {
+Runner.prototype.disconnect = function (next) {
   return next();
 };
 
-Runner.prototype.list = function(detailed, next) {
+Runner.prototype.list = function (detailed, next) {
   var self = this;
   var docker = self.docker;
   docker.listContainers({
-    all: false,
-  }, function(err, containers) {
+    all: false
+  }, function (err, containers) {
     if (!detailed) return next(err, _.map(containers, 'Names'));
     next(err, containers);
   });
 };
 
-Runner.prototype.stop = function(options, next) {
+Runner.prototype.stop = function (options, next) {
   var self = this;
   var docker = self.docker;
   docker.listContainers({
-    all: false,
-  }, function(err, containers) {
+    all: false
+  }, function (err, containers) {
     var toStop = [];
-    containers.forEach(function(container) {
+    containers.forEach(function (container) {
       if (self.containerNameMatches(container, options.service.name)) {
         var cnt = docker.getContainer(container.Id);
         self.bosco.log('Stopping ' + options.service.name.green);
         toStop.push(cnt);
       }
     });
-    async.map(toStop, function(container, cb) {
+    async.map(toStop, function (container, cb) {
       container.stop(cb);
     }, next);
   });
 };
 
-Runner.prototype.start = function(options, next) {
+Runner.prototype.start = function (options, next) {
   var self = this;
   var docker = self.docker;
   var dockerFqn = self.getFqn(options);
@@ -85,7 +85,7 @@ Runner.prototype.start = function(options, next) {
   var defaultDependencyLocalHostDomain = self.bosco.config.get('docker:localhostDomain') || '.service.local.tescloud.com';
   var dependencyLocalHosts = [];
   if (options.service.dependsOn && options.service.dependsOn.forEach) {
-    options.service.dependsOn.forEach(function(dep) {
+    options.service.dependsOn.forEach(function (dep) {
       dependencyLocalHosts.push(dep + defaultDependencyLocalHostDomain + ':' + self.bosco.options.ip);
       if (_.startsWith(dep, 'service-')) {
         dependencyLocalHosts.push(dep.split('service-')[1] + defaultDependencyLocalHostDomain + ':' + self.bosco.options.ip);
@@ -96,20 +96,20 @@ Runner.prototype.start = function(options, next) {
   if (Object.prototype.toString.call(defaultLocalHosts) !== '[object Array]') defaultLocalHosts = [defaultLocalHosts];
   if (options.service.docker.HostConfig) {
     var ExtraHosts = options.service.docker.HostConfig.ExtraHosts || [];
-    options.service.docker.HostConfig.ExtraHosts = ExtraHosts.concat(defaultLocalHosts.map(function(name) { return name + ':' + self.bosco.options.ip; }), dependencyLocalHosts);
+    options.service.docker.HostConfig.ExtraHosts = ExtraHosts.concat(defaultLocalHosts.map(function (name) { return name + ':' + self.bosco.options.ip; }), dependencyLocalHosts);
   }
 
 
-  DockerUtils.prepareImage(self.bosco, docker, dockerFqn, options, function(err) {
+  DockerUtils.prepareImage(self.bosco, docker, dockerFqn, options, function (err) {
     if (err) return next(err);
-    DockerUtils.createContainer(docker, dockerFqn, options, function(err, container) {
+    DockerUtils.createContainer(docker, dockerFqn, options, function (err, container) {
       if (err) return next(err);
       DockerUtils.startContainer(self.bosco, docker, dockerFqn, options, container, next);
     });
   });
 };
 
-Runner.prototype.update = function(options, next) {
+Runner.prototype.update = function (options, next) {
   var self = this;
   var docker = self.docker;
 
@@ -119,7 +119,7 @@ Runner.prototype.update = function(options, next) {
   DockerUtils.pullImage(self.bosco, docker, dockerFqn, next);
 };
 
-Runner.prototype.getFqn = function(options) {
+Runner.prototype.getFqn = function (options) {
   var dockerFqn = '';
   var service = options.service;
   if (service.docker) {
@@ -142,14 +142,14 @@ Runner.prototype.getFqn = function(options) {
   return dockerFqn + service.name + ':' + (service.version || 'latest');
 };
 
-Runner.prototype.matchWithoutVersion = function(a, b) {
+Runner.prototype.matchWithoutVersion = function (a, b) {
   var realA = a.slice(0, a.lastIndexOf(':'));
   var realB = b.slice(0, b.lastIndexOf(':'));
   return realA === realB;
 };
 
-Runner.prototype.containerNameMatches = function(container, name) {
-  return _.some(container.Names, function(val) {
+Runner.prototype.containerNameMatches = function (container, name) {
+  return _.some(container.Names, function (val) {
     return val === '/' + name;
   });
 };

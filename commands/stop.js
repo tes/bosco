@@ -15,31 +15,31 @@ module.exports = {
       name: 'tag',
       alias: 't',
       type: 'string',
-      desc: 'Filter by a tag defined within bosco-service.json',
+      desc: 'Filter by a tag defined within bosco-service.json'
     },
     {
       name: 'list',
       alias: 'l',
       type: 'string',
-      desc: 'Stop a list of repos (comma separated)',
+      desc: 'Stop a list of repos (comma separated)'
     },
     {
       name: 'deps-only',
       alias: 'd',
       type: 'boolean',
-      desc: 'Only stop the dependencies of the current repo, not itself',
+      desc: 'Only stop the dependencies of the current repo, not itself'
     },
     {
       name: 'infra',
       type: 'boolean',
-      desc: 'Only stop infra- dependencies',
+      desc: 'Only stop infra- dependencies'
     },
     {
       name: 'exclude',
       type: 'string',
-      desc: 'Exclude any repositories that match this regex',
-    },
-  ],
+      desc: 'Exclude any repositories that match this regex'
+    }
+  ]
 };
 
 function cmd(bosco, args, done) {
@@ -79,36 +79,34 @@ function cmd(bosco, args, done) {
       if (_.includes(services, 'docker-compose')) {
         return DockerComposeRunner.stop(boscoService, cb);
       }
-    } else {
-      if (_.includes(services, repo)) {
-        return NodeRunner.stop({name: repo}, cb);
-      }
+    } else if (_.includes(services, repo)) {
+      return NodeRunner.stop({ name: repo }, cb);
     }
     return cb();
   }
 
   function stopRunningServices(cb) {
-    RunListHelper.getRunList(bosco, repos, repoRegex, null, repoTag, false, function(err, services) {
-      async.mapLimit(services, bosco.concurrency.network, function(boscoService, next) {
+    RunListHelper.getRunList(bosco, repos, repoRegex, null, repoTag, false, function (err, services) {
+      async.mapLimit(services, bosco.concurrency.network, function (boscoService, next) {
         var repo = boscoService.name;
         if (!repo.match(repoRegex)) return next();
         if (boscoService.service) {
           return stopService(repo, boscoService, runningServices, next);
         }
-      }, function() {
+      }, function () {
         // Special case for bosco-cdn, room for improvement to make this
         // generic for all custom bosco services.
         if (!_.includes(runningServices, 'bosco-cdn')) return cb();
-        NodeRunner.stop({name: 'bosco-cdn'}, cb);
+        NodeRunner.stop({ name: 'bosco-cdn' }, cb);
       });
     });
   }
 
   function getRunningServices(cb) {
-    NodeRunner.listRunning(false, function(err, nodeRunning) {
-      DockerRunner.list(false, function(err, dockerRunning) {
-        var flatDockerRunning = _.map(_.flatten(dockerRunning), function(item) { return item.replace('/', ''); });
-        DockerComposeRunner.list(false, function(err, dockerComposeRunning) {
+    NodeRunner.listRunning(false, function (err, nodeRunning) {
+      DockerRunner.list(false, function (err, dockerRunning) {
+        var flatDockerRunning = _.map(_.flatten(dockerRunning), function (item) { return item.replace('/', ''); });
+        DockerComposeRunner.list(false, function (err, dockerComposeRunning) {
           runningServices = _.union(nodeRunning, flatDockerRunning, dockerComposeRunning);
           cb();
         });
@@ -118,7 +116,7 @@ function cmd(bosco, args, done) {
 
   bosco.log('Stop each microservice ' + args);
 
-  async.series([initialiseRunners, getRunningServices, stopRunningServices, disconnectRunners], function() {
+  async.series([initialiseRunners, getRunningServices, stopRunningServices, disconnectRunners], function () {
     if (done) return done(null, runningServices);
   });
 }

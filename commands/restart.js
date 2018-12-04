@@ -3,7 +3,7 @@ var async = require('async');
 module.exports = {
   name: 'restart',
   description: 'Runs stop and then run with the same parameters - aka restart ;)',
-  usage: '[-r <repoPattern>] [-t <tag>]',
+  usage: '[-r <repoPattern>] [-t <tag>]'
 };
 
 function cmd(bosco, args) {
@@ -20,7 +20,7 @@ function cmd(bosco, args) {
     run.cmd(bosco, args, next);
   }
 
-  async.waterfall([executeStop, executeRun], function() {
+  async.waterfall([executeStop, executeRun], function () {
     // Done
   });
 }

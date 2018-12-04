@@ -5,7 +5,7 @@ var join = require('path').join;
 module.exports = {
   name: 'audit',
   description: 'Audit npm packages across repos',
-  usage: '[-r <repoPattern>]',
+  usage: '[-r <repoPattern>]'
 };
 
 function cmd(bosco, args, next) {
@@ -21,13 +21,13 @@ function cmd(bosco, args, next) {
       return cb();
     }
 
-    audit(join(repoPath, 'package.json'), function(err, d) {
+    audit(join(repoPath, 'package.json'), function (err, d) {
       if (err) {
         bosco.error(repoPath.blue + ' >> ' + err.message);
       } else if (d.length === 0) {
         bosco.log(repo.blue + ': ' + 'Looks ok...'.green);
       } else {
-        d.forEach(function(item) {
+        d.forEach(function (item) {
           item.advisory.url = 'https://nodesecurity.io/advisories/' + item.advisory.url;
         });
         bosco.log(repoPath.blue + ': \n' + JSON.stringify(d, false, 2).red);
@@ -40,13 +40,13 @@ function cmd(bosco, args, next) {
     async.mapLimit(repos, bosco.concurrency.cpu, function iterateRepos(repo, cb) {
       var repoPath = bosco.getRepoPath(repo);
       nsp(repo, repoPath, cb);
-    }, function() {
+    }, function () {
       return done();
     });
   }
 
-  bosco.console.warn = function() { };
-  auditRepos(function() {
+  bosco.console.warn = function () { };
+  auditRepos(function () {
     bosco.log('Complete');
     if (next) next();
   });
