@@ -99,7 +99,7 @@ function cmd(bosco, args, callback) {
 
   function pushToS3(file, next) {
     if (!bosco.knox) {
-      bosco.warn('Knox AWS not configured for environment ' + bosco.options.envrionment + ' - so not pushing ' + file.path + ' to S3.');
+      bosco.warn('Knox AWS not configured for environment ' + bosco.options.environment + ' - so not pushing ' + file.path + ' to S3.');
       return next(null, { file: file });
     }
 
