@@ -9,7 +9,7 @@ var dockerList = [];
 
 module.exports = {
   name: 'ps',
-  description: 'Lists all running services',
+  description: 'Lists all running services'
 };
 
 function cmd(bosco) {
@@ -21,10 +21,10 @@ function cmd(bosco) {
   }
 
   function getRunningServices(next) {
-    NodeRunner.listRunning(true, function(err, nodeRunning) {
+    NodeRunner.listRunning(true, function (err, nodeRunning) {
       if (err) return next(err);
       nodeList = nodeRunning;
-      DockerRunner.list(true, function(err, dockerRunning) {
+      DockerRunner.list(true, function (err, dockerRunning) {
         if (err) return next(err);
         dockerList = dockerRunning;
         next();
@@ -42,12 +42,14 @@ function cmd(bosco) {
 
   function printNodeServices(name, list) {
     var table = new Table({
-      chars: {'mid': '', 'left-mid': '', 'mid-mid': '', 'right-mid': ''},
+      chars: {
+        mid: '', 'left-mid': '', 'mid-mid': '', 'right-mid': ''
+      },
       head: [name + ' Service', 'PID', 'Status', 'Mode', 'Watch'],
-      colWidths: [calcFluidColumnWidth(42, 5), 10, 10, 12, 10],
+      colWidths: [calcFluidColumnWidth(42, 5), 10, 10, 12, 10]
     });
 
-    list.forEach(function(item) {
+    list.forEach(function (item) {
       table.push([item.name, item.pid || 'N/A', item.pm2_env.status, item.pm2_env.exec_mode, item.pm2_env.watch || '']);
     });
 
@@ -57,16 +59,18 @@ function cmd(bosco) {
 
   function printDockerServices(name, list) {
     var table = new Table({
-      chars: {'mid': '', 'left-mid': '', 'mid-mid': '', 'right-mid': ''},
+      chars: {
+        mid: '', 'left-mid': '', 'mid-mid': '', 'right-mid': ''
+      },
       head: [name + ' Service', 'Status', 'FQN'],
-      colWidths: [25, 20, calcFluidColumnWidth(45, 3)],
+      colWidths: [25, 20, calcFluidColumnWidth(45, 3)]
     });
 
-    list.forEach(function(item) {
+    list.forEach(function (item) {
       table.push([
-        _.map(item.Names, function(i) { return i.replace('/', ''); }).join(', '),
+        _.map(item.Names, function (i) { return i.replace('/', ''); }).join(', '),
         item.Status,
-        item.Image,
+        item.Image
       ]);
     });
 
@@ -76,7 +80,7 @@ function cmd(bosco) {
 
   bosco.log('Getting running microservices ...');
 
-  async.series([initialiseRunners, getRunningServices], function() {
+  async.series([initialiseRunners, getRunningServices], function () {
     bosco.console.log('');
     bosco.log('Running NodeJS Services (via PM2):');
     printNodeServices('Node', nodeList);

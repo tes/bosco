@@ -6,7 +6,7 @@ var red = '\u001b[41m \u001b[0m';
 module.exports = {
   name: 'stash',
   description: 'Stashes any local changes across all repos',
-  usage: '[-r <repoPattern>]',
+  usage: '[-r <repoPattern>]'
 };
 
 function stash(bosco, args, progressbar, bar, orgPath, next) {
@@ -21,8 +21,8 @@ function stash(bosco, args, progressbar, bar, orgPath, next) {
   var ignoreMissingStashCommands = ['pop', 'apply'];
   var ignoreMissingStash = (ignoreMissingStashCommands.indexOf(args[0]) !== -1);
   exec(cmdString, {
-    cwd: orgPath,
-  }, function(error, stdout, stderr) {
+    cwd: orgPath
+  }, function (error, stdout, stderr) {
     if (progressbar) bar.tick();
     var err = error;
 
@@ -32,9 +32,7 @@ function stash(bosco, args, progressbar, bar, orgPath, next) {
     if (err) {
       if (progressbar) bosco.console.log('');
       bosco.error(orgPath.blue + ' >> ' + stderr);
-    } else {
-      if (!progressbar && stdout) bosco.log(orgPath.blue + ' >> ' + stdout);
-    }
+    } else if (!progressbar && stdout) bosco.log(orgPath.blue + ' >> ' + stdout);
     next(err);
   });
 }
@@ -56,7 +54,7 @@ function cmd(bosco, args) {
       complete: green,
       incomplete: red,
       width: 50,
-      total: total,
+      total: total
     }) : null;
 
     async.mapSeries(repos, function repoStash(repo, repoCb) {
@@ -64,12 +62,12 @@ function cmd(bosco, args) {
 
       var repoPath = bosco.getRepoPath(repo);
       stash(bosco, args, progressbar, bar, repoPath, repoCb);
-    }, function() {
+    }, function () {
       cb();
     });
   }
 
-  stashRepos(function() {
+  stashRepos(function () {
     bosco.log('Complete');
   });
 }

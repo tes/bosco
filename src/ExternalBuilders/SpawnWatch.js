@@ -1,22 +1,26 @@
 var spawn = require('child_process').spawn;
 var _ = require('lodash');
 
-module.exports = function(bosco) {
-  return function(service, command, cwd, verbose, buildFinished) {
+module.exports = function (bosco) {
+  return function (service, command, cwd, verbose, buildFinished) {
     bosco.log('Spawning ' + 'watch'.cyan + ' command for ' + service.name.blue + ': ' + command.log);
     var wc = spawn(process.env.SHELL, ['-c', command.command], cwd);
-    var output = {state: 'starting', data: [], stdout: '', stderr: ''};
+    var output = {
+      state: 'starting', data: [], stdout: '', stderr: ''
+    };
     var outputCache;
     var outputCacheIndex;
     var overallTimeoutTimer;
 
     function addOutput(type, data) {
       output[type] += data;
-      output.data.push({type: type, data: data});
+      output.data.push({ type: type, data: data });
     }
 
     function reset() {
-      output = {state: 'starting', data: [], stdout: '', stderr: ''};
+      output = {
+        state: 'starting', data: [], stdout: '', stderr: ''
+      };
       outputCache = '';
       outputCacheIndex = -1;
       if (overallTimeoutTimer) clearTimeout(overallTimeoutTimer);
@@ -45,7 +49,7 @@ module.exports = function(bosco) {
     }
 
     function isBuildFinished() {
-      output.data.forEach(function(entry, i) {
+      output.data.forEach(function (entry, i) {
         if (i <= outputCacheIndex) { return; }
         outputCache += entry.data;
         outputCacheIndex = i;
@@ -81,8 +85,8 @@ module.exports = function(bosco) {
     }
 
     reset();
-    wc.stdout.on('data', function(data) { onChildOutput('stdout', data); });
-    wc.stderr.on('data', function(data) { onChildOutput('stderr', data); });
+    wc.stdout.on('data', function (data) { onChildOutput('stdout', data); });
+    wc.stderr.on('data', function (data) { onChildOutput('stderr', data); });
     wc.on('exit', onChildExit);
   };
 };

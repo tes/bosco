@@ -6,7 +6,7 @@ var mime = require('mime');
 var sf = require('sf');
 var _ = require('lodash');
 
-module.exports = function(bosco) {
+module.exports = function (bosco) {
   function checksum(str, algorithm, encoding) {
     return crypto
       .createHash(algorithm || 'md5')
@@ -21,7 +21,7 @@ module.exports = function(bosco) {
       return bosco.warn(sf('Asset {asset} not found at path {path}, declared in {repo}', {
         asset: assetKey,
         path: resolvedPath,
-        repo: boscoRepo.name,
+        repo: boscoRepo.name
       }));
     }
 
@@ -30,14 +30,14 @@ module.exports = function(bosco) {
 
   function getExtraFiles(repoPath, build) {
     var extraFiles = build && build.watch && build.watch.extraBrowserSyncFiles || [];
-    return _.map(extraFiles, function(glob) {
+    return _.map(extraFiles, function (glob) {
       return path.join(repoPath, glob);
     });
   }
 
   function getAssetHelper(boscoRepo, tagFilter) {
     return {
-      addAsset: function(staticAssets, buildNumber, assetKey, asset, tag, type, basePath, externalBuild, minificationConfig) {
+      addAsset: function (staticAssets, buildNumber, assetKey, asset, tag, type, basePath, externalBuild, minificationConfig) {
         if (tagFilter && tag !== tagFilter) return;
 
         var newAsset = {};
@@ -77,7 +77,7 @@ module.exports = function(bosco) {
           staticAssets.push(newAsset);
         }
       },
-      addError: function(staticAssets, tag, message) {
+      addError: function (staticAssets, tag, message) {
         var newAsset = {};
         newAsset.serviceName = boscoRepo.serviceName;
         newAsset.assetKey = 'formattedAssets';
@@ -93,7 +93,7 @@ module.exports = function(bosco) {
         newAsset.message = message;
         newAsset.content = '';
         staticAssets.push(newAsset);
-      },
+      }
     };
   }
 
@@ -105,6 +105,6 @@ module.exports = function(bosco) {
   return {
     getAssetHelper: getAssetHelper,
     createKey: createKey,
-    checksum: checksum,
+    checksum: checksum
   };
 };

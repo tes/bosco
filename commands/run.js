@@ -21,56 +21,56 @@ module.exports = {
       name: 'tag',
       alias: 't',
       type: 'string',
-      desc: 'Filter by a tag defined within bosco-service.json',
+      desc: 'Filter by a tag defined within bosco-service.json'
     },
     {
       name: 'watch',
       alias: 'w',
       type: 'string',
-      desc: 'Watch the applications started with run for changes that match this regular expression',
+      desc: 'Watch the applications started with run for changes that match this regular expression'
     },
     {
       name: 'list',
       alias: 'l',
       type: 'string',
-      desc: 'Start a list of repos (comma separated)',
+      desc: 'Start a list of repos (comma separated)'
     },
     {
       name: 'deps-only',
       alias: 'd',
       type: 'boolean',
-      desc: 'Only start the dependencies of the current repo, not itself',
+      desc: 'Only start the dependencies of the current repo, not itself'
     },
     {
       name: 'show',
       type: 'boolean',
-      desc: 'Display the dependency tree but do not start the services',
+      desc: 'Display the dependency tree but do not start the services'
     },
     {
       name: 'docker-only',
       type: 'boolean',
-      desc: 'Only start docker dependencies',
+      desc: 'Only start docker dependencies'
     },
     {
       name: 'team-only',
       type: 'boolean',
-      desc: 'Only start app or service dependencies in the current team',
+      desc: 'Only start app or service dependencies in the current team'
     },
     {
       name: 'infra',
       type: 'boolean',
-      desc: 'Only start infra- dependencies',
+      desc: 'Only start infra- dependencies'
     },
     {
       name: 'exclude',
       type: 'string',
-      desc: 'Exclude any repositories that match this regex',
-    },
-  ],
+      desc: 'Exclude any repositories that match this regex'
+    }
+  ]
 };
 
 function cmd(bosco, args, allDone) {
-  var done = allDone ? allDone : function() {};
+  var done = allDone || function () {};
   var repoPattern = bosco.options.repo;
   var repoRegex = new RegExp(repoPattern);
   var watchPattern = bosco.options.watch || '$a';
@@ -125,7 +125,7 @@ function cmd(bosco, args, allDone) {
         if (bosco.options.verbose) {
           bosco.log('Running docker service ' + runConfig.name.green + ' ...');
         }
-        return DockerRunner.start(runConfig, function(err) {
+        return DockerRunner.start(runConfig, function (err) {
           // Log errors from docker but do not stop all tasks
           if (err) {
             bosco.error('There was an error running ' + runConfig.name + ': ' + err);
@@ -176,7 +176,7 @@ function cmd(bosco, args, allDone) {
         return;
       }
       bosco.log('Launching ' + (runList.services.length + '').green + ' ' + runList.type.cyan + ' processes with parallel limit of ' + (runList.limit + '').cyan + ' ...');
-      async.mapLimit(runList.services, runList.limit, runService, function(err) {
+      async.mapLimit(runList.services, runList.limit, runService, function (err) {
         if (alreadyRunning > 0 && !bosco.options.verbose) {
           bosco.log('Did not start ' + ('' + alreadyRunning).cyan + ' services that were already running.  Use --verbose to see more detail.');
         }
@@ -184,13 +184,13 @@ function cmd(bosco, args, allDone) {
       });
     }
 
-    getRunList(function(err, runList) {
+    getRunList(function (err, runList) {
       if (err) return next(err);
-      var dockerServices = _.filter(runList, function(i) { return i.service.type === 'docker' && _.startsWith(i.name, 'infra-'); });
-      var dockerComposeServices = _.filter(runList, function(i) { return i.service.type === 'docker-compose'; });
-      var nodeServices = _.filter(runList, function(i) { return _.startsWith(i.name, 'service-') && i.service.type !== 'skip'; });
-      var nodeApps = _.filter(runList, function(i) { return _.startsWith(i.name, 'app-') && i.service.type !== 'skip'; });
-      var unknownServices = _.filter(runList, function(i) { return !_.includes(['docker', 'docker-compose', 'node', 'skip'], i.service.type); });
+      var dockerServices = _.filter(runList, function (i) { return i.service.type === 'docker' && _.startsWith(i.name, 'infra-'); });
+      var dockerComposeServices = _.filter(runList, function (i) { return i.service.type === 'docker-compose'; });
+      var nodeServices = _.filter(runList, function (i) { return _.startsWith(i.name, 'service-') && i.service.type !== 'skip'; });
+      var nodeApps = _.filter(runList, function (i) { return _.startsWith(i.name, 'app-') && i.service.type !== 'skip'; });
+      var unknownServices = _.filter(runList, function (i) { return !_.includes(['docker', 'docker-compose', 'node', 'skip'], i.service.type); });
       if (unknownServices.length > 0) {
         bosco.error('Unable to run services of un-recognised type: ' + _.map(unknownServices, 'name').join(', ').cyan + '. Check their bosco-service.json configuration.');
         bosco.warn('This may be due to either:');
@@ -200,25 +200,25 @@ function cmd(bosco, args, allDone) {
         bosco.warn('- Missing github configuration: ' + 'bosco config set github:org <organisation>'.yellow);
       }
       async.mapSeries([
-          {services: dockerServices, type: 'docker', limit: bosco.concurrency.cpu},
-          {services: dockerComposeServices, type: 'docker-compose', limit: bosco.concurrency.cpu},
-          {services: nodeServices, type: 'service', limit: bosco.concurrency.cpu},
-          {services: nodeApps, type: 'app', limit: bosco.concurrency.cpu},
+        { services: dockerServices, type: 'docker', limit: bosco.concurrency.cpu },
+        { services: dockerComposeServices, type: 'docker-compose', limit: bosco.concurrency.cpu },
+        { services: nodeServices, type: 'service', limit: bosco.concurrency.cpu },
+        { services: nodeApps, type: 'app', limit: bosco.concurrency.cpu }
       ], runServices, next);
     });
   }
 
   function stopNotRunningServices(next) {
     bosco.log('Removing stopped/dead services');
-    async.each(notRunningServices, function(service, cb) {
-      NodeRunner.stop({name: service}, cb);
+    async.each(notRunningServices, function (service, cb) {
+      NodeRunner.stop({ name: service }, cb);
     }, next);
   }
 
   function getRunningServices(next) {
-    NodeRunner.listRunning(false, function(err, nodeRunning) {
-      DockerRunner.list(false, function(err, dockerRunning) {
-        var flatDockerRunning = _.map(_.flatten(dockerRunning), function(item) { return item.replace('/', ''); });
+    NodeRunner.listRunning(false, function (err, nodeRunning) {
+      DockerRunner.list(false, function (err, dockerRunning) {
+        var flatDockerRunning = _.map(_.flatten(dockerRunning), function (item) { return item.replace('/', ''); });
         runningServices = _.union(nodeRunning, flatDockerRunning);
         next();
       });
@@ -226,7 +226,7 @@ function cmd(bosco, args, allDone) {
   }
 
   function getStoppedServices(next) {
-    NodeRunner.listNotRunning(false, function(err, nodeNotRunning) {
+    NodeRunner.listNotRunning(false, function (err, nodeNotRunning) {
       notRunningServices = nodeNotRunning;
       next();
     });
@@ -236,12 +236,12 @@ function cmd(bosco, args, allDone) {
     // Ensure that the ~/.pm2 folders exist
     var folders = [
       process.env.HOME + '/.pm2/logs',
-      process.env.HOME + '/.pm2/pids',
+      process.env.HOME + '/.pm2/pids'
     ];
 
-    async.map(folders, function(folder, cb) {
+    async.map(folders, function (folder, cb) {
       fs.mkdirp(folder, cb);
-    }, function(err) {
+    }, function (err) {
       next(err);
     });
   }
@@ -253,7 +253,7 @@ function cmd(bosco, args, allDone) {
 
   bosco.log('Run each microservice, will inject ip into docker: ' + bosco.options.ip.cyan);
 
-  async.series([ensurePM2, initialiseRunners, getRunningServices, getStoppedServices, stopNotRunningServices, startRunnableServices, disconnectRunners], function(err) {
+  async.series([ensurePM2, initialiseRunners, getRunningServices, getStoppedServices, stopNotRunningServices, startRunnableServices, disconnectRunners], function (err) {
     if (err) {
       bosco.error(err);
       return done();
@@ -263,7 +263,7 @@ function cmd(bosco, args, allDone) {
     if (!_.includes(args, 'cdn')) return done();
 
     var cdn = require('./cdn');
-    cdn.cmd(bosco, [], function() {});
+    cdn.cmd(bosco, [], function () {});
   });
 }
 

@@ -1,4 +1,4 @@
-module.exports = function(bosco) {
+module.exports = function (bosco) {
   function ensureCorrectNodeVersion(rawCommand, interpreter) {
     return (interpreter ? bosco.options.nvmUse : bosco.options.nvmUseDefault) + rawCommand;
   }
@@ -26,10 +26,12 @@ module.exports = function(bosco) {
       }
     }
     command = ensureCorrectNodeVersion(command, interpreter);
-    return {command: command, args: args, log: commandForLog, watch: watch, ready: ready, timeout: timeout};
+    return {
+      command: command, args: args, log: commandForLog, watch: watch, ready: ready, timeout: timeout
+    };
   }
 
   return {
-    createCommand: createCommand,
+    createCommand: createCommand
   };
 };

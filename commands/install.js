@@ -29,11 +29,11 @@ function getPackageManager(bosco, repoPath, interpreter) {
     }
     command += ' --no-package-lock install';
   }
-  return {name: name, command: nvm + command};
+  return { name: name, command: nvm + command };
 }
 
 function cleanModulesIfVersionChanged(bosco, repoPath, repo, next) {
-  NodeRunner.getVersion(bosco, {cwd: repoPath}, function(err, currentVersion) {
+  NodeRunner.getVersion(bosco, { cwd: repoPath }, function (err, currentVersion) {
     if (err) { return next(err); }
     var nodeVersionKey = 'teams:' + bosco.getTeam() + ':nodes:' + repo;
     var lastVersion = bosco.config.get(nodeVersionKey);
@@ -43,15 +43,15 @@ function cleanModulesIfVersionChanged(bosco, repoPath, repo, next) {
       bosco.prompt.get({
         properties: {
           confirm: {
-            description: confirmationDescription,
-          },
-        },
-      }, function(err, result) {
+            description: confirmationDescription
+          }
+        }
+      }, function (err, result) {
         if (!result || (result.confirm !== 'Y' && result.confirm !== 'y')) {
           return next();
         }
 
-        exec('rm -rf ./node_modules', {cwd: repoPath}, function(err, stdout, stderr) {
+        exec('rm -rf ./node_modules', { cwd: repoPath }, function (err, stdout, stderr) {
           if (err) {
             bosco.error('Failed to clear node_modules for ' + repoPath.blue + ' >> ' + stderr);
           } else {
@@ -70,7 +70,7 @@ function cleanModulesIfVersionChanged(bosco, repoPath, repo, next) {
 }
 
 function shouldInstallRepo(bosco, repoPath, repo, next) {
-  NodeRunner.getHashes(bosco, ['package.json', '.nvmrc', 'yarn.lock', 'package-lock.json'], {cwd: repoPath}, function(err, currentHash) {
+  NodeRunner.getHashes(bosco, ['package.json', '.nvmrc', 'yarn.lock', 'package-lock.json'], { cwd: repoPath }, function (err, currentHash) {
     if (err) { return next(err); }
     var nodeHashKey = 'teams:' + bosco.getTeam() + ':hashes:' + repo;
     var lastHash = bosco.config.get(nodeHashKey);
@@ -89,7 +89,7 @@ function install(bosco, progressbar, bar, repoPath, repo, next) {
     return next();
   }
 
-  NodeRunner.getInterpreter(bosco, {name: repo, cwd: repoPath}, function(err, interpreter) {
+  NodeRunner.getInterpreter(bosco, { name: repo, cwd: repoPath }, function (err, interpreter) {
     if (err) {
       bosco.error(err);
       return next();
@@ -97,22 +97,20 @@ function install(bosco, progressbar, bar, repoPath, repo, next) {
 
     var packageManager = getPackageManager(bosco, repoPath, interpreter);
     exec(packageManager.command, {
-      cwd: repoPath,
-    }, function(err, stdout, stderr) {
+      cwd: repoPath
+    }, function (err, stdout, stderr) {
       if (progressbar) bar.tick();
       if (err) {
         if (progressbar) bosco.console.log('');
         bosco.error(repoPath.blue + ' >> ' + stderr);
-      } else {
-        if (!progressbar) {
-          if (!stdout) {
-            bosco.log(packageManager.name + ' install for ' + repoPath.blue + ': ' + 'No changes'.green);
-          } else {
-            bosco.log(packageManager.name + ' install for ' + repoPath.blue);
-            bosco.console.log(stdout);
-            if (stderr) {
-              bosco.error(stderr);
-            }
+      } else if (!progressbar) {
+        if (!stdout) {
+          bosco.log(packageManager.name + ' install for ' + repoPath.blue + ': ' + 'No changes'.green);
+        } else {
+          bosco.log(packageManager.name + ' install for ' + repoPath.blue);
+          bosco.console.log(stdout);
+          if (stderr) {
+            bosco.error(stderr);
           }
         }
       }
@@ -135,11 +133,11 @@ function cmd(bosco, args, next) {
       return cb();
     }
 
-    RunListHelper.getRepoRunList(bosco, bosco.getRepos(), repoRegex, '$^', null, false, function(err, runRepos) {
+    RunListHelper.getRepoRunList(bosco, bosco.getRepos(), repoRegex, '$^', null, false, function (err, runRepos) {
       repos = _.chain(runRepos)
-              .filter(function(repo) { return repo.type !== 'docker'; })
-              .map('name')
-              .value();
+        .filter(function (repo) { return repo.type !== 'docker'; })
+        .map('name')
+        .value();
       cb(err);
     });
   }
@@ -149,7 +147,7 @@ function cmd(bosco, args, next) {
       if (!repo.match(repoRegex)) { return repoCb(); }
       var repoPath = bosco.getRepoPath(repo);
       shouldInstallRepo(bosco, repoPath, repo, repoCb);
-    }, function() {
+    }, function () {
       if (reposToInstall.length > 0) {
         bosco.log('The following repos had changes in key files, so will trigger an install: ');
         bosco.log(reposToInstall.join(', ').cyan);
@@ -163,7 +161,7 @@ function cmd(bosco, args, next) {
       if (!repo.match(repoRegex)) return repoCb();
       var repoPath = bosco.getRepoPath(repo);
       cleanModulesIfVersionChanged(bosco, repoPath, repo, repoCb);
-    }, function() {
+    }, function () {
       cb();
     });
   }
@@ -176,14 +174,14 @@ function cmd(bosco, args, next) {
       complete: green,
       incomplete: red,
       width: 50,
-      total: total,
+      total: total
     }) : null;
 
     async.mapLimit(reposToInstall, bosco.concurrency.cpu, function repoInstall(repo, repoCb) {
       if (!repo.match(repoRegex)) return repoCb();
       var repoPath = bosco.getRepoPath(repo);
       install(bosco, progressbar, bar, repoPath, repo, repoCb);
-    }, function() {
+    }, function () {
       cb();
     });
   }
@@ -197,8 +195,8 @@ function cmd(bosco, args, next) {
     shouldInstallRepos,
     checkRepos,
     installRepos,
-    saveConfig,
-  ], function() {
+    saveConfig
+  ], function () {
     bosco.log('npm install complete');
     if (next) next();
   });
@@ -209,5 +207,5 @@ module.exports = {
   description: 'Runs npm install against all repos',
   usage: '[-r <repoPattern>]',
   requiresNvm: true,
-  cmd: cmd,
+  cmd: cmd
 };

@@ -4,7 +4,7 @@ var _ = require('lodash');
 module.exports = {
   name: 'status',
   description: 'Checks git status across all services',
-  usage: '[-r <repoPattern>]',
+  usage: '[-r <repoPattern>]'
 };
 
 var CHANGE_STRINGS = ['Changes not staged', 'Your branch is ahead', 'Untracked files', 'Changes to be committed'];
@@ -15,11 +15,11 @@ function cmd(bosco) {
   var options = ch.createOptions(bosco, {
     cmd: 'git',
     args: ['-c', 'color.status=always', 'status'],
-    guardFn: function(innerBosco, repoPath, opts, next) {
+    guardFn: function (innerBosco, repoPath, opts, next) {
       if (innerBosco.exists([repoPath, '.git'].join('/'))) return next();
       next(new Error('Doesn\'t seem to be a git repo: ' + repoPath.blue));
     },
-    stdoutFn: function(stdout, path) {
+    stdoutFn: function (stdout, path) {
       if (!stdout) return;
 
       function stdoutHasString(str) {
@@ -29,10 +29,10 @@ function cmd(bosco) {
       if (_(CHANGE_STRINGS).some(stdoutHasString)) {
         bosco.log(path.blue + ':\n' + stdout);
       }
-    },
+    }
   });
 
-  ch.iterate(bosco, options, function() {
+  ch.iterate(bosco, options, function () {
     bosco.log('Complete');
   });
 }

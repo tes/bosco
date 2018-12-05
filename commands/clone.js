@@ -14,17 +14,17 @@ module.exports = {
   options: [{
     name: 'clean',
     type: 'boolean',
-    desc: 'Remove any repositories in the workspace that are no longer in the github team',
-  }],
+    desc: 'Remove any repositories in the workspace that are no longer in the github team'
+  }]
 };
 
 function getRepoList(client, teamConfig, page, next) {
   if (teamConfig.isUser) {
-    client.get('/user/repos', {per_page: 20, page: page}, function(err, status, body, headers) {
+    client.get('/user/repos', { per_page: 20, page: page }, function (err, status, body, headers) {
       next(err, _.map(body, 'name'), _.includes(headers.link, 'rel="next"'));
     });
   } else {
-    client.get('/teams/' + teamConfig.id + '/repos', {per_page: 20, page: page}, function(err, status, body, headers) {
+    client.get('/teams/' + teamConfig.id + '/repos', { per_page: 20, page: page }, function (err, status, body, headers) {
       next(err, _.map(body, 'name'), _.includes(headers.link, 'rel="next"'));
     });
   }
@@ -33,8 +33,8 @@ function getRepoList(client, teamConfig, page, next) {
 function checkCanDelete(bosco, repoPath, next) {
   function reducer(memo, command, cb) {
     exec(command, {
-      cwd: repoPath,
-    }, function(err, stdout) {
+      cwd: repoPath
+    }, function (err, stdout) {
       return cb(err, memo && !err && !stdout);
     });
   }
@@ -42,8 +42,8 @@ function checkCanDelete(bosco, repoPath, next) {
   async.reduce([
     'git stash list',
     'git branch --no-merged origin/master',
-    'git status --porcelain',
-  ], true, reducer, function(err, result) {
+    'git status --porcelain'
+  ], true, reducer, function (err, result) {
     next(err, result);
   });
 }
@@ -51,15 +51,13 @@ function checkCanDelete(bosco, repoPath, next) {
 function clone(bosco, progressbar, bar, repoUrl, orgPath, next) {
   if (!progressbar) bosco.log('Cloning ' + repoUrl.blue + ' into ' + orgPath.blue);
   exec('git clone ' + repoUrl, {
-    cwd: orgPath,
-  }, function(err, stdout, stderr) {
+    cwd: orgPath
+  }, function (err, stdout, stderr) {
     if (progressbar) bar.tick();
     if (err) {
       if (progressbar) bosco.console.log('');
       bosco.error(repoUrl.blue + ' >> ' + stderr);
-    } else {
-      if (!progressbar && stdout) bosco.log(repoUrl.blue + ' >> ' + stdout);
-    }
+    } else if (!progressbar && stdout) bosco.log(repoUrl.blue + ' >> ' + stdout);
     next();
   });
 }
@@ -80,7 +78,7 @@ function fetch(bosco, team, repos, repoRegex, args, next) {
 
     function removeOrphan(orphan, cb2) {
       var orphanPath = bosco.getRepoPath(orphan);
-      checkCanDelete(bosco, orphanPath, function(err, canDelete) {
+      checkCanDelete(bosco, orphanPath, function (err, canDelete) {
         if (err || !canDelete) {
           bosco.warn('Not deleting project ' + orphan.red + ' as you have uncommited or unpushed local changes.');
           return cb2();
@@ -96,11 +94,11 @@ function fetch(bosco, team, repos, repoRegex, args, next) {
       orphanAction = removeOrphan;
     }
 
-    fs.readdir(bosco.getOrgPath(), function(err, files) {
+    fs.readdir(bosco.getOrgPath(), function (err, files) {
       var orphans = _.chain(files)
-        .map(function(file) { return path.join(bosco.getOrgPath(), file); })
-        .filter(function(file) { return fs.statSync(file).isDirectory() && bosco.exists(path.join(file, '.git')); })
-        .map(function(file) { return path.relative(bosco.getOrgPath(), file); })
+        .map(function (file) { return path.join(bosco.getOrgPath(), file); })
+        .filter(function (file) { return fs.statSync(file).isDirectory() && bosco.exists(path.join(file, '.git')); })
+        .map(function (file) { return path.relative(bosco.getOrgPath(), file); })
         .difference(repos)
         .value();
 
@@ -117,7 +115,7 @@ function fetch(bosco, team, repos, repoRegex, args, next) {
       complete: green,
       incomplete: red,
       width: 50,
-      total: total,
+      total: total
     }) : null;
 
     async.mapLimit(repos, bosco.concurrency.network, function repoGet(repo, repoCb) {
@@ -133,7 +131,7 @@ function fetch(bosco, team, repos, repoRegex, args, next) {
       } else {
         clone(bosco, progressbar, bar, repoUrl, orgPath, repoCb);
       }
-    }, function() {
+    }, function () {
       if (pullFlag) {
         bosco.warn('Some repositories already existed, to pull changes use \'bosco pull\'');
       }
@@ -144,7 +142,7 @@ function fetch(bosco, team, repos, repoRegex, args, next) {
   function gitIgnoreRepos(cb) {
     // Ensure repo folders are in workspace gitignore
     var gi = [bosco.getWorkspacePath(), '.gitignore'].join('/');
-    fs.readFile(gi, function(err, contents) {
+    fs.readFile(gi, function (err, contents) {
       if (err) return cb(err);
       var ignore = (contents || '').toString().split('\n');
       var newIgnore = _.union(ignore, repos, ['.DS_Store', 'node_modules', '.bosco/bosco.json', '']);
@@ -152,7 +150,7 @@ function fetch(bosco, team, repos, repoRegex, args, next) {
     });
   }
 
-  async.series([saveRepos, checkOrphans, getRepos, gitIgnoreRepos], function() {
+  async.series([saveRepos, checkOrphans, getRepos, gitIgnoreRepos], function () {
     bosco.log('Complete');
     if (next) next();
   });
@@ -164,7 +162,7 @@ function cmd(bosco, args, next) {
   var team = bosco.getTeam() || 'no-team';
   var teamConfig = bosco.config.get('teams:' + team);
 
-  var client = github.client(bosco.config.get('github:authToken'), {hostname: bosco.config.get('github:apiHostname') });
+  var client = github.client(bosco.config.get('github:authToken'), { hostname: bosco.config.get('github:apiHostname') });
 
   if (!teamConfig) {
     // The user does not have a team, so just treat the repos config
@@ -173,7 +171,7 @@ function cmd(bosco, args, next) {
       'Looks like you havent linked this workspace to a team?  Try: ',
       'bosco team setup'.green,
       '. If you can\'t see your team in the list, Try: ',
-      'bosco team sync'.green,
+      'bosco team sync'.green
     ].join(''));
   }
 
@@ -182,20 +180,20 @@ function cmd(bosco, args, next) {
   var page = 1;
   var repoList = [];
   async.whilst(
-    function() { return more; },
-    function(callback) {
-      getRepoList(client, teamConfig, page, function(err, repos, isMore) {
+    function () { return more; },
+    function (callback) {
+      getRepoList(client, teamConfig, page, function (err, repos, isMore) {
         if (err) { return callback(err); }
         repoList = _.union(repoList, repos);
         if (isMore) {
-          page = page + 1;
+          page += 1;
         } else {
           more = false;
         }
         callback();
       });
     },
-    function(err) {
+    function (err) {
       if (err) {
         return bosco.error(err.message);
       }

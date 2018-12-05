@@ -7,7 +7,7 @@ var semver = require('semver');
 module.exports = {
   name: 'remote',
   description: 'Checks your projects for any references to non local environments or versions of dependencies that dont work offline',
-  cmd: function(bosco) {
+  cmd: function (bosco) {
     // The attached is unashamedly default TES config, you need to replace it with your own in the bosco.config
     var defaultConfig = {
       localConfigurationFiles: ['default.json', 'local.json', 'test.json'],
@@ -15,8 +15,8 @@ module.exports = {
       notLocalConnectionString: '(development|staging|live)',
       modules: {
         'module-tsl-logger': '^0.2.41',
-        'electric-metrics': '^0.0.15',
-      },
+        'electric-metrics': '^0.0.15'
+      }
     };
 
     var remoteConfig = bosco.config.get('remote') || defaultConfig;
@@ -26,7 +26,7 @@ module.exports = {
 
     function checkRemoteConnectionStrings(repo, repoPath, next) {
       var localProblems = false;
-      var mergedConfig = _.reduce(remoteConfig.localConfigurationFiles, function(merged, configFile) {
+      var mergedConfig = _.reduce(remoteConfig.localConfigurationFiles, function (merged, configFile) {
         var configFilePath = path.join(repoPath, 'config', configFile);
         var newConfig;
         if (bosco.exists(configFilePath)) {
@@ -38,7 +38,7 @@ module.exports = {
         return newConfig;
       }, {});
 
-      traverse(mergedConfig).forEach(function(item) {
+      traverse(mergedConfig).forEach(function (item) {
         var currentPath = this.path.join('.');
         if (currentPath.match(remoteConfig.likelyHostConfig)) {
           if (typeof item === 'string') {
@@ -58,7 +58,7 @@ module.exports = {
       var packageJsonPath = path.join(repoPath, 'package.json');
       if (bosco.exists(packageJsonPath)) {
         var pkgJson = require(packageJsonPath);
-        _.forEach(remoteConfig.modules, function(version, module) {
+        _.forEach(remoteConfig.modules, function (version, module) {
           var repoModuleVersion = pkgJson.dependencies && pkgJson.dependencies[module] || pkgJson.devDependencies && pkgJson.devDependencies[module];
           if (repoModuleVersion && repoModuleVersion !== 'latest') {
             var satisfies = !semver.lt(repoModuleVersion.replace('^', ''), version.replace('^', ''));
@@ -76,14 +76,14 @@ module.exports = {
       var localProblems = false;
       async.mapSeries(repos, function repoStash(repo, repoCb) {
         var repoPath = bosco.getRepoPath(repo);
-        checkRemoteConnectionStrings(repo, repoPath, function(err, localConnectionProblems) {
+        checkRemoteConnectionStrings(repo, repoPath, function (err, localConnectionProblems) {
           localProblems = localProblems || localConnectionProblems;
-          checkModuleVersions(repo, repoPath, function(err, localModuleProblems) {
+          checkModuleVersions(repo, repoPath, function (err, localModuleProblems) {
             localProblems = localProblems || localModuleProblems;
             repoCb();
           });
         });
-      }, function() {
+      }, function () {
         if (localProblems) {
           bosco.error('Resolve the problems above or you\'re ... err ... going to have problems :(');
         } else {
@@ -93,6 +93,6 @@ module.exports = {
     }
 
     checkRepos();
-  },
+  }
 
 };

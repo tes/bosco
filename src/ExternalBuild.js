@@ -3,7 +3,7 @@ var SpawnWatch = require('./ExternalBuilders/SpawnWatch');
 var ExecBuild = require('./ExternalBuilders/ExecBuild');
 var BuildUtils = require('./ExternalBuilders/utils');
 
-module.exports = function(bosco) {
+module.exports = function (bosco) {
   function doBuild(service, options, interpreter, shouldBuild, next) {
     if (!service.build) return next();
 
@@ -13,7 +13,7 @@ module.exports = function(bosco) {
     var verbose = bosco.options.verbose;
     var watchingService = options.watchBuilds && !!service.name.match(options.watchRegex);
     var command = buildUtils.createCommand(service.build, interpreter, watchingService);
-    var cwd = {cwd: service.repoPath};
+    var cwd = { cwd: service.repoPath };
     var firstBuildCalledBack = false;
 
     // If we dont need to build and aren't watching the service, lets just use the
@@ -107,14 +107,14 @@ module.exports = function(bosco) {
   }
 
   function doBuildWithInterpreter(service, options, shouldBuild, next) {
-    NodeRunner.getInterpreter(bosco, {name: service.name, cwd: service.repoPath}, function(err, interpreter) {
-      if (err) return next({message: err});
+    NodeRunner.getInterpreter(bosco, { name: service.name, cwd: service.repoPath }, function (err, interpreter) {
+      if (err) return next({ message: err });
       doBuild(service, options, interpreter, shouldBuild, next);
     });
   }
 
   return {
     doBuildWithInterpreter: doBuildWithInterpreter,
-    doBuild: doBuild,
+    doBuild: doBuild
   };
 };

@@ -9,7 +9,7 @@ function getHostIp() {
   var ip = _.chain(os.networkInterfaces())
     .values()
     .flatten()
-    .filter(function(val) {
+    .filter(function (val) {
       return (val.family === 'IPv4' && val.internal === false);
     })
     .map('address')
@@ -25,18 +25,18 @@ function processCmdVars(optsCreate, name, cwd) {
   var processedBinds = [];
   var data = {
     HOST_IP: getHostIp(),
-    PATH: cwd,
+    PATH: cwd
   };
 
   if (optsCreate.Cmd) {
-    optsCreate.Cmd.forEach(function(cmd) {
+    optsCreate.Cmd.forEach(function (cmd) {
       processedCommands.push(sf(cmd, data));
     });
     optsCreate.Cmd = processedCommands;
   }
 
   if (optsCreate.Binds) {
-    optsCreate.Binds.forEach(function(bind) {
+    optsCreate.Binds.forEach(function (bind) {
       processedBinds.push(sf(bind, data));
     });
     optsCreate.Binds = processedBinds;
@@ -44,9 +44,9 @@ function processCmdVars(optsCreate, name, cwd) {
 }
 
 function stopAndRemoveContainer(container, callback) {
-  container.inspect().then(function(data) {
+  container.inspect().then(function (data) {
     if (data.State.Running) {
-      container.stop().then(function() {
+      container.stop().then(function () {
         container.remove(callback);
       });
     } else {
@@ -57,18 +57,18 @@ function stopAndRemoveContainer(container, callback) {
 
 function createContainer(docker, fqn, options, next) {
   var optsCreate = {
-    'name': options.service.name,
-    'Image': fqn,
-    'Hostname': '',
-    'User': '',
-    'AttachStdin': false,
-    'AttachStdout': false,
-    'AttachStderr': false,
-    'Tty': false,
-    'OpenStdin': false,
-    'StdinOnce': false,
-    'Env': null,
-    'Volumes': null,
+    name: options.service.name,
+    Image: fqn,
+    Hostname: '',
+    User: '',
+    AttachStdin: false,
+    AttachStdout: false,
+    AttachStderr: false,
+    Tty: false,
+    OpenStdin: false,
+    StdinOnce: false,
+    Env: null,
+    Volumes: null
   };
 
   if (options.service.docker && options.service.docker.Config) {
@@ -89,7 +89,7 @@ function createContainer(docker, fqn, options, next) {
     docker.createContainer(optsCreate, next);
   }
   var container = docker.getContainer(optsCreate.name);
-  container.inspect(function(err, data) {
+  container.inspect(function (err, data) {
     if (err) return doCreate();
     if (data && data.Id) stopAndRemoveContainer(container, doCreate);
     else doCreate();
@@ -106,19 +106,19 @@ function checkRunning(port, host, next) {
   var start = new Date();
   var timer;
   var finished;
-  socket.on('connect', function() {
-    timer = setTimeout(function() { socket.end(); }, 200);
+  socket.on('connect', function () {
+    timer = setTimeout(function () { socket.end(); }, 200);
   });
-  socket.on('close', function(hadError) {
+  socket.on('close', function (hadError) {
     if (hadError) return; // If we are closing due to an error ignore it
     clearTimeout(timer);
     var closed = new Date() - start;
     if (!finished) {
       finished = true;
-      next(null, closed > 100 ? true : false);
+      next(null, closed > 100);
     }
   });
-  socket.on('error', function() {
+  socket.on('error', function () {
     if (!finished) {
       finished = true;
       next(new Error('Failed to connect'), false);
@@ -129,8 +129,8 @@ function checkRunning(port, host, next) {
 function startContainer(bosco, docker, fqn, options, container, next) {
   // We need to get the SSH port?
   var optsStart = {
-    'NetworkMode': 'bridge',
-    'VolumesFrom': null,
+    NetworkMode: 'bridge',
+    VolumesFrom: null
   };
 
   if (options.service.docker && options.service.docker.HostConfig) {
@@ -143,14 +143,14 @@ function startContainer(bosco, docker, fqn, options, container, next) {
 
   bosco.log('Starting ' + options.name.green + ': ' + fqn.magenta + '...');
 
-  container.start(function(err) {
+  container.start(function (err) {
     if (err) {
       bosco.error('Failed to start Docker image: ' + err.message);
       return next(err);
     }
 
     var checkPort;
-    _.forOwn(optsStart.PortBindings, function(value) {
+    _.forOwn(optsStart.PortBindings, function (value) {
       if (!checkPort && value[0].HostPort) checkPort = value[0].HostPort; // Check first port
     });
 
@@ -164,7 +164,7 @@ function startContainer(bosco, docker, fqn, options, container, next) {
     var checkEnd = Date.now() + checkTimeout;
 
     function check() {
-      checkRunning(checkPort, checkHost, function(err, running) {
+      checkRunning(checkPort, checkHost, function (err, running) {
         if (!err && running) {
           return next();
         }
@@ -186,12 +186,12 @@ function ensureManifest(bosco, name, cwd) {
   var manifest = path.join(cwd, 'manifest.json');
   if (fs.existsSync(manifest)) { return; }
   bosco.log('Adding default manifest file for docker build ...');
-  var manifestContent = { 'service': name, 'build': 'local' };
+  var manifestContent = { service: name, build: 'local' };
   fs.writeFileSync(manifest, JSON.stringify(manifestContent));
 }
 
 function buildImage(bosco, docker, fqn, options, next) {
-  var buildPath = sf(options.service.docker.build, {PATH: options.cwd});
+  var buildPath = sf(options.service.docker.build, { PATH: options.cwd });
 
   ensureManifest(bosco, options.service.name, options.cwd);
 
@@ -201,35 +201,32 @@ function buildImage(bosco, docker, fqn, options, next) {
 
   bosco.log('Building image for ' + options.service.name + ' ...');
   var lastStream = '';
-  docker.buildImage(tarStream, {t: fqn}, function(err, stream) {
+  docker.buildImage(tarStream, { t: fqn }, function (err, stream) {
     if (err) return next(err);
 
-    stream.on('data', function(data) {
+    stream.on('data', function (data) {
       var json = JSON.parse(data);
       if (json.error) {
         bosco.error(json.error);
-        return;
-      } else if (json.progress) {
-        return;
       } else if (json.stream) {
         lastStream = json.stream;
         process.stdout.write('.');
       }
     });
-    stream.once('end', function() {
+    stream.once('end', function () {
       var id = lastStream.match(/Successfully built ([a-f0-9]+)/);
       if (id && id[1]) {
         process.stdout.write('\n');
         return next(null, docker.getImage(id[1]));
       }
-      next(new Error('Id not found in final log line: ' . lastStream));
+      next(new Error('Id not found in final log line: '.lastStream));
     });
     stream.once('error', next);
   });
 }
 
 function locateImage(docker, repoTag, callback) {
-  docker.listImages(function(err, list) {
+  docker.listImages(function (err, list) {
     if (err) return callback(err);
 
     for (var i = 0, len = list.length; i < len; i++) {
@@ -246,7 +243,7 @@ function pullImage(bosco, docker, repoTag, next) {
   var prettyError;
 
   function handler() {
-    locateImage(docker, repoTag, function(err, image) {
+    locateImage(docker, repoTag, function (err, image) {
       if (err || prettyError) return next(prettyError || err);
       next(null, image);
     });
@@ -254,7 +251,7 @@ function pullImage(bosco, docker, repoTag, next) {
 
   bosco.log('Pulling image ' + repoTag.green + ' ...');
 
-  docker.pull(repoTag, function(err, stream) {
+  docker.pull(repoTag, function (err, stream) {
     var currentLayers = {};
 
     if (err || prettyError) return next(prettyError || err);
@@ -262,16 +259,16 @@ function pullImage(bosco, docker, repoTag, next) {
     function newBar(id) {
       var logged = false;
       return {
-        tick: function() {
+        tick: function () {
           if (!logged) {
             bosco.log('Downloading layer ' + id + '...');
             logged = true;
           }
-        },
+        }
       };
     }
 
-    stream.on('data', function(data) {
+    stream.on('data', function (data) {
       var json;
       try {
         json = JSON.parse(data);
@@ -299,7 +296,7 @@ function prepareImage(bosco, docker, fqn, options, next) {
   if (options.service.docker && options.service.docker.build) {
     return buildImage(bosco, docker, fqn, options, next);
   }
-  locateImage(docker, fqn, function(err, image) {
+  locateImage(docker, fqn, function (err, image) {
     if (err || image) return next(err, image);
 
     // Image not available
@@ -313,5 +310,5 @@ module.exports = {
   locateImage: locateImage,
   prepareImage: prepareImage,
   pullImage: pullImage,
-  startContainer: startContainer,
+  startContainer: startContainer
 };

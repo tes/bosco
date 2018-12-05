@@ -3,7 +3,7 @@ var _ = require('lodash');
 module.exports = {
   name: 's3delete',
   description: 'Deletes a published asset set from S3',
-  usage: '[-e <environmment>] <build>',
+  usage: '[-e <environmment>] <build>'
 };
 
 function cmd(bosco, args) {
@@ -15,11 +15,11 @@ function cmd(bosco, args) {
     bosco.prompt.get({
       properties: {
         confirm: {
-          description: message,
-        },
-      },
-    }, function(err, result) {
-      if (!result) return next({message: 'Did not confirm'});
+          description: message
+        }
+      }
+    }, function (err, result) {
+      if (!result) return next({ message: 'Did not confirm' });
       if (result.confirm === 'Y' || result.confirm === 'y') {
         next(null, true);
       } else {
@@ -28,13 +28,13 @@ function cmd(bosco, args) {
     });
   }
 
-  bosco.knox.list({ prefix: bosco.options.environment + '/' + toDelete }, function(err, data) {
+  bosco.knox.list({ prefix: bosco.options.environment + '/' + toDelete }, function (err, data) {
     var files = _.map(data.Contents, 'Key');
     if (files.length === 0) return bosco.error('There doesn\'t appear to be any files matching that push.');
 
-    confirm('Are you sure you want to delete '.white + (files.length + '').green + ' files in push ' + toDelete.green + '?', function(err, confirmed) {
+    confirm('Are you sure you want to delete '.white + (files.length + '').green + ' files in push ' + toDelete.green + '?', function (err, confirmed) {
       if (err || !confirmed) return;
-      bosco.knox.deleteMultiple(files, function(err, res) {
+      bosco.knox.deleteMultiple(files, function (err, res) {
         if (err) return bosco.error(err.message);
         if (res.statusCode === '200') {
           bosco.log('Completed deleting ' + toDelete.blue);

@@ -6,7 +6,7 @@ var red = '\u001b[41m \u001b[0m';
 module.exports = {
   name: 'clean-modules',
   description: 'Cleans out node_modules and re-runs npm install against all repos',
-  usage: '[-r <repoPattern>]',
+  usage: '[-r <repoPattern>]'
 };
 
 function clean(bosco, progressbar, bar, repoPath, next) {
@@ -17,16 +17,14 @@ function clean(bosco, progressbar, bar, repoPath, next) {
   }
 
   exec('rm -rf ./node_modules', {
-    cwd: repoPath,
-  }, function(err, stdout, stderr) {
+    cwd: repoPath
+  }, function (err, stdout, stderr) {
     if (progressbar) bar.tick();
     if (err) {
       if (progressbar) bosco.console.log('');
       bosco.error(repoPath.blue + ' >> ' + stderr);
-    } else {
-      if (!progressbar) {
-        bosco.log('Cleaned node modules for ' + repoPath.blue);
-      }
+    } else if (!progressbar) {
+      bosco.log('Cleaned node modules for ' + repoPath.blue);
     }
     next();
   });
@@ -49,7 +47,7 @@ function cmd(bosco, args, next) {
       complete: green,
       incomplete: red,
       width: 50,
-      total: total,
+      total: total
     }) : null;
 
     async.mapLimit(repos, bosco.concurrency.network, function repoStash(repo, repoCb) {
@@ -57,12 +55,12 @@ function cmd(bosco, args, next) {
 
       var repoPath = bosco.getRepoPath(repo);
       clean(bosco, progressbar, bar, repoPath, repoCb);
-    }, function() {
+    }, function () {
       cb();
     });
   }
 
-  cleanRepos(function() {
+  cleanRepos(function () {
     bosco.log('Complete');
     if (next) next();
   });

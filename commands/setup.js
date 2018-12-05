@@ -1,6 +1,6 @@
 module.exports = {
   name: 'setup',
-  description: 'Runs clone and then install to get your environment ready for action.',
+  description: 'Runs clone and then install to get your environment ready for action.'
 };
 
 function cmd(bosco, args) {
@@ -8,9 +8,9 @@ function cmd(bosco, args) {
   var install = require('./install');
   var team = require('./team');
 
-  team.cmd(bosco, ['sync'], function() {
-    team.cmd(bosco, ['setup'], function() {
-      clone.cmd(bosco, [], function() {
+  team.cmd(bosco, ['sync'], function () {
+    team.cmd(bosco, ['setup'], function () {
+      clone.cmd(bosco, [], function () {
         install.cmd(bosco, args);
       });
     });

@@ -29,7 +29,7 @@ function addCommandOptions(args, command) {
 
   var options = command.options || [];
 
-  _.forEach(options, function(option) {
+  _.forEach(options, function (option) {
     if (!option.name) {
       throw new Error('Error parsing bosco command ' + command.name + ' options');
     }
@@ -37,7 +37,7 @@ function addCommandOptions(args, command) {
     cmdArgs = cmdArgs.option(option.name, option);
   });
 
-  _.forEach(globalOptions, function(option) {
+  _.forEach(globalOptions, function (option) {
     cmdArgs = cmdArgs.option(option.name, option);
   });
 
@@ -51,7 +51,7 @@ function addBoscoCommands(args, commands) {
     if (!command.options) return true;
 
     var oldStyleArgs = false;
-    _.forEach(command.options, function(option) {
+    _.forEach(command.options, function (option) {
       if (!option.name) {
         if (!option.option || !option.syntax || option.syntax.length < 2) {
           throw new Error('Error parsing bosco command ' + command.name + ' options');
@@ -62,7 +62,7 @@ function addBoscoCommands(args, commands) {
     return !oldStyleArgs;
   }
 
-  _.forEach(commands, function(command) {
+  _.forEach(commands, function (command) {
     if (!command) return;
 
     if (!checkCommandOptions(command)) {
@@ -70,7 +70,7 @@ function addBoscoCommands(args, commands) {
       return;
     }
 
-    args.command(command.name, command.description, function(commandArgs) {
+    args.command(command.name, command.description, function (commandArgs) {
       addCommandOptions(commandArgs, command);
     });
   });
@@ -81,7 +81,7 @@ function addBoscoCommands(args, commands) {
 function getCommandsOnPath(folderPath) {
   if (!fs.existsSync(folderPath)) return [];
 
-  return _.map(fs.readdirSync(folderPath), function(filename) {
+  return _.map(fs.readdirSync(folderPath), function (filename) {
     if (path.extname(filename) !== '.js') return null;
 
     var file = folderPath + filename;
@@ -105,14 +105,14 @@ var globalCommand = {
     {
       name: 'completion',
       type: 'string',
-      desc: 'Generate the shell completion code',
+      desc: 'Generate the shell completion code'
     },
     {
       name: 'shellCommands',
       type: 'boolean',
-      desc: 'Generate commands for shell completion mode [used internally]',
-    },
-  ],
+      desc: 'Generate commands for shell completion mode [used internally]'
+    }
+  ]
 };
 
 var boscoArgs = addCommandOptions(yargs, globalCommand)
@@ -142,7 +142,7 @@ if (argv.completion) {
 
 // Only take options we have specified.
 var boscoOptions = {};
-_.forOwn((boscoArgs.parsed || {}).aliases || {}, function(val, optionName) {
+_.forOwn((boscoArgs.parsed || {}).aliases || {}, function (val, optionName) {
   boscoOptions[optionName] = argv[optionName];
 });
 

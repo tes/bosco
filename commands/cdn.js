@@ -18,20 +18,20 @@ module.exports = {
     name: 'tag',
     alias: 't',
     type: 'string',
-    desc: 'Filter by a tag defined within bosco-service.json',
+    desc: 'Filter by a tag defined within bosco-service.json'
   },
   {
     name: 'watch',
     alias: 'w',
     type: 'string',
-    desc: 'Filter by a regex of services to watch (similar to -r in run)',
+    desc: 'Filter by a regex of services to watch (similar to -r in run)'
   },
   {
     name: 'local-vendor',
     alias: 'lv',
     type: 'boolean',
-    desc: 'Force vendor library files to come from local cdn instead of remote cdn',
-  }],
+    desc: 'Force vendor library files to come from local cdn instead of remote cdn'
+  }]
 };
 
 function cmd(bosco, args) {
@@ -65,7 +65,7 @@ function cmd(bosco, args) {
   }
 
   function startServer(staticAssets, staticRepos, serverPort) {
-    var isWatchedFile = function(asset) {
+    var isWatchedFile = function (asset) {
       var hasSourceFiles = asset.sourceFiles && asset.sourceFiles.length > 0;
       var assetPath = hasSourceFiles ? asset.sourceFiles[0] : asset.path;
       var watched;
@@ -79,7 +79,7 @@ function cmd(bosco, args) {
 
     function getAsset(assetUrl) {
       var key = assetUrl.replace('/', '');
-      return _.find(staticAssets, {assetKey: key});
+      return _.find(staticAssets, { assetKey: key });
     }
 
     var corsHeaders = {
@@ -87,10 +87,10 @@ function cmd(bosco, args) {
       'Access-Control-Allow-Methods': 'POST, GET, PUT, DELETE, OPTIONS',
       'Access-Control-Allow-Credentials': true,
       'Access-Control-Max-Age': '86400', // 24 hours
-      'Access-Control-Allow-Headers': 'X-Requested-With, Access-Control-Allow-Origin, X-HTTP-Method-Override, Content-Type, Authorization, Accept',
+      'Access-Control-Allow-Headers': 'X-Requested-With, Access-Control-Allow-Origin, X-HTTP-Method-Override, Content-Type, Authorization, Accept'
     };
 
-    var server = http.createServer(function(request, response) {
+    var server = http.createServer(function (request, response) {
       if (request.method === 'OPTIONS') {
         response.writeHead(200, corsHeaders);
         return response.end();
@@ -98,9 +98,9 @@ function cmd(bosco, args) {
 
       var headers = {
         'Cache-Control': 'no-cache, must-revalidate',
-        'Pragma': 'no-cache',
-        'Expires': 'Sat, 21 May 1952 00:00:00 GMT',
-        'Access-Control-Allow-Origin': '*',
+        Pragma: 'no-cache',
+        Expires: 'Sat, 21 May 1952 00:00:00 GMT',
+        'Access-Control-Allow-Origin': '*'
       };
 
       var pathname = url.parse(request.url).pathname;
@@ -136,7 +136,9 @@ function cmd(bosco, args) {
           response.end(responseContent);
         } else {
           var baseBoscoCdnUrl = bosco.getBaseCdnUrl();
-          requestLib.get({uri: cdnUrl, gzip: true, timeout: 5000, encoding: null}, function(err, cdnResponse, body) { // body is a buffer
+          requestLib.get({
+            uri: cdnUrl, gzip: true, timeout: 5000, encoding: null
+          }, function (err, cdnResponse, body) { // body is a buffer
             if (err) {
               bosco.error('Error proxying asset for: ' + cdnUrl + ', Error: ' + err.message);
               response.writeHead(500);
@@ -154,7 +156,7 @@ function cmd(bosco, args) {
 
             responseHeaders = _.defaults({
               'content-type': contentType,
-              'content-length': responseContent.length,
+              'content-length': responseContent.length
             }, corsHeaders);
 
             response.writeHead(200, responseHeaders);
@@ -163,7 +165,7 @@ function cmd(bosco, args) {
             var cacheContentToSave = {
               headers: responseHeaders,
               body: typeof responseContent === 'string' ? responseContent : responseContent.toString('base64'),
-              isBinary: typeof responseContent !== 'string',
+              isBinary: typeof responseContent !== 'string'
             };
             fs.writeSync(fs.openSync(localCacheFile, 'w'), JSON.stringify(cacheContentToSave, null, 2));
           });
@@ -185,15 +187,15 @@ function cmd(bosco, args) {
 
       if (isWatchedFile(asset)) {
         if (hasSourceFiles && !minify) {
-          async.reduce(asset.sourceFiles, '', function(memo, item, callback) {
-            fs.readFile(item, function(err, content) {
+          async.reduce(asset.sourceFiles, '', function (memo, item, callback) {
+            fs.readFile(item, function (err, content) {
               callback(null, memo + content);
             });
-          }, function(err, content) {
+          }, function (err, content) {
             response.end(content);
           });
         } else {
-          fs.readFile(asset.path, function(err, content) {
+          fs.readFile(asset.path, function (err, content) {
             response.end(content);
           });
         }
@@ -211,7 +213,7 @@ function cmd(bosco, args) {
       bs.init({
         proxy: bosco.options['browser-sync-proxy'],
         files: assetsToWatch,
-        reloadDelay: bosco.options['browser-sync-delay'],
+        reloadDelay: bosco.options['browser-sync-delay']
       });
     }
 
@@ -225,7 +227,7 @@ function cmd(bosco, args) {
 
   if (minify) bosco.log('Running per service builds for front end assets, this can take some time ...');
 
-  getRunList(function(err, repoList) {
+  getRunList(function (err, repoList) {
     var repoNames = _.map(repoList, 'name');
     var options = {
       repos: repoNames,
@@ -239,15 +241,15 @@ function cmd(bosco, args) {
       repoRegex: repoRegex,
       repoTag: repoTag,
       watchCallback: watchCallback,
-      isCdn: true,
+      isCdn: true
     };
 
     var executeAsync = {
       staticAssets: bosco.staticUtils.getStaticAssets.bind(null, options),
-      staticRepos: bosco.staticUtils.getStaticRepos.bind(null, options),
+      staticRepos: bosco.staticUtils.getStaticRepos.bind(null, options)
     };
 
-    async.parallel(executeAsync, function(err, results) {
+    async.parallel(executeAsync, function (err, results) {
       startServer(results.staticAssets, results.staticRepos, port);
     });
   });

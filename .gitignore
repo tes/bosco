@@ -8,5 +8,4 @@ tes
 .bosco
 npm-debug.log
 coverage
-package-lock.json
 /.nyc_output/

@@ -16,18 +16,18 @@ function createOptions(bosco, givenOptions) {
     cmd: 'echo',
     args: ['NO COMMAND DEFINED!'],
     guardFn: guardFn,
-    dieOnError: false,
+    dieOnError: false
   });
 
   if (!options.init) {
     if (options.stdoutFn === undefined) {
-      options.stdoutFn = function(stdout, repoPath) {
+      options.stdoutFn = function (stdout, repoPath) {
         bosco.error(repoPath.green + ' >> ' + stdout);
       };
     }
 
     if (options.stderrFn === undefined) {
-      options.stderrFn = function(stderr, repoPath) {
+      options.stderrFn = function (stderr, repoPath) {
         bosco.error(repoPath.red + ' >> ' + stderr);
       };
     }
@@ -67,10 +67,10 @@ function execute(bosco, command, args, repoPath, options, next) {
 
   var sc = spawn(command, args, {
     cwd: repoPath,
-    stdio: stdio,
+    stdio: stdio
   });
 
-  sc.on('error', function(err) {
+  sc.on('error', function (err) {
     bosco.error('spawn error: ' + err);
   });
 
@@ -79,7 +79,7 @@ function execute(bosco, command, args, repoPath, options, next) {
 
     if (options.stdoutFn) {
       count++;
-      sc.stdout.toArray(function(stdout) {
+      sc.stdout.toArray(function (stdout) {
         var fullStdout = stdout.join('');
         if (fullStdout.length) {
           if (options.stdoutFn.length === 3) {
@@ -97,7 +97,7 @@ function execute(bosco, command, args, repoPath, options, next) {
 
     if (options.stderrFn) {
       count++;
-      sc.stderr.toArray(function(stderr) {
+      sc.stderr.toArray(function (stderr) {
         var fullStderr = stderr.join('');
         if (fullStderr.length) {
           if (options.stderrFn.length === 3) {
@@ -114,7 +114,7 @@ function execute(bosco, command, args, repoPath, options, next) {
     options.init(bosco, sc, repoPath);
   }
 
-  sc.on('close', function(code) {
+  sc.on('close', function (code) {
     returnCode = code;
     tryNext();
   });
@@ -126,16 +126,16 @@ function iterate(bosco, options, next) {
   var repos = bosco.getRepos();
   if (!repos) return bosco.error('You are repo-less :( You need to initialise bosco first, try \'bosco clone\'.');
 
-  async.mapLimit(repos, bosco.options.cpus, function(repo, repoCb) {
+  async.mapLimit(repos, bosco.options.cpus, function (repo, repoCb) {
     if (!repo.match(repoRegex)) return repoCb();
 
     var repoPath = bosco.getRepoPath(repo);
 
-    options.guardFn(bosco, repoPath, options, function(err) {
+    options.guardFn(bosco, repoPath, options, function (err) {
       if (err) return repoCb(err);
       execute(bosco, options.cmd, options.args, repoPath, options, repoCb);
     });
-  }, function(err) {
+  }, function (err) {
     if (options.dieOnError) return next(err);
     next();
   });
@@ -166,5 +166,5 @@ module.exports = {
   iterate: iterate,
   execute: execute,
   isDefaulOption: isDefaulOption,
-  checkInService: checkInService,
+  checkInService: checkInService
 };

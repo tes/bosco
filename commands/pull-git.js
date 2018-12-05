@@ -10,7 +10,7 @@ var red = '\u001b[41m \u001b[0m';
 module.exports = {
   name: 'pull-git',
   description: 'Pulls any changes from git repos',
-  usage: '[-r <repoPattern>]',
+  usage: '[-r <repoPattern>]'
 };
 
 function checkCurrentBranch(bosco, repoPath, next) {
@@ -23,16 +23,14 @@ function checkCurrentBranch(bosco, repoPath, next) {
   }
 
   exec('git rev-parse --abbrev-ref HEAD', {
-    cwd: repoPath,
-  }, function(err, stdout, stderr) {
+    cwd: repoPath
+  }, function (err, stdout, stderr) {
     if (err) {
       bosco.error(repoPath.blue + ' >> ' + stderr);
-    } else {
-      if (stdout) {
-        var branch = stdout.replace(/(\r\n|\n|\r)/gm, '');
-        if (branch !== 'master') {
-          bosco.warn(repoPath.yellow + ': ' + 'Is not on master, it is on ' + branch.cyan);
-        }
+    } else if (stdout) {
+      var branch = stdout.replace(/(\r\n|\n|\r)/gm, '');
+      if (branch !== 'master') {
+        bosco.warn(repoPath.yellow + ': Is not on master, it is on ' + branch.cyan);
       }
     }
     next();
@@ -45,19 +43,17 @@ function pull(bosco, progressbar, bar, repoPath, next) {
   }
 
   exec('git pull --rebase', {
-    cwd: repoPath,
-  }, function(err, stdout, stderr) {
+    cwd: repoPath
+  }, function (err, stdout, stderr) {
     if (progressbar) bar.tick();
     if (err) {
       if (progressbar) bosco.console.log('');
       bosco.error(repoPath.blue + ' >> ' + stderr);
-    } else {
-      if (!progressbar && stdout) {
-        if (stdout.indexOf('up to date') > 0) {
-          bosco.log(repoPath.blue + ': ' + 'No change'.green);
-        } else {
-          bosco.log(repoPath.blue + ': ' + 'Pulling changes ...'.red + '\n' + stdout);
-        }
+    } else if (!progressbar && stdout) {
+      if (stdout.indexOf('up to date') > 0) {
+        bosco.log(repoPath.blue + ': ' + 'No change'.green);
+      } else {
+        bosco.log(repoPath.blue + ': ' + 'Pulling changes ...'.red + '\n' + stdout);
       }
     }
     next();
@@ -84,17 +80,17 @@ function cmd(bosco, args, next) {
       complete: green,
       incomplete: red,
       width: 50,
-      total: total,
+      total: total
     }) : null;
 
     async.mapLimit(repos, 1, function repoStash(repo, repoCb) {
       if (!repo) return repoCb();
       if (!repo.match(repoRegex)) return repoCb();
       var repoPath = bosco.getRepoPath(repo);
-      checkCurrentBranch(bosco, repoPath, function() {
+      checkCurrentBranch(bosco, repoPath, function () {
         pull(bosco, progressbar, bar, repoPath, repoCb);
       });
-    }, function() {
+    }, function () {
       cb();
     });
   }
@@ -103,13 +99,13 @@ function cmd(bosco, args, next) {
     bosco.log('Ensuring required node version is installed as per .nvmrc ...');
     async.mapSeries(repos, function checkInterpreter(repo, repoCb) {
       var repoPath = bosco.getRepoPath(repo);
-      NodeRunner.getInterpreter(bosco, { name: repo, cwd: repoPath }, function(err) {
+      NodeRunner.getInterpreter(bosco, { name: repo, cwd: repoPath }, function (err) {
         if (err) {
           bosco.error(err);
         }
         return repoCb();
       });
-    }, function() {
+    }, function () {
       cb();
     });
   }
@@ -125,11 +121,11 @@ function cmd(bosco, args, next) {
       return cb();
     }
 
-    RunListHelper.getRepoRunList(bosco, bosco.getRepos(), repoRegex, watchNothing, null, false, function(err, runRepos) {
+    RunListHelper.getRepoRunList(bosco, bosco.getRepos(), repoRegex, watchNothing, null, false, function (err, runRepos) {
       repos = _.chain(runRepos)
-                .filter(function(repo) { return repo.type !== 'remote'; })
-                .map('name')
-                .value();
+        .filter(function (repo) { return repo.type !== 'remote'; })
+        .map('name')
+        .value();
       cb(err);
     });
   }
@@ -138,8 +134,8 @@ function cmd(bosco, args, next) {
     setRunRepos,
     pullRepos,
     ensureNodeVersions,
-    clearGithubCache,
-  ], function() {
+    clearGithubCache
+  ], function () {
     bosco.log('Complete!');
     if (next) next();
   });

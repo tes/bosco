@@ -10,13 +10,13 @@ module.exports = {
   options: [{
     name: 'compoxure',
     type: 'string',
-    desc: 'Url to a compoxure statistics endpoint',
-  }],
+    desc: 'Url to a compoxure statistics endpoint'
+  }]
 };
 
 function cmd(bosco, args, next) {
-  var getStatistics = function(url, cb) {
-    request(url, function(err, response, body) {
+  var getStatistics = function (url, cb) {
+    request(url, function (err, response, body) {
       if (err) {
         bosco.error(err.message);
         return next();
@@ -27,11 +27,11 @@ function cmd(bosco, args, next) {
 
   var unusedBundles = [];
 
-  getStatistics(bosco.options.compoxure, function(err, statistics) {
+  getStatistics(bosco.options.compoxure, function (err, statistics) {
     var serviceBundles = {};
-    _.forEach(statistics, function(repo) {
+    _.forEach(statistics, function (repo) {
       if (repo.bundles) {
-        _.forEach(repo.bundles, function(bundles, serviceName) {
+        _.forEach(repo.bundles, function (bundles, serviceName) {
           var bundleNames = _.map(bundles, 'name');
           serviceBundles[serviceName] = serviceBundles[serviceName] || [];
           serviceBundles[serviceName] = _.union(serviceBundles[serviceName], bundleNames);
@@ -39,26 +39,26 @@ function cmd(bosco, args, next) {
       }
     });
 
-    async.map(Object.keys(serviceBundles), function(service, cb) {
+    async.map(Object.keys(serviceBundles), function (service, cb) {
       var activeBundles = serviceBundles[service];
       var githubName = service;
       if (service === 'site-assets') {
         githubName = 'service-site-assets';
       } // Name hack
-      helper.getServiceConfigFromGithub(bosco, githubName, {}, function(err, config) {
+      helper.getServiceConfigFromGithub(bosco, githubName, {}, function (err, config) {
         if (err || !config) { return cb(); }
 
         // Pull the discrete bundles from the config
         var assetJs = config.assets && config.assets.js && Object.keys(config.assets.js) || [];
         var assetCss = config.assets && config.assets.css && Object.keys(config.assets.css) || [];
         var files = config.files && Object.keys(config.files);
-        _.forEach(files, function(file) {
+        _.forEach(files, function (file) {
           if (config.files[file].js) { assetJs.push(file); }
           if (config.files[file].css) { assetCss.push(file); }
         });
         var configuredBundles = _.union(
-          _.map(assetJs, function(i) { return i + '.js'; }),
-          _.map(assetCss, function(i) { return i + '.css'; })
+          _.map(assetJs, function (i) { return i + '.js'; }),
+          _.map(assetCss, function (i) { return i + '.css'; })
         );
 
         // Remove the used ones to get those unused
@@ -67,14 +67,14 @@ function cmd(bosco, args, next) {
           service: service,
           unused: unused,
           configuredBundles: configuredBundles,
-          activeBundles: activeBundles,
+          activeBundles: activeBundles
         });
 
         cb();
       });
-    }, function() {
+    }, function () {
       bosco.log('Here are the things you need to look at:');
-      _.forEach(unusedBundles, function(service) {
+      _.forEach(unusedBundles, function (service) {
         if (service.unused.length > 0) {
           bosco.console.log(service.service.green);
           bosco.console.log(' Configured: ' + (service.configuredBundles.join(',')).grey);

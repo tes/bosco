@@ -9,7 +9,7 @@ var async = require('async');
 module.exports = {
   name: 'team',
   description: 'A command to keep your Github organisation and team setup in sync with Bosco',
-  usage: 'sync|ls|ln <team> <directory>',
+  usage: 'sync|ls|ln <team> <directory>'
 };
 
 function showTeams(bosco) {
@@ -17,7 +17,7 @@ function showTeams(bosco) {
   var teams = _.keys(teamConfig).sort();
 
   bosco.log('Your current github organisations and teams:');
-  _.each(teams, function(team) {
+  _.each(teams, function (team) {
     bosco.log(' - ' + team.green + ' > ' + (teamConfig[team].path ? teamConfig[team].path.cyan : 'Not linked'.grey));
   });
 
@@ -26,14 +26,14 @@ function showTeams(bosco) {
 
 function getTeams(client, cb) {
   function createTeamPageRequestTask(page) {
-    return function(next) {
-      client.get('/user/teams', {page: page}, function(err, status, body) {
+    return function (next) {
+      client.get('/user/teams', { page: page }, function (err, status, body) {
         next(err, body);
       });
     };
   }
 
-  client.get('/user/teams', {}, function(err, status, teams, headers) {
+  client.get('/user/teams', {}, function (err, status, teams, headers) {
     if (err) { return cb(err); }
 
     var links = parseLinkHeader(headers.link);
@@ -48,7 +48,7 @@ function getTeams(client, cb) {
     // Create tasks to get the remaining pages of teams
     var tasks = _.range(2, lastPage + 1).map(createTeamPageRequestTask);
 
-    async.parallel(tasks, function(err, results) {
+    async.parallel(tasks, function (err, results) {
       if (err) { return cb(err); }
       cb(null, teams.concat(_.flatten(results)));
     });
@@ -56,17 +56,17 @@ function getTeams(client, cb) {
 }
 
 function syncTeams(bosco, next) {
-  var client = github.client(bosco.config.get('github:authToken'), {hostname: bosco.config.get('github:apiHostname')});
+  var client = github.client(bosco.config.get('github:authToken'), { hostname: bosco.config.get('github:apiHostname') });
   var currentTeams = bosco.config.get('teams') || {};
   var added = 0;
 
-  getTeams(client, function(err, teams) {
+  getTeams(client, function (err, teams) {
     if (err) { return bosco.error('Unable to access github with given authKey: ' + err.message); }
 
-    _.each(teams, function(team) {
+    _.each(teams, function (team) {
       var teamKey = team.organization.login + '/' + team.slug;
       if (!currentTeams || !currentTeams[teamKey]) {
-        bosco.config.set('teams:' + teamKey, {id: team.id});
+        bosco.config.set('teams:' + teamKey, { id: team.id });
         bosco.log('Added ' + teamKey.green + ' team ...');
         added++;
       }
@@ -75,11 +75,11 @@ function syncTeams(bosco, next) {
     // Add personal repo
     var user = bosco.config.get('github:user');
     if (!currentTeams[user]) {
-      bosco.config.set('teams:' + user, {id: user, isUser: true});
+      bosco.config.set('teams:' + user, { id: user, isUser: true });
     }
 
-    bosco.config.save(function() {
-      bosco.log('Synchronisation with Github complete, added ' + (added ? added : 'no new') + ' teams.');
+    bosco.config.save(function () {
+      bosco.log('Synchronisation with Github complete, added ' + (added || 'no new') + ' teams.');
       if (next) { next(); }
     });
   });
@@ -97,7 +97,7 @@ function linkTeam(bosco, team, folder, next) {
   fs.mkdirpSync(path.join(teamPath, '.bosco')); // Always create config folder
   bosco.config.set('teams:' + team + ':path', teamPath);
 
-  bosco.config.save(function() {
+  bosco.config.save(function () {
     bosco.log('Team ' + team.green + ' path updated to: ' + teamPath.cyan);
     bosco.options.workspace = bosco.findWorkspace();
     if (next) { next(); }
@@ -112,16 +112,16 @@ function setupInitialLink(bosco, next) {
     message: 'Select a team to map to a workspace directory:',
     name: 'repo',
     default: currentTeam,
-    choices: teams,
+    choices: teams
   };
   var folderQuestion = {
     type: 'input',
     message: 'Enter the path to map team to (defaults to current folder):',
     name: 'folder',
-    default: '.',
+    default: '.'
   };
 
-  inquirer.prompt([repoQuestion, folderQuestion]).then(function(answers) {
+  inquirer.prompt([repoQuestion, folderQuestion]).then(function (answers) {
     linkTeam(bosco, answers.repo, answers.folder, next);
   });
 }

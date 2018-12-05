@@ -10,8 +10,8 @@ module.exports = {
     name: 'noremote',
     alias: 'nr',
     type: 'boolean',
-    desc: 'Do not pull docker images for remote repositories (dependencies)',
-  }],
+    desc: 'Do not pull docker images for remote repositories (dependencies)'
+  }]
 };
 
 
@@ -26,8 +26,8 @@ function cmd(bosco, args, next) {
 
   async.series([
     executePullGit,
-    executePullDocker,
-  ], function() {
+    executePullDocker
+  ], function () {
     bosco.log('Complete!');
     if (next) next();
   });
