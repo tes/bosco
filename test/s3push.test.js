@@ -2,7 +2,6 @@
 
 var _ = require('lodash');
 var expect = require('expect.js');
-var fs = require('fs');
 var zlib = require('zlib');
 
 var boscoMock = require('./boscoMock');
