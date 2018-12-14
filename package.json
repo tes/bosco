@@ -24,7 +24,6 @@
   },
   "man": [
     "./man/bosco-activity.3",
-    "./man/bosco-audit.3",
     "./man/bosco-cdn.3",
     "./man/bosco-clean.3",
     "./man/bosco-clone.3",
@@ -79,7 +78,6 @@
     "mime": "^1.2.11",
     "moment": "^2.12.0",
     "nconf": "^0.8.1",
-    "nsp": "^3.2.1",
     "octonode": "^0.9.5",
     "osenv": "^0.1.0",
     "parse-link-header": "^0.4.1",
