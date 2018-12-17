@@ -10,6 +10,9 @@
     "coveralls": "nyc report --reporter=text-lcov | coveralls",
     "precommit": "npm run test"
   },
+  "publishConfig": {
+    "registry": "https://registry.npmjs.org"
+  },
   "keywords": [
     "micro",
     "service",
