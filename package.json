@@ -7,12 +7,13 @@
     "lint": "eslint .",
     "pretest": "npm run lint",
     "test": "nyc mocha",
-    "coveralls": "nyc report --reporter=text-lcov | coveralls"
+    "coveralls": "nyc report --reporter=text-lcov | coveralls",
+    "vuln": "npm audit --json | npm-audit-helper --exit-zero"
   },
   "husky": {
     "hooks": {
       "pre-commit": "npm run test",
-      "pre-push": "npm audit"
+      "pre-push": "npm run vuln"
     }
   },
   "publishConfig": {
@@ -115,6 +116,7 @@
     "gulp-marked-man": "^0.3.1",
     "husky": "^1.2.1",
     "mocha": "^5.2.0",
+    "npm-audit-helper": "^2.3.16",
     "nyc": "^13.3.0",
     "sinon": "^1.17.1"
   },
