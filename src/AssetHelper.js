@@ -4,7 +4,6 @@ var crypto = require('crypto');
 var path = require('path');
 var mime = require('mime');
 var sf = require('sf');
-var _ = require('lodash');
 
 module.exports = function (bosco) {
   function checksum(str, algorithm, encoding) {
@@ -26,13 +25,6 @@ module.exports = function (bosco) {
     }
 
     return resolvedPath;
-  }
-
-  function getExtraFiles(repoPath, build) {
-    var extraFiles = build && build.watch && build.watch.extraBrowserSyncFiles || [];
-    return _.map(extraFiles, function (glob) {
-      return path.join(repoPath, glob);
-    });
   }
 
   function getAssetHelper(boscoRepo, tagFilter) {
@@ -72,7 +64,6 @@ module.exports = function (bosco) {
           }
           newAsset.checksum = checksum(newAsset.content, 'sha1', 'hex');
           newAsset.uniqueKey = newAsset.bundleKey + ':' + assetKey;
-          newAsset.extraBrowserSyncFiles = getExtraFiles(newAsset.repoPath, boscoRepo.build);
           newAsset.minificationConfig = minificationConfig;
           staticAssets.push(newAsset);
         }
