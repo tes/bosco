@@ -7,13 +7,12 @@
     "lint": "eslint .",
     "pretest": "npm run lint",
     "test": "nyc mocha",
-    "coveralls": "nyc report --reporter=text-lcov | coveralls",
-    "vuln": "npm audit --json | npm-audit-helper --exit-zero"
+    "coveralls": "nyc report --reporter=text-lcov | coveralls"
   },
   "husky": {
     "hooks": {
       "pre-commit": "npm run test",
-      "pre-push": "npm run vuln"
+      "pre-push": "npm audit"
     }
   },
   "publishConfig": {
