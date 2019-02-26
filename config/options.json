@@ -48,21 +48,6 @@
     "type": "boolean",
     "desc": "Install missing node versions via nvm"
   }, {
-    "name": "browser-sync",
-    "alias": "l",
-    "type": "boolean",
-    "desc": "Enable browser-sync on cdn"
-  }, {
-    "name": "browser-sync-proxy",
-    "type": "string",
-    "default": "http://local.tescloud.com:8080",
-    "desc": "Change the url browser-sync proxies to"
-  }, {
-    "name": "browser-sync-delay",
-    "type": "number",
-    "default": 0,
-    "desc": "Delay on browser refresh - useful to increase if refresh requires server restarts"
-  }, {
     "name": "verbose",
     "alias": "v",
     "type": "boolean",

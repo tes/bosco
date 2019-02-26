@@ -5,7 +5,6 @@ var path = require('path');
 var http = require('http');
 var url = require('url');
 var requestLib = require('request');
-var browserSync = require('browser-sync');
 var RunListHelper = require('../src/RunListHelper');
 var CmdHelper = require('../src/CmdHelper');
 
@@ -42,7 +41,6 @@ function cmd(bosco, args) {
   var watchPattern = bosco.options.watch || '$a';
   var watchRegex = new RegExp(watchPattern);
   var repoTag = bosco.options.tag;
-  var bs = browserSync.create();
   var repos;
 
   bosco.log('Starting pseudo CDN on port: ' + (port + '').blue);
@@ -205,17 +203,6 @@ function cmd(bosco, args) {
     });
 
     server.listen(serverPort);
-
-    if (bosco.options['browser-sync']) {
-      var assets = _.map(_.filter(staticAssets, isWatchedFile), 'path');
-      var extraFiles = _.filter(_.uniq(_.flattenDeep(_.map(staticAssets, 'extraFiles'))));
-      var assetsToWatch = _.union(assets, extraFiles);
-      bs.init({
-        proxy: bosco.options['browser-sync-proxy'],
-        files: assetsToWatch,
-        reloadDelay: bosco.options['browser-sync-delay']
-      });
-    }
 
     bosco.log('Server is listening on ' + serverPort);
   }
