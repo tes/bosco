@@ -53,7 +53,7 @@ Runner.prototype.getInterpreter = function (bosco, options, next) {
   var installing;
   var found = false;
   var hasNvmRc = bosco.exists(path.join(options.cwd, '.nvmrc'));
-  if (hasNvmRc) {
+  if (hasNvmRc && !bosco.options['system-node']) {
     var e = childProcess.exec(bosco.options.nvmWhich, { cwd: options.cwd });
     e.stdout.setEncoding('utf8');
     e.stderr.setEncoding('utf8');

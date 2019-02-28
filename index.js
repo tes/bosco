@@ -39,11 +39,19 @@ Bosco.prototype.init = function (options) {
   self.options.defaultsConfigFile = [self.options.configPath, 'defaults.json'].join('/');
 
   // NVM presets
-  self.options.nvmSh = '. ${NVM_DIR:-$HOME/.nvm}/nvm.sh && ';
-  self.options.nvmUse = self.options.nvmSh + 'nvm use;';
-  self.options.nvmUseDefault = self.options.nvmSh + 'nvm use default;';
-  self.options.nvmWhich = self.options.nvmSh + 'nvm which';
-  self.options.nvmInstall = self.options.nvmSh + 'nvm install';
+  if (self.options['system-node']) {
+    self.options.nvmSh = '';
+    self.options.nvmUse = '';
+    self.options.nvmUseDefault = '';
+    self.options.nvmWhich = '';
+    self.options.nvmInstall = '';
+  } else {
+    self.options.nvmSh = '. ${NVM_DIR:-$HOME/.nvm}/nvm.sh && ';
+    self.options.nvmUse = self.options.nvmSh + 'nvm use;';
+    self.options.nvmUseDefault = self.options.nvmSh + 'nvm use default;';
+    self.options.nvmWhich = self.options.nvmSh + 'nvm which';
+    self.options.nvmInstall = self.options.nvmSh + 'nvm install';
+  }
 
   self.options.cpus = require('os').cpus().length;
   self.options.ip = ip.address();
@@ -566,6 +574,10 @@ Bosco.prototype.exists = function (checkPath) {
 };
 
 Bosco.prototype.hasNvm = function () {
+  if (this.options['system-node']) {
+    return true;
+  }
+
   var nvmDir = process.env.NVM_DIR || '';
   var homeNvmDir = process.env.HOME ? path.join(process.env.HOME, '.nvm') : '';
 
