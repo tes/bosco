@@ -43,6 +43,10 @@
     "type": "boolean",
     "desc": "Force over ride on publish even if no changes"
   }, {
+    "name": "system-node",
+    "type": "boolean",
+    "desc": "Skip NVM and use system supplied node binary"
+  }, {
     "name": "install-missing",
     "alias": "i",
     "type": "boolean",
