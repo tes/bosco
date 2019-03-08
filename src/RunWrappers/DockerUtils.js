@@ -104,14 +104,19 @@ function checkRunning(port, host, next) {
   var net = require('net');
   var socket = net.createConnection(port, host);
   var start = new Date();
-  var timer;
   var finished;
-  socket.on('connect', function () {
-    timer = setTimeout(function () { socket.end(); }, 200);
+
+  socket.setTimeout(200);
+  socket.on('timeout', function () {
+    socket.end();
+  });
+  socket.on('data', function () {
+    finished = true;
+    socket.end();
+    next(null, true);
   });
   socket.on('close', function (hadError) {
-    if (hadError) return; // If we are closing due to an error ignore it
-    clearTimeout(timer);
+    if (hadError) return;
     var closed = new Date() - start;
     if (!finished) {
       finished = true;
@@ -173,8 +178,7 @@ function startContainer(bosco, docker, fqn, options, container, next) {
           bosco.warn('Could not detect if ' + options.name.green + ' had started on port ' + ('' + checkPort).magenta + ' after ' + checkTimeout + 'ms');
           return next();
         }
-
-        setTimeout(check, 50);
+        setTimeout(check, 200);
       });
     }
     bosco.log('Waiting for ' + options.name.green + ' to respond at ' + checkHost.magenta + ' on port ' + ('' + checkPort).magenta);
