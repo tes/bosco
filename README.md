@@ -117,6 +117,7 @@ You can use a number of parameters to control the behaviour of Bosco.  Parameter
 |-f, --force|Force over ride of any files|false|
 |-s, --service|Inside single service|false|
 |--nocache|Ignore local cache for github projects|false|
+|--org --organisation|Github org to search for repos in - overrides current folder or Bosco config. Means you can use Bosco outside of a team folder|false|
 
 To see all possible commands and parameters, just type 'bosco'.
 
