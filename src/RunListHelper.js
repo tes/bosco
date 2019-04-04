@@ -5,9 +5,11 @@ var async = require('async');
 var treeify = require('treeify');
 var warnOrganisationMissing = true;
 
-function getGithubRepo(bosco, repo) {
+function getGithubRepo(bosco, repo, organisation) {
   var team = bosco.getTeam();
-  var organisation = !team ? bosco.config.get('github:org') : team.split('/')[0];
+  if (!organisation) {
+    organisation = !team ? bosco.config.get('github:org') : team.split('/')[0];
+  }
   var githubRepo;
   if (!organisation) {
     if (warnOrganisationMissing) {
@@ -21,9 +23,9 @@ function getGithubRepo(bosco, repo) {
   return githubRepo;
 }
 
-function getCachedConfig(bosco, repo, returnDefault) {
+function getCachedConfig(bosco, repo, organisation, returnDefault) {
   var unknownDefault = { name: repo, service: { name: repo, type: 'unknown' } };
-  var githubRepo = getGithubRepo(bosco, repo);
+  var githubRepo = getGithubRepo(bosco, repo, organisation);
   var configKey = 'cache:github:' + githubRepo;
   var cachedConfig = bosco.config.get(configKey);
   return cachedConfig || (returnDefault && unknownDefault);
@@ -65,10 +67,10 @@ function getServiceDockerConfig(bosco, runConfig, svcConfig) {
   return dockerConfig;
 }
 
-function getServiceConfigFromGithub(bosco, repo, svcConfig, next) {
+function getServiceConfigFromGithub(bosco, repo, svcConfig, organisation, next) {
   var client = github.client(bosco.config.get('github:authToken'), { hostname: bosco.config.get('github:apiHostname') });
-  var githubRepo = getGithubRepo(bosco, repo);
-  var cachedConfig = getCachedConfig(bosco, repo, false);
+  var githubRepo = getGithubRepo(bosco, repo, organisation);
+  var cachedConfig = getCachedConfig(bosco, repo, organisation, false);
   var configKey = 'cache:github:' + githubRepo;
   var nocache = bosco.options.nocache;
   var isInfraRepo = repo.indexOf('infra-') >= 0;
@@ -110,7 +112,7 @@ function getServiceConfigFromGithub(bosco, repo, svcConfig, next) {
   }
 }
 
-function getRunConfig(bosco, repo, watchRegex, next) {
+function getRunConfig(bosco, repo, watchRegex, organisation, next) {
   var repoPath = bosco.getRepoPath(repo);
   var watch = !!repo.match(watchRegex);
   var packageJson = [repoPath, 'package.json'].join('/');
@@ -157,13 +159,13 @@ function getRunConfig(bosco, repo, watchRegex, next) {
   }
 
   if (!repoExistsLocally && next) {
-    getServiceConfigFromGithub(bosco, repo, svcConfig, next);
+    getServiceConfigFromGithub(bosco, repo, svcConfig, organisation, next);
   } else {
     return next && next(null, svcConfig) || svcConfig;
   }
 }
 
-function getRunList(bosco, repos, repoRegex, watchRegex, repoTag, displayOnly, next) {
+function getRunList(bosco, repos, repoRegex, watchRegex, repoTag, displayOnly, organisation, next) {
   var configs = {};
   var tree = {};
 
@@ -218,7 +220,7 @@ function getRunList(bosco, repos, repoRegex, watchRegex, repoTag, displayOnly, n
         return cb2(null, memo);
       }
       memo.push(repo);
-      getRunConfig(bosco, repo, watchRegex, function (err, svcConfig) {
+      getRunConfig(bosco, repo, watchRegex, organisation, function (err, svcConfig) {
         if (err) {
           bosco.error('Unable to retrieve config from github for: ' + repo.cyan + ' because: ' + err.message);
           return cb2(null, memo);
@@ -243,9 +245,9 @@ function getRunList(bosco, repos, repoRegex, watchRegex, repoTag, displayOnly, n
   }
 
   function createTree(parent, repo) {
-    var repoConfig = getRunConfig(bosco, repo);
+    var repoConfig = getRunConfig(bosco, repo, null, organisation);
     if (!repoConfig.service.type) {
-      repoConfig = getCachedConfig(bosco, repo, true);
+      repoConfig = getCachedConfig(bosco, repo, organisation, true);
     }
     var isInfra = repo.indexOf('infra-') >= 0;
     var isService = repo.indexOf('service-') >= 0;
@@ -267,7 +269,7 @@ function getRunList(bosco, repos, repoRegex, watchRegex, repoTag, displayOnly, n
       repoName = repoName.blue;
     }
     parent[repoName] = {};
-    return _.map(getCachedConfig(bosco, repo, true).service.dependsOn, _.curry(createTree)(parent[repoName]));
+    return _.map(getCachedConfig(bosco, repo, organisation, true).service.dependsOn, _.curry(createTree)(parent[repoName]));
   }
 
   var filteredRepos = _.filter(repos, matchingRepo);

@@ -88,7 +88,7 @@ function cmd(bosco, args, next) {
       return cb();
     }
     bosco.log('Checking for remote docker images to pull ...');
-    RunListHelper.getRunList(bosco, repos, repoRegex, watchNothing, null, false, function (err, services) {
+    RunListHelper.getRunList(bosco, repos, repoRegex, watchNothing, null, false, null, function (err, services) {
       if (err) {
         return next(err);
       }

@@ -45,7 +45,7 @@ function cmd(bosco, args, next) {
       if (service === 'site-assets') {
         githubName = 'service-site-assets';
       } // Name hack
-      helper.getServiceConfigFromGithub(bosco, githubName, {}, function (err, config) {
+      helper.getServiceConfigFromGithub(bosco, githubName, {}, null, function (err, config) {
         if (err || !config) { return cb(); }
 
         // Pull the discrete bundles from the config

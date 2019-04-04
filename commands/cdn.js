@@ -59,7 +59,7 @@ function cmd(bosco, args) {
   if (!repos) return bosco.error('You are repo-less :( You need to initialise bosco first, try \'bosco clone\'.');
 
   function getRunList(next) {
-    RunListHelper.getRunList(bosco, repos, repoRegex, watchRegex, repoTag, false, next);
+    RunListHelper.getRunList(bosco, repos, repoRegex, watchRegex, repoTag, false, null, next);
   }
 
   function startServer(staticAssets, staticRepos, serverPort) {

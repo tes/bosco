@@ -65,6 +65,11 @@ module.exports = {
       name: 'exclude',
       type: 'string',
       desc: 'Exclude any repositories that match this regex'
+    },
+    {
+      name: 'organisation',
+      alias: 'org',
+      desc: 'Specify Github org to search for repos in - overrides folder or Bosco config'
     }
   ]
 };
@@ -76,6 +81,7 @@ function cmd(bosco, args, allDone) {
   var watchPattern = bosco.options.watch || '$a';
   var watchRegex = new RegExp(watchPattern);
   var repoTag = bosco.options.tag;
+  var organisation = bosco.options.organisation;
 
   var repos;
   if (bosco.options.list) {
@@ -100,7 +106,7 @@ function cmd(bosco, args, allDone) {
   }
 
   function getRunList(next) {
-    RunListHelper.getRunList(bosco, repos, repoRegex, watchRegex, repoTag, false, next);
+    RunListHelper.getRunList(bosco, repos, repoRegex, watchRegex, repoTag, false, organisation, next);
   }
 
   function startRunnableServices(next) {
@@ -248,7 +254,7 @@ function cmd(bosco, args, allDone) {
 
   if (bosco.options.show) {
     bosco.log('Dependency tree for current repo filter:');
-    return RunListHelper.getRunList(bosco, repos, repoRegex, watchRegex, repoTag, true, done);
+    return RunListHelper.getRunList(bosco, repos, repoRegex, watchRegex, repoTag, true, organisation, done);
   }
 
   bosco.log('Run each microservice, will inject ip into docker: ' + bosco.options.ip.cyan);
