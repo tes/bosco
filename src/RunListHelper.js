@@ -65,12 +65,18 @@ function getServiceDockerConfig(bosco, runConfig, svcConfig) {
   return dockerConfig;
 }
 
+function isExpiredConfig(config) {
+  if (!config.cachedTime) return true;
+  return (new Date() - new Date(config.cachedTime)) > (2 * 24 * 60 * 60 * 1000); // 2 days
+}
+
 function getServiceConfigFromGithub(bosco, repo, svcConfig, next) {
   var client = github.client(bosco.config.get('github:authToken'), { hostname: bosco.config.get('github:apiHostname') });
   var githubRepo = getGithubRepo(bosco, repo);
   var cachedConfig = getCachedConfig(bosco, repo, false);
   var configKey = 'cache:github:' + githubRepo;
   var nocache = bosco.options.nocache;
+  var offline = bosco.options.offline;
   var isInfraRepo = repo.indexOf('infra-') >= 0;
   var skipRemoteRepo = (bosco.options.teamOnly && !isInfraRepo) || bosco.command === 'cdn';
   if (!githubRepo) {
@@ -80,7 +86,7 @@ function getServiceConfigFromGithub(bosco, repo, svcConfig, next) {
     svcConfig.service.type = 'skip';
     return next(null, svcConfig);
   }
-  if (cachedConfig && !nocache) {
+  if (cachedConfig && !nocache && (!isExpiredConfig(cachedConfig) || offline)) {
     next(null, cachedConfig);
   } else {
     bosco.log('Downloading remote service config from github: ' + githubRepo.cyan);
@@ -101,6 +107,8 @@ function getServiceConfigFromGithub(bosco, repo, svcConfig, next) {
         if (!boscoSvcConfig.service || boscoSvcConfig.service.type !== 'docker') {
           boscoSvcConfig.service = _.defaults(boscoSvcConfig.service, getServiceDockerConfig(bosco, svcConfig, boscoSvcConfig));
         }
+
+        boscoSvcConfig.cachedTime = new Date();
         bosco.config.set(configKey, boscoSvcConfig);
         bosco.config.save(function () {
           next(null, boscoSvcConfig);
