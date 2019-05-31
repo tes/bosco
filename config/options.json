@@ -64,9 +64,15 @@
     "type": "boolean",
     "default": false,
     "desc": "No logging output"
-  }, {
+  },
+  {
     "name": "nocache",
     "type": "boolean",
     "desc": "Do not use the remote config cache"
+  },
+  {
+    "name": "offline",
+    "type": "boolean",
+    "desc": "Forgoes fetching config from github. Uses stale cache where applicable"
   }
 ]

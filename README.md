@@ -117,6 +117,7 @@ You can use a number of parameters to control the behaviour of Bosco.  Parameter
 |-f, --force|Force over ride of any files|false|
 |-s, --service|Inside single service|false|
 |--nocache|Ignore local cache for github projects|false|
+|--offline|Ignore expired cache of remote service data and use local if available|false|
 
 To see all possible commands and parameters, just type 'bosco'.
 
