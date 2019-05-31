@@ -117,10 +117,5 @@
     "npm-audit-helper": "^2.3.16",
     "nyc": "^13.3.0",
     "sinon": "^1.17.1"
-  },
-  "config": {
-    "blanket": {
-      "pattern": "src"
-    }
   }
 }
