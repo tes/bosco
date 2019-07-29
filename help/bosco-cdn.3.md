@@ -8,7 +8,7 @@ bosco-cdn(3) -- Serve static assets locally for development.
 
 ## DESCRIPTION
 
-This command will run the bundling and minification process and then serve all of the static assets locally, which defaults to http://localhost:7334/.  It will watch the assets specified in the `bosco-service.json` file and reload if they change.
+This command will run the bundling and minification process and then serve all of the static assets locally, which defaults to `http://localhost:7334/`.  It will watch the assets specified in the `bosco-service.json` file and reload if they change.
 
 It is expected that you leave this command running while doing development on services, as if you are also using Compoxure then it provides the HTML fragments that allow the static assets to be included in other pages.
 
