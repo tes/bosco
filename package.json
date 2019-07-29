@@ -88,7 +88,7 @@
     "octonode": "^0.9.5",
     "osenv": "^0.1.0",
     "parse-link-header": "^0.4.1",
-    "pm2": "^2.7.2",
+    "pm2": "^3.5.1",
     "prettyjson": "^1.0.0",
     "progress": "^1.1.8",
     "prompt": "^1.0.0",
