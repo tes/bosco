@@ -100,9 +100,9 @@
     "tar-fs": "^1.2.0",
     "traverse": "^0.6.6",
     "treeify": "^1.0.1",
-    "tty-table": "^2.6.9",
+    "tty-table": "^2.7.3",
     "uglify-js": "^2.6.1",
-    "yargs": "^4.8.1"
+    "yargs": "^13.3.0"
   },
   "devDependencies": {
     "coveralls": "^3.0.2",
