@@ -109,8 +109,15 @@ function cmd(bosco, args) {
       }
 
       var isLibraryAsset = pathname.indexOf('/vendor/library/') >= 0;
-      // Path matches something that is service-name/build e.g. /app-home/720/css/logged-in.css
-      var isRemoteAsset = pathname.match(/^\/(.*)\/(\d+)\//);
+      /*
+        Path matches something that is service-name/build e.g:
+        - /app-home/720/css/logged-in.css
+        - /app-home/ec701e5/css/logged-in.css
+
+        but not what bundle-version gives us locally:
+        - /app-home/local/css/logged-in.css
+      */
+      var isRemoteAsset = pathname.match(/^\/([^\/]+)\/(?!local)([^\/]+)\//);
       var serveRemoteAsset = isRemoteAsset || (isLibraryAsset && !bosco.options.localVendor);
       if (serveRemoteAsset) {
         var baseCdn = bosco.config.get('cdn:remoteUrl') || 'https://duqxiy1o2cbw6.cloudfront.net/tes';
