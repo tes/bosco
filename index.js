@@ -85,17 +85,6 @@ Bosco.prototype.run = function (options) {
 
     if (err) return self.console.log(err);
 
-    var quotes;
-    var quotePath = self.config.get('quotes') || './quotes.json';
-    try {
-      quotes = require(quotePath);
-    } catch (ex) {
-      self.console.log('Failed to load quotes: ' + quotePath);
-    }
-    if (quotes) {
-      self.log(quotes[Math.floor(Math.random() * quotes.length)].blue);
-    }
-
     // Workspace found by reverse lookup in config - github team >> workspace.
     self.options.workspace = self.findWorkspace();
     self.options.workspaceConfigPath = [self.options.workspace, '.bosco'].join('/');

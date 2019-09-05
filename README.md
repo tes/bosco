@@ -70,7 +70,6 @@ Bosco is built around the idea that you use github teams to manage groups of rep
 It will then ask you to link a team to a workspace folder - this folder can be anywhere, but it just lets Bosco know that this is the place where that team lives, this then appears in the output of the command 'bosco team ls'.
 
 ```
-[07:09:26] Bosco: I'm glad I didn't know you when I was a kid.
 [07:09:26] Bosco: Initialised using [/Users/cliftonc/.bosco/bosco.json] in environment [local] with team [service]
 [07:09:26] Bosco: Your current github organisations and teams
 [07:09:26] Bosco:  - tes/southampton-buildings > /Users/cliftonc/work/resources
