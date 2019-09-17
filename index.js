@@ -1,9 +1,8 @@
 var Bosco = require('bosco-core');
-var pkg = require('./package.json');
 
 function boscoRun() {
-  var bosco = new Bosco();
-  bosco.initWithCommandLineArgs(pkg);
+  var bosco = new Bosco(__dirname);
+  bosco.initWithCommandLineArgs();
   bosco.run();
 }
 
