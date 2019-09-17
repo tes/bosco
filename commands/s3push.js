@@ -4,6 +4,7 @@ var zlib = require('zlib');
 var mime = require('mime');
 var iltorb = require('iltorb');
 var Table = require('tty-table');
+var StaticUtils = require('../src/StaticUtils');
 
 module.exports = {
   name: 's3push',
@@ -231,6 +232,8 @@ function cmd(bosco, args, callback) {
   }
 
   function go(next) {
+    var staticUtils = StaticUtils(bosco);
+
     bosco.log('Compiling front end assets, this can take a while ... ');
 
     var options = {
@@ -243,7 +246,7 @@ function cmd(bosco, args, callback) {
       isCdn: false
     };
 
-    bosco.staticUtils.getStaticAssets(options, function (err, staticAssets) {
+    staticUtils.getStaticAssets(options, function (err, staticAssets) {
       if (err) {
         bosco.error('There was an error: ' + err.message);
         return next(err);

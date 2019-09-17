@@ -7,6 +7,7 @@ var url = require('url');
 var requestLib = require('request');
 var RunListHelper = require('../src/RunListHelper');
 var CmdHelper = require('../src/CmdHelper');
+var StaticUtils = require('../src/StaticUtils');
 
 module.exports = {
   name: 'cdn',
@@ -34,6 +35,7 @@ module.exports = {
 };
 
 function cmd(bosco, args) {
+  var staticUtils = StaticUtils(bosco);
   var minify = _.includes(args, 'minify');
   var port = bosco.config.get('cdn:port') || 7334;
   var repoPattern = bosco.options.repo;
@@ -239,8 +241,8 @@ function cmd(bosco, args) {
     };
 
     var executeAsync = {
-      staticAssets: bosco.staticUtils.getStaticAssets.bind(null, options),
-      staticRepos: bosco.staticUtils.getStaticRepos.bind(null, options)
+      staticAssets: staticUtils.getStaticAssets.bind(null, options),
+      staticRepos: staticUtils.getStaticRepos.bind(null, options)
     };
 
     async.parallel(executeAsync, function (err, results) {
