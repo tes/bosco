@@ -3,11 +3,14 @@ var path = require('path');
 var _ = require('lodash');
 var async = require('async');
 var glob = require('glob');
+var getAssetHelperFactory = require('./getAssetHelper');
+var getMinify = require('./getMinify');
+var ExternalBuild = require('./ExternalBuild');
 
 module.exports = function (bosco) {
-  var AssetHelper = require('./AssetHelper')(bosco);
-  var minify = require('./Minify')(bosco).minify;
-  var doBuildWithInterpreter = require('./ExternalBuild')(bosco).doBuildWithInterpreter;
+  var getAssetHelper = getAssetHelperFactory(bosco);
+  var minify = getMinify(bosco);
+  var doBuildWithInterpreter = ExternalBuild(bosco).doBuildWithInterpreter;
   var html = require('./Html')(bosco);
   var createAssetHtmlFiles = html.createAssetHtmlFiles;
   var attachFormattedRepos = html.attachFormattedRepos;
@@ -46,7 +49,7 @@ module.exports = function (bosco) {
   }
 
   function createAssetList(boscoRepo, buildNumber, minified, tagFilter, warnMissing, next) {
-    var assetHelper = AssetHelper.getAssetHelper(boscoRepo, tagFilter);
+    var assetHelper = getAssetHelper(boscoRepo, tagFilter);
     var fileTypesWhitelist = bosco.options.fileTypesWhitelist;
     var staticAssets = [];
     var assetKey;

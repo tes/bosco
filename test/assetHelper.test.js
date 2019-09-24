@@ -8,7 +8,7 @@ describe('Asset Helper', function() {
 
     var bosco = {warn: function(msg) { message = msg }};
     var staticAssets = {'my-key': {}};
-    var addAsset = require('../src/AssetHelper')(bosco).getAssetHelper({name: 'our-repo', path: '/tmp'}, null).addAsset;
+    var addAsset = require('../src/getAssetHelper')(bosco)({name: 'our-repo', path: '/tmp'}, null).addAsset;
 
     // when
     addAsset(staticAssets, '100', 'my-key', 'asset.hole', 'tag', 'html', '.');

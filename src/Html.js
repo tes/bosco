@@ -1,10 +1,9 @@
 var _ = require('lodash');
 var hb = require('handlebars');
 var fs = require('fs');
+var createKey = require('./assetCreateKey');
 
 module.exports = function (bosco) {
-  var createKey = require('./AssetHelper')(bosco).createKey;
-
   function isJavascript(asset) {
     if (asset.type !== 'js') return false;
     if (asset.extname !== '.js') return false;

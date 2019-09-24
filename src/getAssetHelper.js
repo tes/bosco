@@ -1,18 +1,11 @@
 
 var fs = require('fs');
-var crypto = require('crypto');
 var path = require('path');
 var mime = require('mime');
 var sf = require('sf');
+var checksum = require('./assetChecksum');
 
 module.exports = function (bosco) {
-  function checksum(str, algorithm, encoding) {
-    return crypto
-      .createHash(algorithm || 'md5')
-      .update(str, 'utf8')
-      .digest(encoding || 'hex');
-  }
-
   function resolve(boscoRepo, basePath, asset, assetKey) {
     var resolvedPath = path.join(boscoRepo.path, basePath, asset);
 
@@ -88,14 +81,5 @@ module.exports = function (bosco) {
     };
   }
 
-  function createKey(name, buildNumber, tag, hash, type, extension) {
-    return path.join(name, buildNumber, type, tag + (hash ? '.' + hash : '') + (extension ? '.' + extension : ''));
-  }
-
-
-  return {
-    getAssetHelper: getAssetHelper,
-    createKey: createKey,
-    checksum: checksum
-  };
+  return getAssetHelper;
 };
