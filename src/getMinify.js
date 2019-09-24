@@ -2,10 +2,9 @@ var _ = require('lodash');
 var fs = require('fs');
 var UglifyJS = require('uglify-js');
 var CleanCSS = require('clean-css');
+var createKey = require('./assetCreateKey');
 
 module.exports = function (bosco) {
-  var createKey = require('./AssetHelper')(bosco).createKey;
-
   function compileJs(staticAssets, jsAssets, concatenateOnly, next) {
     var bundleKeys = _.uniq(_.map(jsAssets, 'bundleKey'));
     var err;
@@ -194,7 +193,5 @@ module.exports = function (bosco) {
     });
   }
 
-  return {
-    minify: minify
-  };
+  return minify;
 };
