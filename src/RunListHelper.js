@@ -250,7 +250,7 @@ function getRunList(bosco, repos, repoRegex, watchRegex, repoTag, displayOnly, n
     return config.order || (_.includes(['docker', 'docker-compose'], config.service.type) ? 100 : 500);
   }
 
-  function createTree(parent, repo) {
+  function createTree(parent, path, repo) {
     var repoConfig = getRunConfig(bosco, repo);
     if (!repoConfig.service.type) {
       repoConfig = getCachedConfig(bosco, repo, true);
@@ -275,7 +275,20 @@ function getRunList(bosco, repos, repoRegex, watchRegex, repoTag, displayOnly, n
       repoName = repoName.blue;
     }
     parent[repoName] = {};
-    return _.map(getCachedConfig(bosco, repo, true).service.dependsOn, _.curry(createTree)(parent[repoName]));
+
+    var dependsOn = getCachedConfig(bosco, repo, true).service.dependsOn || [];
+
+    var newDependencies = dependsOn.filter(function (dependency) {
+      return !path.includes(dependency);
+    });
+
+    var circularDependencies = dependsOn.filter(function (dependency) {
+      return path.includes(dependency);
+    }).map(function (dependency) {
+      return dependency + ' (circular)';
+    });
+
+    return _.map(newDependencies.concat(circularDependencies), _.curry(createTree)(parent[repoName], path.concat(repo)));
   }
 
   var filteredRepos = _.filter(repos, matchingRepo);
@@ -292,7 +305,7 @@ function getRunList(bosco, repos, repoRegex, watchRegex, repoTag, displayOnly, n
 
     if (displayOnly) {
       _.chain(repoList)
-        .map(_.curry(createTree)(tree))
+        .map(_.curry(createTree)(tree, []))
         .value();
       /* eslint-disable no-console */
       console.log(treeify.asTree(tree));
