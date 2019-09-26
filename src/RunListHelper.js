@@ -276,7 +276,7 @@ function getRunList(bosco, repos, repoRegex, watchRegex, repoTag, displayOnly, n
     }
     parent[repoName] = {};
 
-    var dependsOn = getCachedConfig(bosco, repo, true).service.dependsOn || [];
+    var dependsOn = repoConfig.service.dependsOn || [];
 
     var newDependencies = dependsOn.filter(function (dependency) {
       return !path.includes(dependency);
@@ -304,7 +304,7 @@ function getRunList(bosco, repos, repoRegex, watchRegex, repoTag, displayOnly, n
       .value();
 
     if (displayOnly) {
-      _.chain(repoList)
+      _.chain(repos)
         .map(_.curry(createTree)(tree, []))
         .value();
       /* eslint-disable no-console */
