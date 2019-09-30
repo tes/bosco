@@ -1,6 +1,6 @@
 {
   "name": "bosco",
-  "version": "3.1.3",
+  "version": "3.1.4",
   "description": "Bosco will take care of your microservices, just don't try and use him on a plane.",
   "main": "index.js",
   "scripts": {
