@@ -35,7 +35,7 @@ module.exports = {
 };
 
 function cmd(bosco, args) {
-  var staticUtils = StaticUtils(bosco);
+  bosco.staticUtils = bosco.staticUtils || StaticUtils(bosco);
   var minify = _.includes(args, 'minify');
   var port = bosco.config.get('cdn:port') || 7334;
   var repoPattern = bosco.options.repo;
@@ -241,8 +241,8 @@ function cmd(bosco, args) {
     };
 
     var executeAsync = {
-      staticAssets: staticUtils.getStaticAssets.bind(null, options),
-      staticRepos: staticUtils.getStaticRepos.bind(null, options)
+      staticAssets: bosco.staticUtils.getStaticAssets.bind(null, options),
+      staticRepos: bosco.staticUtils.getStaticRepos.bind(null, options)
     };
 
     async.parallel(executeAsync, function (err, results) {

@@ -46,6 +46,7 @@ function bytesToSize(bytes) {
 }
 
 function cmd(bosco, args, callback) {
+  bosco.staticUtils = bosco.staticUtils || StaticUtils(bosco);
   if (args.length > 0) tag = args[0];
 
   var cdnUrl = bosco.config.get('aws:cdn') + '/';
@@ -232,8 +233,6 @@ function cmd(bosco, args, callback) {
   }
 
   function go(next) {
-    var staticUtils = StaticUtils(bosco);
-
     bosco.log('Compiling front end assets, this can take a while ... ');
 
     var options = {
@@ -246,7 +245,7 @@ function cmd(bosco, args, callback) {
       isCdn: false
     };
 
-    staticUtils.getStaticAssets(options, function (err, staticAssets) {
+    bosco.staticUtils.getStaticAssets(options, function (err, staticAssets) {
       if (err) {
         bosco.error('There was an error: ' + err.message);
         return next(err);

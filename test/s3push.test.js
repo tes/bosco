@@ -170,8 +170,7 @@ describe('s3push', function() {
     });
   });
 
-  it.skip('should push all files to s3', function(done) {
-    var message = 'This is a test error message';
+  it('should push all files to s3', function(done) {
     var s3Data = [];
     function putBuffer(buffer, path, headers, next) {
       if (headers['Content-Encoding']) {
