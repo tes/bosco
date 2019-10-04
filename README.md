@@ -3,7 +3,7 @@
 [![Build Status](https://travis-ci.org/tes/bosco.svg?branch=master)](https://travis-ci.org/tes/bosco)
 [![Dependencies Status](https://david-dm.org/tes/bosco.png)](https://david-dm.org/tes/bosco)
 [![Dev Dependencies Status](https://david-dm.org/tes/bosco/dev-status.png)](https://david-dm.org/tes/bosco#info=devDependencies)
-[![Coverage Status](https://img.shields.io/coveralls/tes/bosco.svg)](https://coveralls.io/r/tes/bosco?branch=master) [![Gitter](https://badges.gitter.im/Join Chat.svg)](https://gitter.im/tes/bosco?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+[![Coverage Status](https://img.shields.io/coveralls/tes/bosco.svg)](https://coveralls.io/r/tes/bosco?branch=master) [![Gitter](https://badges.gitter.im/JoinChat.svg)](https://gitter.im/tes/bosco?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
 Bosco is a utility knife to help manage the complexity that using microservices, which naturally results in a large number of code repositories, brings with it.  Inspired by the Github 'setup', e.g. can a developer run one simple command and get up and running?
 
