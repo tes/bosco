@@ -1,4 +1,3 @@
-var ch = require('../src/CmdHelper');
 var _ = require('lodash');
 
 module.exports = {
@@ -14,7 +13,7 @@ function cmd(bosco, args) {
 
   bosco.log('Running "' + stringCommand.green + '" across all matching repos ...');
 
-  var options = ch.createOptions(bosco, {
+  var options = bosco.cmdHelper.createOptions({
     cmd: command,
     args: cmdArgs,
     init: function (innerBosco, child, repoPath) {
@@ -25,7 +24,7 @@ function cmd(bosco, args) {
     }
   });
 
-  ch.iterate(bosco, options, function (err) {
+  bosco.cmdHelper.iterate(options, function (err) {
     if (err) bosco.error(err);
     bosco.log('Complete');
   });

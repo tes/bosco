@@ -1,7 +1,6 @@
 var async = require('async');
 var exec = require('child_process').exec;
 var NodeRunner = require('../src/RunWrappers/Node');
-var CmdHelper = require('../src/CmdHelper');
 var RunListHelper = require('../src/RunListHelper');
 var _ = require('lodash');
 var green = '\u001b[42m \u001b[0m';
@@ -129,7 +128,7 @@ function cmd(bosco, args, next) {
   bosco.log('Running install across repos ...');
 
   function setRunRepos(cb) {
-    if (!CmdHelper.checkInService(bosco)) {
+    if (!bosco.cmdHelper.checkInService()) {
       return cb();
     }
 

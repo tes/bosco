@@ -1,5 +1,3 @@
-var ch = require('../src/CmdHelper');
-
 module.exports = {
   name: 'branches',
   description: 'Checks git local branch name across all services',
@@ -9,7 +7,7 @@ module.exports = {
 function cmd(bosco) {
   bosco.log('Running \'git rev-parse --abbrev-ref HEAD\' across all matching repos ...');
 
-  var options = ch.createOptions(bosco, {
+  var options = bosco.cmdHelper.createOptions({
     cmd: 'git',
     args: ['rev-parse', '--abbrev-ref', 'HEAD'],
     guardFn: function (innerBosco, repoPath, opts, next) {
@@ -27,7 +25,7 @@ function cmd(bosco) {
     }
   });
 
-  ch.iterate(bosco, options, function () {
+  bosco.cmdHelper.iterate(options, function () {
     bosco.log('Complete');
   });
 }

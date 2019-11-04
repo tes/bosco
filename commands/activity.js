@@ -1,4 +1,3 @@
-var ch = require('../src/CmdHelper');
 var execFile = require('child_process').execFile;
 var moment = require('moment');
 
@@ -42,7 +41,7 @@ function cmd(bosco, args, next) {
   }
   bosco.log('Showing commits since ' + since);
 
-  var options = ch.createOptions(bosco, {
+  var options = bosco.cmdHelper.createOptions({
     cmd: 'git',
     args: ['log', '--date=relative', '--pretty=format:' + FORMAT, '--no-merges', '--since=' + since],
     guardFn: function (innerBosco, repoPath, guardOptions, cb) {
@@ -52,7 +51,7 @@ function cmd(bosco, args, next) {
     stdoutFn: makeRepoActivityStdoutFn(bosco)
   });
 
-  ch.iterate(bosco, options, function () {
+  bosco.cmdHelper.iterate(options, function () {
     bosco.log('Activity complete');
 
     if (next) next();

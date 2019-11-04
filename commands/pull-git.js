@@ -2,7 +2,6 @@ var async = require('async');
 var exec = require('child_process').exec;
 var NodeRunner = require('../src/RunWrappers/Node');
 var RunListHelper = require('../src/RunListHelper');
-var CmdHelper = require('../src/CmdHelper');
 var _ = require('lodash');
 var green = '\u001b[42m \u001b[0m';
 var red = '\u001b[41m \u001b[0m';
@@ -65,7 +64,7 @@ function cmd(bosco, args, next) {
   var repoRegex = new RegExp(repoPattern);
   var watchNothing = '$a';
 
-  CmdHelper.checkInService(bosco);
+  bosco.cmdHelper.checkInService();
   var repos = bosco.getRepos();
 
   if (!repos) return bosco.error('You are repo-less :( You need to initialise bosco first, try \'bosco clone\'.');
@@ -117,7 +116,7 @@ function cmd(bosco, args, next) {
   }
 
   function setRunRepos(cb) {
-    if (!CmdHelper.checkInService(bosco)) {
+    if (!bosco.cmdHelper.checkInService()) {
       return cb();
     }
 

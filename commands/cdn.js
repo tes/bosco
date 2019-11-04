@@ -6,7 +6,6 @@ var http = require('http');
 var url = require('url');
 var requestLib = require('request');
 var RunListHelper = require('../src/RunListHelper');
-var CmdHelper = require('../src/CmdHelper');
 var StaticUtils = require('../src/StaticUtils');
 
 module.exports = {
@@ -50,7 +49,7 @@ function cmd(bosco, args) {
   if (bosco.options.list) {
     repos = bosco.options.list.split(',');
   } else {
-    if (CmdHelper.checkInService(bosco)) {
+    if (bosco.cmdHelper.checkInService()) {
       bosco.options.watch = bosco.options.watch || new RegExp(bosco.getRepoName());
       watchRegex = new RegExp(bosco.options.watch);
     }

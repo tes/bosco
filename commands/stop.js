@@ -4,7 +4,6 @@ var RunListHelper = require('../src/RunListHelper');
 var NodeRunner = require('../src/RunWrappers/Node');
 var DockerRunner = require('../src/RunWrappers/Docker');
 var DockerComposeRunner = require('../src/RunWrappers/DockerCompose');
-var CmdHelper = require('../src/CmdHelper');
 
 module.exports = {
   name: 'stop',
@@ -52,7 +51,7 @@ function cmd(bosco, args, done) {
   if (bosco.options.list) {
     repos = bosco.options.list.split(',');
   } else {
-    CmdHelper.checkInService(bosco);
+    bosco.cmdHelper.checkInService();
     repos = bosco.getRepos();
   }
 

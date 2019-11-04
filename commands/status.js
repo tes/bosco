@@ -1,4 +1,3 @@
-var ch = require('../src/CmdHelper');
 var _ = require('lodash');
 
 module.exports = {
@@ -12,7 +11,7 @@ var CHANGE_STRINGS = ['Changes not staged', 'Your branch is ahead', 'Untracked f
 function cmd(bosco) {
   bosco.log('Running git status across all matching repos ...');
 
-  var options = ch.createOptions(bosco, {
+  var options = bosco.cmdHelper.createOptions({
     cmd: 'git',
     args: ['-c', 'color.status=always', 'status'],
     guardFn: function (innerBosco, repoPath, opts, next) {
@@ -32,7 +31,7 @@ function cmd(bosco) {
     }
   });
 
-  ch.iterate(bosco, options, function () {
+  bosco.cmdHelper.iterate(options, function () {
     bosco.log('Complete');
   });
 }
