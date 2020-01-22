@@ -98,9 +98,10 @@
   },
   "devDependencies": {
     "coveralls": "^3.0.2",
-    "eslint": "^6.2.2",
-    "eslint-config-airbnb": "^17.1.0",
-    "eslint-plugin-import": "^2.14.0",
+    "eslint": "^6.4.0",
+    "eslint-config-airbnb": "^18.0.1",
+    "eslint-config-airbnb-base": "^14.0.0",
+    "eslint-plugin-import": "^2.18.2",
     "expect.js": "^0.3.1",
     "gulp": "^4.0.0",
     "husky": "^1.2.1",
