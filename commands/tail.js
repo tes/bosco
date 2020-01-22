@@ -1,52 +1,52 @@
-var _ = require('lodash');
-var async = require('async');
-var pm2 = require('pm2');
-var Tail = require('tail').Tail;
+const _ = require('lodash');
+const async = require('async');
+const pm2 = require('pm2');
+const { Tail } = require('tail');
 
 module.exports = {
   name: 'tail',
   description: 'Tails the logs from pm2',
-  usage: '[out|err] [-r <repoPattern>]'
+  usage: '[out|err] [-r <repoPattern>]',
 };
 
 function cmd(bosco, args) {
-  var repoPattern = bosco.options.repo;
-  var repoRegex = new RegExp(repoPattern);
+  const repoPattern = bosco.options.repo;
+  const repoRegex = new RegExp(repoPattern);
 
   // Connect or launch PM2
-  pm2.connect(function (err) {
+  pm2.connect((err) => {
     if (err) {
       bosco.error(err);
       return;
     }
 
     function describeRunningServices(running) {
-      async.map(running, function (repo, next) {
+      async.map(running, (repo, next) => {
         if (repo.match(repoRegex)) {
-          pm2.describe(repo, function (err, list) {
+          pm2.describe(repo, (err, list) => {
             if (err) {
               bosco.error(err);
               return;
             }
-            var file = list[0].pm2_env.pm_out_log_path;
+            let file = list[0].pm2_env.pm_out_log_path;
             if (args[0] === 'err') {
               file = list[0].pm2_env.pm_err_log_path;
             }
-            bosco.log('Tailing ' + file);
-            var tail = new Tail(file);
+            bosco.log(`Tailing ${file}`);
+            const tail = new Tail(file);
 
-            tail.on('line', function (data) {
-              bosco.console.log(repo + ' ' + data);
+            tail.on('line', (data) => {
+              bosco.console.log(`${repo} ${data}`);
             });
 
-            tail.on('error', function (error) {
+            tail.on('error', (error) => {
               bosco.error(error);
             });
           });
         } else {
           next();
         }
-      }, function (err) {
+      }, (err) => {
         if (err) {
           bosco.error(err);
           process.exit(1);
@@ -56,12 +56,12 @@ function cmd(bosco, args) {
     }
 
     function getRunningServices(next) {
-      pm2.list(function (err, list) {
+      pm2.list((err, list) => {
         next(err, _.map(list, 'name'));
       });
     }
 
-    getRunningServices(function (err, running) {
+    getRunningServices((err, running) => {
       describeRunningServices(running);
     });
   });

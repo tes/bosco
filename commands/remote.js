@@ -1,36 +1,36 @@
-var async = require('async');
-var _ = require('lodash');
-var path = require('path');
-var traverse = require('traverse');
-var semver = require('semver');
+const async = require('async');
+const _ = require('lodash');
+const path = require('path');
+const traverse = require('traverse');
+const semver = require('semver');
 
 module.exports = {
   name: 'remote',
   description: 'Checks your projects for any references to non local environments or versions of dependencies that dont work offline',
-  cmd: function (bosco) {
+  cmd(bosco) {
     // The attached is unashamedly default TES config, you need to replace it with your own in the bosco.config
-    var defaultConfig = {
+    const defaultConfig = {
       localConfigurationFiles: ['default.json', 'local.json', 'test.json'],
       likelyHostConfig: '([^v]host|url)',
       notLocalConnectionString: '(development|staging|live)',
       modules: {
         'module-tsl-logger': '^0.2.41',
-        'electric-metrics': '^0.0.15'
-      }
+        'electric-metrics': '^0.0.15',
+      },
     };
 
-    var remoteConfig = bosco.config.get('remote') || defaultConfig;
+    const remoteConfig = bosco.config.get('remote') || defaultConfig;
 
-    var repos = bosco.getRepos();
+    const repos = bosco.getRepos();
     if (!repos) return bosco.error('You are repo-less :( You need to initialise bosco first, try \'bosco clone\'.');
 
     function checkRemoteConnectionStrings(repo, repoPath, next) {
-      var localProblems = false;
-      var mergedConfig = _.reduce(remoteConfig.localConfigurationFiles, function (merged, configFile) {
-        var configFilePath = path.join(repoPath, 'config', configFile);
-        var newConfig;
+      let localProblems = false;
+      const mergedConfig = _.reduce(remoteConfig.localConfigurationFiles, (merged, configFile) => {
+        const configFilePath = path.join(repoPath, 'config', configFile);
+        let newConfig;
         if (bosco.exists(configFilePath)) {
-          var config = require(path.join(repoPath, 'config', configFile));
+          const config = require(path.join(repoPath, 'config', configFile));
           newConfig = _.defaultsDeep(merged, config);
         } else {
           newConfig = merged;
@@ -39,12 +39,12 @@ module.exports = {
       }, {});
 
       traverse(mergedConfig).forEach(function (item) {
-        var currentPath = this.path.join('.');
+        const currentPath = this.path.join('.');
         if (currentPath.match(remoteConfig.likelyHostConfig)) {
           if (typeof item === 'string') {
             if (item.match(remoteConfig.notLocalConnectionString)) {
               localProblems = true;
-              bosco.warn('Host problem in ' + repo.cyan + ' at config ' + currentPath.green + ' of ' + item.yellow);
+              bosco.warn(`Host problem in ${repo.cyan} at config ${currentPath.green} of ${item.yellow}`);
             }
           }
         }
@@ -54,17 +54,17 @@ module.exports = {
     }
 
     function checkModuleVersions(repo, repoPath, next) {
-      var localProblems = false;
-      var packageJsonPath = path.join(repoPath, 'package.json');
+      let localProblems = false;
+      const packageJsonPath = path.join(repoPath, 'package.json');
       if (bosco.exists(packageJsonPath)) {
-        var pkgJson = require(packageJsonPath);
-        _.forEach(remoteConfig.modules, function (version, module) {
-          var repoModuleVersion = pkgJson.dependencies && pkgJson.dependencies[module] || pkgJson.devDependencies && pkgJson.devDependencies[module];
+        const pkgJson = require(packageJsonPath);
+        _.forEach(remoteConfig.modules, (version, module) => {
+          const repoModuleVersion = pkgJson.dependencies && pkgJson.dependencies[module] || pkgJson.devDependencies && pkgJson.devDependencies[module];
           if (repoModuleVersion && repoModuleVersion !== 'latest') {
-            var satisfies = !semver.lt(repoModuleVersion.replace('^', ''), version.replace('^', ''));
+            const satisfies = !semver.lt(repoModuleVersion.replace('^', ''), version.replace('^', ''));
             if (!satisfies) {
               localProblems = true;
-              bosco.warn('Module problem in ' + repo.cyan + ' with ' + module.green + ', please upgrade ' + repoModuleVersion.yellow + ' >> ' + version.yellow);
+              bosco.warn(`Module problem in ${repo.cyan} with ${module.green}, please upgrade ${repoModuleVersion.yellow} >> ${version.yellow}`);
             }
           }
         });
@@ -73,17 +73,17 @@ module.exports = {
     }
 
     function checkRepos() {
-      var localProblems = false;
-      async.mapSeries(repos, function repoStash(repo, repoCb) {
-        var repoPath = bosco.getRepoPath(repo);
-        checkRemoteConnectionStrings(repo, repoPath, function (err, localConnectionProblems) {
+      let localProblems = false;
+      async.mapSeries(repos, (repo, repoCb) => {
+        const repoPath = bosco.getRepoPath(repo);
+        checkRemoteConnectionStrings(repo, repoPath, (err, localConnectionProblems) => {
           localProblems = localProblems || localConnectionProblems;
-          checkModuleVersions(repo, repoPath, function (err, localModuleProblems) {
+          checkModuleVersions(repo, repoPath, (err, localModuleProblems) => {
             localProblems = localProblems || localModuleProblems;
             repoCb();
           });
         });
-      }, function () {
+      }, () => {
         if (localProblems) {
           bosco.error('Resolve the problems above or you\'re ... err ... going to have problems :(');
         } else {
@@ -93,6 +93,6 @@ module.exports = {
     }
 
     checkRepos();
-  }
+  },
 
 };

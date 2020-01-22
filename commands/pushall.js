@@ -1,5 +1,5 @@
-var async = require('async');
-var exec = require('child_process').exec;
+const async = require('async');
+const { exec } = require('child_process');
 
 /*
  * this command is called pushall as there is a weird Node bug when calling the command 'push' - try bosco push to see.
@@ -8,7 +8,7 @@ var exec = require('child_process').exec;
 module.exports = {
   name: 'pushall',
   description: 'Will push any changes across all repos - useful for batch updates, typically used after bosco commit',
-  usage: '[-r <repoPattern>]'
+  usage: '[-r <repoPattern>]',
 };
 
 function confirm(bosco, message, next) {
@@ -16,10 +16,10 @@ function confirm(bosco, message, next) {
   bosco.prompt.get({
     properties: {
       confirm: {
-        description: message
-      }
-    }
-  }, function (err, result) {
+        description: message,
+      },
+    },
+  }, (err, result) => {
     if (!result) return next({ message: 'Did not confirm' });
 
     if (result.confirm === 'Y' || result.confirm === 'y') {
@@ -32,10 +32,10 @@ function confirm(bosco, message, next) {
 
 function countCommitsAhead(bosco, orgPath, next) {
   exec('git log origin/master..master | xargs cat | wc -l', {
-    cwd: orgPath
-  }, function (err, stdout, stderr) {
+    cwd: orgPath,
+  }, (err, stdout, stderr) => {
     if (err) {
-      bosco.error(orgPath.blue + ' >> ' + stderr);
+      bosco.error(`${orgPath.blue} >> ${stderr}`);
     } else if (stdout) return next(null, parseInt(stdout, 10));
 
     next(err, 0);
@@ -44,32 +44,32 @@ function countCommitsAhead(bosco, orgPath, next) {
 
 function push(bosco, orgPath, repo, next) {
   if (!bosco.exists([orgPath, '.git'].join('/'))) {
-    bosco.warn('Doesn\'t seem to be a git repo: ' + orgPath.blue);
+    bosco.warn(`Doesn't seem to be a git repo: ${orgPath.blue}`);
     return next();
   }
 
-  countCommitsAhead(bosco, orgPath, function (err, commitsAhead) {
+  countCommitsAhead(bosco, orgPath, (err, commitsAhead) => {
     if (err) return next(err);
 
     if (!commitsAhead) {
-      bosco.log('Nothing to push for ' + repo.blue);
+      bosco.log(`Nothing to push for ${repo.blue}`);
       return next();
     }
 
-    confirm(bosco, 'Confirm you want to push: ' + orgPath.blue + ' [y/N]', function (err, confirmed) {
+    confirm(bosco, `Confirm you want to push: ${orgPath.blue} [y/N]`, (err, confirmed) => {
       if (err) return next(err);
 
       if (!confirmed) {
-        bosco.log('Not pushing ' + repo.blue);
+        bosco.log(`Not pushing ${repo.blue}`);
         return next();
       }
 
       exec('git push origin master', {
-        cwd: orgPath
-      }, function (err, stdout, stderr) {
+        cwd: orgPath,
+      }, (err, stdout, stderr) => {
         if (err) {
-          bosco.error(orgPath.blue + ' >> ' + stderr);
-        } else if (stdout) bosco.log(orgPath.blue + ' >> ' + stdout);
+          bosco.error(`${orgPath.blue} >> ${stderr}`);
+        } else if (stdout) bosco.log(`${orgPath.blue} >> ${stdout}`);
         next(err);
       });
     });
@@ -77,28 +77,28 @@ function push(bosco, orgPath, repo, next) {
 }
 
 function cmd(bosco) {
-  var repos = bosco.getRepos();
+  const repos = bosco.getRepos();
   if (!repos) return bosco.error('You are repo-less :( You need to initialise bosco first, try \'bosco clone\'.');
 
-  var regex = bosco.options.repo;
+  const regex = bosco.options.repo;
 
-  bosco.log('Running git push across all repos that match ' + regex + '...');
+  bosco.log(`Running git push across all repos that match ${regex}...`);
 
   function pushRepos(cb) {
-    async.mapSeries(repos, function repoPush(repo, repoCb) {
-      var repoPath = bosco.getRepoPath(repo);
+    async.mapSeries(repos, (repo, repoCb) => {
+      const repoPath = bosco.getRepoPath(repo);
       if (repo.match(regex)) {
-        bosco.log('Running git push on ' + repo.blue);
+        bosco.log(`Running git push on ${repo.blue}`);
         push(bosco, repoPath, repo, repoCb);
       } else {
         repoCb();
       }
-    }, function () {
+    }, () => {
       cb();
     });
   }
 
-  pushRepos(function () {
+  pushRepos(() => {
     bosco.log('Complete');
   });
 }

@@ -4,6 +4,6 @@
  * Bosco command line tool
  */
 
-var boscoRun = require('../index');
+const boscoRun = require('../index');
 
 boscoRun();

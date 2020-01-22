@@ -1,7 +1,7 @@
-var _ = require('lodash');
-var hb = require('handlebars');
-var fs = require('fs');
-var createKey = require('./assetCreateKey');
+const _ = require('lodash');
+const hb = require('handlebars');
+const fs = require('fs');
+const createKey = require('./assetCreateKey');
 
 module.exports = function (bosco) {
   function isJavascript(asset) {
@@ -20,20 +20,20 @@ module.exports = function (bosco) {
   }
 
   function formattedAssets(staticAssets) {
-    var assets = { services: [] };
-    var templateContent = fs.readFileSync(__dirname + '/../templates/assetList.html');
-    var template = hb.compile(templateContent.toString());
+    const assets = { services: [] };
+    const templateContent = fs.readFileSync(`${__dirname}/../templates/assetList.html`);
+    const template = hb.compile(templateContent.toString());
 
-    var assetsByService = _.groupBy(staticAssets, 'serviceName');
+    const assetsByService = _.groupBy(staticAssets, 'serviceName');
 
-    _.forOwn(assetsByService, function (serviceAssets, serviceName) {
-      var service = { serviceName: serviceName, bundles: [] };
-      var bundlesByTag = _.groupBy(serviceAssets, 'tag');
-      _.forOwn(bundlesByTag, function (bundleAssets, bundleTag) {
-        _.forEach(bundleAssets, function (asset) {
+    _.forOwn(assetsByService, (serviceAssets, serviceName) => {
+      const service = { serviceName, bundles: [] };
+      const bundlesByTag = _.groupBy(serviceAssets, 'tag');
+      _.forOwn(bundlesByTag, (bundleAssets, bundleTag) => {
+        _.forEach(bundleAssets, (asset) => {
           asset.url = bosco.getAssetCdnUrl(asset.assetKey);
         });
-        var bundle = { bundle: bundleTag, assets: bundleAssets };
+        const bundle = { bundle: bundleTag, assets: bundleAssets };
         service.bundles.push(bundle);
       });
       assets.services.push(service);
@@ -46,9 +46,9 @@ module.exports = function (bosco) {
   }
 
   function formattedRepos(repos) {
-    var templateContent = fs.readFileSync(__dirname + '/../templates/repoList.html');
-    var template = hb.compile(templateContent.toString());
-    var templateData = { repos: repos };
+    const templateContent = fs.readFileSync(`${__dirname}/../templates/repoList.html`);
+    const template = hb.compile(templateContent.toString());
+    const templateData = { repos };
 
     templateData.user = bosco.config.get('github:user');
     templateData.date = (new Date()).toString();
@@ -62,10 +62,10 @@ module.exports = function (bosco) {
   }
 
   function createAssetHtmlFiles(staticAssets, isCdn, next) {
-    var htmlAssets = {};
+    const htmlAssets = {};
 
-    _.forEach(staticAssets, function (asset) {
-      var htmlFile = createKey(asset.serviceName, asset.buildNumber, asset.tag, asset.type, 'html', 'html');
+    _.forEach(staticAssets, (asset) => {
+      const htmlFile = createKey(asset.serviceName, asset.buildNumber, asset.tag, asset.type, 'html', 'html');
 
       if (!isJavascript(asset) && !isStylesheet(asset)) return;
 
@@ -83,25 +83,25 @@ module.exports = function (bosco) {
         isMinifiedFragment: true,
         mimeType: 'text/html',
         extname: '.html',
-        extraFiles: asset.extraFiles
+        extraFiles: asset.extraFiles,
       };
 
       if (isCdn && isMinified(asset)) return;
 
       if (isJavascript(asset)) {
         htmlAssets[htmlFile].content += _.template('<script src="<%= url %>"></script>\n')({
-          url: bosco.getAssetCdnUrl(asset.assetKey)
+          url: bosco.getAssetCdnUrl(asset.assetKey),
         });
       }
 
       if (isStylesheet(asset)) {
         htmlAssets[htmlFile].content += _.template('<link rel="stylesheet" href="<%=url %>" type="text/css" media="all" />\n')({
-          url: bosco.getAssetCdnUrl(asset.assetKey)
+          url: bosco.getAssetCdnUrl(asset.assetKey),
         });
       }
     });
 
-    var allStaticAssets = _.union(_.values(htmlAssets), staticAssets);
+    const allStaticAssets = _.union(_.values(htmlAssets), staticAssets);
 
     allStaticAssets.formattedAssets = formattedAssets(allStaticAssets);
 
@@ -109,7 +109,7 @@ module.exports = function (bosco) {
   }
 
   return {
-    createAssetHtmlFiles: createAssetHtmlFiles,
-    attachFormattedRepos: attachFormattedRepos
+    createAssetHtmlFiles,
+    attachFormattedRepos,
   };
 };

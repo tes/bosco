@@ -1,6 +1,6 @@
-var async = require('async');
-var pullGit = require('./pull-git');
-var pullDocker = require('./pull-docker');
+const async = require('async');
+const pullGit = require('./pull-git');
+const pullDocker = require('./pull-docker');
 
 module.exports = {
   name: 'pull',
@@ -10,8 +10,8 @@ module.exports = {
     name: 'noremote',
     alias: 'nr',
     type: 'boolean',
-    desc: 'Do not pull docker images for remote repositories (dependencies)'
-  }]
+    desc: 'Do not pull docker images for remote repositories (dependencies)',
+  }],
 };
 
 
@@ -26,8 +26,8 @@ function cmd(bosco, args, next) {
 
   async.series([
     executePullGit,
-    executePullDocker
-  ], function () {
+    executePullDocker,
+  ], () => {
     bosco.log('Complete!');
     if (next) next();
   });

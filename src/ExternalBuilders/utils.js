@@ -4,13 +4,13 @@ module.exports = function (bosco) {
   }
 
   function createCommand(buildConfig, interpreter, watch) {
-    var commandForLog;
-    var command;
-    var ready;
-    var timeout;
-    var args;
+    let commandForLog;
+    let command;
+    let ready;
+    let timeout;
+    let args;
     if (watch) {
-      var watchConfig = buildConfig.watch || {};
+      const watchConfig = buildConfig.watch || {};
       ready = watchConfig.ready || 'finished';
       timeout = watchConfig.timeout || 10000;
       command = watchConfig.command || buildConfig.command;
@@ -18,7 +18,7 @@ module.exports = function (bosco) {
     } else {
       command = buildConfig.command;
       commandForLog = command;
-      var arrayCommand = Array.isArray(command);
+      const arrayCommand = Array.isArray(command);
       if (arrayCommand) {
         commandForLog = JSON.stringify(command);
         args = command;
@@ -27,11 +27,11 @@ module.exports = function (bosco) {
     }
     command = ensureCorrectNodeVersion(command, interpreter);
     return {
-      command: command, args: args, log: commandForLog, watch: watch, ready: ready, timeout: timeout
+      command, args, log: commandForLog, watch, ready, timeout,
     };
   }
 
   return {
-    createCommand: createCommand
+    createCommand,
   };
 };

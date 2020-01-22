@@ -1,30 +1,30 @@
-var _ = require('lodash');
+const _ = require('lodash');
 
 module.exports = {
   name: 'exec',
   description: 'Runs arbitrary commands across all services - take care!',
-  usage: '[-r <repoRegex>] -- <command>'
+  usage: '[-r <repoRegex>] -- <command>',
 };
 
 function cmd(bosco, args) {
-  var stringCommand = args.join(' ');
-  var command = args[0];
-  var cmdArgs = _.tail(args);
+  const stringCommand = args.join(' ');
+  const command = args[0];
+  const cmdArgs = _.tail(args);
 
-  bosco.log('Running "' + stringCommand.green + '" across all matching repos ...');
+  bosco.log(`Running "${stringCommand.green}" across all matching repos ...`);
 
-  var options = bosco.cmdHelper.createOptions({
+  const options = bosco.cmdHelper.createOptions({
     cmd: command,
     args: cmdArgs,
-    init: function (innerBosco, child, repoPath) {
-      innerBosco.log('Starting output stream for: ' + repoPath.green);
+    init(innerBosco, child, repoPath) {
+      innerBosco.log(`Starting output stream for: ${repoPath.green}`);
       child.stdin.end();
       child.stdout.pipe(process.stdout);
       child.stderr.pipe(process.stderr);
-    }
+    },
   });
 
-  bosco.cmdHelper.iterate(options, function (err) {
+  bosco.cmdHelper.iterate(options, (err) => {
     if (err) bosco.error(err);
     bosco.log('Complete');
   });

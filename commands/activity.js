@@ -1,5 +1,5 @@
-var execFile = require('child_process').execFile;
-var moment = require('moment');
+const { execFile } = require('child_process');
+const moment = require('moment');
 
 module.exports = {
   name: 'activity',
@@ -10,20 +10,20 @@ module.exports = {
     name: 'since',
     alias: 's',
     type: 'string',
-    desc: 'Return all data after a ISO date'
-  }]
+    desc: 'Return all data after a ISO date',
+  }],
 };
 
-var FORMAT = '%C(auto)%h %s %C(yellow)(%Cgreen%aN%C(yellow) %ad)%Creset';
+const FORMAT = '%C(auto)%h %s %C(yellow)(%Cgreen%aN%C(yellow) %ad)%Creset';
 
 function makeRepoActivityStdoutFn(bosco) {
   return function repoActivityStdoutFn(stdout, path, next) {
-    var log = path.blue + ':\n' + stdout;
-    var commitCount = log.match(/\n/g).length;
-    var revOpts = ['--max-count=' + commitCount + 1, '--no-merges', '--count', 'HEAD'];
-    execFile('git', ['rev-list'].concat(revOpts), { cwd: path }, function (err, cmdStdout, stderr) {
+    let log = `${path.blue}:\n${stdout}`;
+    const commitCount = log.match(/\n/g).length;
+    const revOpts = [`--max-count=${commitCount}${1}`, '--no-merges', '--count', 'HEAD'];
+    execFile('git', ['rev-list'].concat(revOpts), { cwd: path }, (err, cmdStdout, stderr) => {
       if (err) {
-        bosco.error(path.blue + ' >> ' + stderr);
+        bosco.error(`${path.blue} >> ${stderr}`);
         return next(err);
       }
       if (commitCount === +cmdStdout) log += '\n^^^^^^^ Repo was created'.green;
@@ -34,24 +34,24 @@ function makeRepoActivityStdoutFn(bosco) {
 }
 
 function cmd(bosco, args, next) {
-  var since = bosco.options.since;
+  let { since } = bosco.options;
 
   if (!since) {
     since = moment().subtract(1, 'day').format();
   }
-  bosco.log('Showing commits since ' + since);
+  bosco.log(`Showing commits since ${since}`);
 
-  var options = bosco.cmdHelper.createOptions({
+  const options = bosco.cmdHelper.createOptions({
     cmd: 'git',
-    args: ['log', '--date=relative', '--pretty=format:' + FORMAT, '--no-merges', '--since=' + since],
-    guardFn: function (innerBosco, repoPath, guardOptions, cb) {
+    args: ['log', '--date=relative', `--pretty=format:${FORMAT}`, '--no-merges', `--since=${since}`],
+    guardFn(innerBosco, repoPath, guardOptions, cb) {
       if (innerBosco.exists([repoPath, '.git'].join('/'))) return cb();
-      cb(new Error('Doesn\'t seem to be a git repo: ' + repoPath.blue));
+      cb(new Error(`Doesn't seem to be a git repo: ${repoPath.blue}`));
     },
-    stdoutFn: makeRepoActivityStdoutFn(bosco)
+    stdoutFn: makeRepoActivityStdoutFn(bosco),
   });
 
-  bosco.cmdHelper.iterate(options, function () {
+  bosco.cmdHelper.iterate(options, () => {
     bosco.log('Activity complete');
 
     if (next) next();

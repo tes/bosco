@@ -1,20 +1,20 @@
-var async = require('async');
-var moment = require('moment');
-var figlet = require('figlet');
+const async = require('async');
+const moment = require('moment');
+const figlet = require('figlet');
 
 module.exports = {
   name: 'morning',
-  description: 'Runs clone, pull, installs and provides a summary of changes since your last morning command to get you ready for action for the day'
+  description: 'Runs clone, pull, installs and provides a summary of changes since your last morning command to get you ready for action for the day',
 };
 
 function cmd(bosco, args) {
-  var clone = require('./clone');
-  var pullGit = require('./pull-git');
-  var pullDocker = require('./pull-docker');
-  var install = require('./install');
-  var activity = require('./activity');
+  const clone = require('./clone');
+  const pullGit = require('./pull-git');
+  const pullDocker = require('./pull-docker');
+  const install = require('./install');
+  const activity = require('./activity');
 
-  var lastMorningRunConfigKey = 'events:last-morning-run';
+  const lastMorningRunConfigKey = 'events:last-morning-run';
 
   function executeClone(next) {
     clone.cmd(bosco, args, next);
@@ -43,7 +43,7 @@ function cmd(bosco, args) {
   }
 
   function readyToGo(next) {
-    figlet("You're ready to go, fool!", function (err, data) {
+    figlet("You're ready to go, fool!", (err, data) => {
       if (data) {
         bosco.console.log(data);
         bosco.warn('Downloading docker images can take some time. You have all the code and are probably ready to go...\n');
@@ -53,7 +53,7 @@ function cmd(bosco, args) {
   }
 
 
-  async.series([executeClone, executePullGit, executeInstall, showActivitySummary, readyToGo, executePullDocker, setConfigKeyForLastMorningRun], function () {
+  async.series([executeClone, executePullGit, executeInstall, showActivitySummary, readyToGo, executePullDocker, setConfigKeyForLastMorningRun], () => {
     bosco.log('Morning completed');
     bosco.logErrorStack();
   });

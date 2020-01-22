@@ -1,27 +1,27 @@
-var _ = require('lodash');
-var fs = require('fs');
-var UglifyJS = require('uglify-js');
-var CleanCSS = require('clean-css');
-var createKey = require('./assetCreateKey');
+const _ = require('lodash');
+const fs = require('fs');
+const UglifyJS = require('uglify-js');
+const CleanCSS = require('clean-css');
+const createKey = require('./assetCreateKey');
 
 module.exports = function (bosco) {
   function compileJs(staticAssets, jsAssets, concatenateOnly, next) {
-    var bundleKeys = _.uniq(_.map(jsAssets, 'bundleKey'));
-    var err;
-    _.forEach(bundleKeys, function (bundleKey) {
-      var items = _.filter(jsAssets, { bundleKey: bundleKey });
+    const bundleKeys = _.uniq(_.map(jsAssets, 'bundleKey'));
+    let err;
+    _.forEach(bundleKeys, (bundleKey) => {
+      const items = _.filter(jsAssets, { bundleKey });
 
       if (items.length === 0) { return; }
 
-      var compiled;
-      var serviceName;
-      var buildNumber;
-      var tag;
-      var minificationConfig;
+      let compiled;
+      let serviceName;
+      let buildNumber;
+      let tag;
+      let minificationConfig;
 
       // On first item retrieve shared properties
       if (!serviceName) {
-        var firstItem = items[0];
+        const firstItem = items[0];
         serviceName = firstItem.serviceName;
         buildNumber = firstItem.buildNumber;
         tag = firstItem.tag;
@@ -30,8 +30,8 @@ module.exports = function (bosco) {
 
       function addSourceMap(content) {
         if (!content) return;
-        var mapKey = createKey(serviceName, buildNumber, tag, 'js', 'js', 'map');
-        var mapItem = {};
+        const mapKey = createKey(serviceName, buildNumber, tag, 'js', 'js', 'map');
+        const mapItem = {};
         mapItem.assetKey = mapKey;
         mapItem.serviceName = serviceName;
         mapItem.buildNumber = buildNumber;
@@ -47,8 +47,8 @@ module.exports = function (bosco) {
 
       function addMinifiedJs(content, sourceFiles) {
         if (!content) return;
-        var minifiedKey = createKey(serviceName, buildNumber, tag, null, 'js', 'js');
-        var minifiedItem = {};
+        const minifiedKey = createKey(serviceName, buildNumber, tag, null, 'js', 'js');
+        const minifiedItem = {};
         minifiedItem.assetKey = minifiedKey;
         minifiedItem.serviceName = serviceName;
         minifiedItem.buildNumber = buildNumber;
@@ -66,12 +66,12 @@ module.exports = function (bosco) {
       // If a bundle is already minified it can only have a single item
       if (minificationConfig.alreadyMinified || concatenateOnly) {
         if (!concatenateOnly) {
-          bosco.log('Adding already minified ' + bundleKey.blue + ' JS assets ...');
+          bosco.log(`Adding already minified ${bundleKey.blue} JS assets ...`);
         }
-        var sourceMapContent = '';
-        var jsContent = '';
-        var sourceFiles = [];
-        _.forEach(items, function (item) {
+        let sourceMapContent = '';
+        let jsContent = '';
+        const sourceFiles = [];
+        _.forEach(items, (item) => {
           if (item.extname === minificationConfig.sourceMapExtension) {
             sourceMapContent += item.content;
           } else {
@@ -86,25 +86,25 @@ module.exports = function (bosco) {
           addMinifiedJs(jsContent, sourceFiles);
         }
       } else {
-        bosco.log('Compiling ' + _.size(items) + ' ' + bundleKey.blue + ' JS assets ...');
+        bosco.log(`Compiling ${_.size(items)} ${bundleKey.blue} JS assets ...`);
 
-        var uglifyConfig = bosco.config.get('js:uglify');
+        const uglifyConfig = bosco.config.get('js:uglify');
 
-        var uglifyOptions = {
+        const uglifyOptions = {
           output: uglifyConfig ? uglifyConfig.outputOptions : null,
           compressor: uglifyConfig ? uglifyConfig.compressorOptions : null,
           mangle: uglifyConfig ? uglifyConfig.mangle : null,
-          outSourceMap: tag + '.js.map',
-          sourceMapIncludeSources: true
+          outSourceMap: `${tag}.js.map`,
+          sourceMapIncludeSources: true,
         };
 
         try {
           compiled = UglifyJS.minify(_.values(_.map(items, 'path')), uglifyOptions);
         } catch (ex) {
-          var errorMsg = 'There was an error minifying files in ' + bundleKey.blue + ', error: ' + ex.message;
+          const errorMsg = `There was an error minifying files in ${bundleKey.blue}, error: ${ex.message}`;
           err = new Error(errorMsg);
           compiled = {
-            code: ''
+            code: '',
           };
         }
 
@@ -117,49 +117,49 @@ module.exports = function (bosco) {
   }
 
   function compileCss(staticAssets, cssAssets, concatenateOnly, next) {
-    var bundleKeys = _.uniq(_.map(cssAssets, 'bundleKey'));
+    const bundleKeys = _.uniq(_.map(cssAssets, 'bundleKey'));
 
-    _.forEach(bundleKeys, function (bundleKey) {
-      var items = _.filter(cssAssets, { bundleKey: bundleKey });
-      var cssContent = '';
-      var serviceName;
-      var buildNumber;
-      var tag;
-      var sourceFiles = [];
+    _.forEach(bundleKeys, (bundleKey) => {
+      const items = _.filter(cssAssets, { bundleKey });
+      let cssContent = '';
+      let serviceName;
+      let buildNumber;
+      let tag;
+      const sourceFiles = [];
 
       if (items.length === 0) { return; }
 
       if (!serviceName) {
-        var firstItem = items[0];
+        const firstItem = items[0];
         serviceName = firstItem.serviceName;
         buildNumber = firstItem.buildNumber;
         tag = firstItem.tag;
       }
 
       if (!concatenateOnly) {
-        bosco.log('Compiling ' + _.size(items) + ' ' + bundleKey.blue + ' CSS assets ...');
+        bosco.log(`Compiling ${_.size(items)} ${bundleKey.blue} CSS assets ...`);
       }
 
-      _.forEach(items, function (file) {
+      _.forEach(items, (file) => {
         cssContent += fs.readFileSync(file.path);
         sourceFiles.push(file.path);
       });
 
       if (!concatenateOnly) {
-        var cleanCssConfig = bosco.config.get('css:clean');
+        const cleanCssConfig = bosco.config.get('css:clean');
         if (cleanCssConfig && cleanCssConfig.enabled) {
           cssContent = new CleanCSS(cleanCssConfig.options).minify(cssContent).styles;
         }
       }
 
       if (cssContent.length === 0) {
-        next({ message: 'No css for tag ' + tag });
+        next({ message: `No css for tag ${tag}` });
         return;
       }
 
-      var assetKey = createKey(serviceName, buildNumber, tag, null, 'css', 'css');
+      const assetKey = createKey(serviceName, buildNumber, tag, null, 'css', 'css');
 
-      var minifiedItem = {};
+      const minifiedItem = {};
       minifiedItem.assetKey = assetKey;
       minifiedItem.serviceName = serviceName;
       minifiedItem.buildNumber = buildNumber;
@@ -178,16 +178,12 @@ module.exports = function (bosco) {
   }
 
   function minify(staticAssets, concatenateOnly, next) {
-    var jsAssets = _.filter(staticAssets, { type: 'js' });
-    var cssAssets = _.filter(staticAssets, { type: 'css' });
-    var remainingAssets = _.filter(staticAssets, function (item) {
-      return item.type !== 'js' && item.type !== 'css';
-    });
-    var noCssAssets = _.filter(staticAssets, function (item) {
-      return item.type !== 'css';
-    });
+    const jsAssets = _.filter(staticAssets, { type: 'js' });
+    const cssAssets = _.filter(staticAssets, { type: 'css' });
+    const remainingAssets = _.filter(staticAssets, (item) => item.type !== 'js' && item.type !== 'css');
+    const noCssAssets = _.filter(staticAssets, (item) => item.type !== 'css');
 
-    compileJs(concatenateOnly ? noCssAssets : remainingAssets, jsAssets, concatenateOnly, function (err, minifiedStaticAssets) {
+    compileJs(concatenateOnly ? noCssAssets : remainingAssets, jsAssets, concatenateOnly, (err, minifiedStaticAssets) => {
       if (err) { return next(err); }
       compileCss(minifiedStaticAssets, cssAssets, concatenateOnly, next);
     });

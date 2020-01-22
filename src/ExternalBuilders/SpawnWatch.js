@@ -1,25 +1,25 @@
-var spawn = require('child_process').spawn;
-var _ = require('lodash');
+const { spawn } = require('child_process');
+const _ = require('lodash');
 
 module.exports = function (bosco) {
   return function (service, command, cwd, verbose, buildFinished) {
-    bosco.log('Spawning ' + 'watch'.cyan + ' command for ' + service.name.blue + ': ' + command.log);
-    var wc = spawn(process.env.SHELL, ['-c', command.command], cwd);
-    var output = {
-      state: 'starting', data: [], stdout: '', stderr: ''
+    bosco.log(`Spawning ${'watch'.cyan} command for ${service.name.blue}: ${command.log}`);
+    const wc = spawn(process.env.SHELL, ['-c', command.command], cwd);
+    let output = {
+      state: 'starting', data: [], stdout: '', stderr: '',
     };
-    var outputCache;
-    var outputCacheIndex;
-    var overallTimeoutTimer;
+    let outputCache;
+    let outputCacheIndex;
+    let overallTimeoutTimer;
 
     function addOutput(type, data) {
       output[type] += data;
-      output.data.push({ type: type, data: data });
+      output.data.push({ type, data });
     }
 
     function reset() {
       output = {
-        state: 'starting', data: [], stdout: '', stderr: ''
+        state: 'starting', data: [], stdout: '', stderr: '',
       };
       outputCache = '';
       outputCacheIndex = -1;
@@ -28,13 +28,13 @@ module.exports = function (bosco) {
     }
 
     function buildCompleted(err) {
-      var outputToReturn = _.clone(output);
+      const outputToReturn = _.clone(output);
       reset();
       return buildFinished(err, outputToReturn);
     }
 
     function onBuildTimeout() {
-      var errorMessage = 'Build timed out beyond ' + command.timeout / 1000 + ' seconds, likely the project build not writing out ready text: ' + command.ready + '\n';
+      const errorMessage = `Build timed out beyond ${command.timeout / 1000} seconds, likely the project build not writing out ready text: ${command.ready}\n`;
       output.state = 'timeout';
       addOutput('stderr', errorMessage);
       if (verbose) {
@@ -44,12 +44,12 @@ module.exports = function (bosco) {
     }
 
     function buildStarted() {
-      bosco.log('Started build command for ' + service.name.blue + ' ...');
+      bosco.log(`Started build command for ${service.name.blue} ...`);
       overallTimeoutTimer = setTimeout(onBuildTimeout, command.timeout);
     }
 
     function isBuildFinished() {
-      output.data.forEach(function (entry, i) {
+      output.data.forEach((entry, i) => {
         if (i <= outputCacheIndex) { return; }
         outputCache += entry.data;
         outputCacheIndex = i;
@@ -76,17 +76,17 @@ module.exports = function (bosco) {
     }
 
     function onChildExit(code, signal) {
-      var childError = new Error('Watch process exited with code ' + code + ' and signal ' + signal);
+      const childError = new Error(`Watch process exited with code ${code} and signal ${signal}`);
       childError.code = code;
       childError.signal = signal;
       output.state = 'child-exit';
-      addOutput('stderr', 'Watch'.red + ' command for ' + service.name.blue + ' died with code ' + code);
+      addOutput('stderr', `${'Watch'.red} command for ${service.name.blue} died with code ${code}`);
       return buildCompleted(childError);
     }
 
     reset();
-    wc.stdout.on('data', function (data) { onChildOutput('stdout', data); });
-    wc.stderr.on('data', function (data) { onChildOutput('stderr', data); });
+    wc.stdout.on('data', (data) => { onChildOutput('stdout', data); });
+    wc.stderr.on('data', (data) => { onChildOutput('stderr', data); });
     wc.on('exit', onChildExit);
   };
 };
