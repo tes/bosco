@@ -45,8 +45,8 @@ function commit(bosco, commitMsg, orgPath, next) {
 
     exec(gitCmd, {
       cwd: orgPath,
-    }, (err, stdout) => {
-      if (err) {
+    }, (execErr, stdout) => {
+      if (execErr) {
         bosco.warn(`${orgPath.blue} >> No changes to commit.`);
       } else if (stdout) bosco.log(`${orgPath.blue} >> ${stdout}`);
       next();

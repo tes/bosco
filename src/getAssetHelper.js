@@ -5,7 +5,7 @@ const mime = require('mime');
 const sf = require('sf');
 const checksum = require('./assetChecksum');
 
-module.exports = function (bosco) {
+module.exports = (bosco) => {
   function resolve(boscoRepo, basePath, asset, assetKey) {
     const resolvedPath = path.join(boscoRepo.path, basePath, asset);
 

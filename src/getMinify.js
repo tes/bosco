@@ -4,7 +4,7 @@ const UglifyJS = require('uglify-js');
 const CleanCSS = require('clean-css');
 const createKey = require('./assetCreateKey');
 
-module.exports = function (bosco) {
+module.exports = (bosco) => {
   function compileJs(staticAssets, jsAssets, concatenateOnly, next) {
     const bundleKeys = _.uniq(_.map(jsAssets, 'bundleKey'));
     let err;

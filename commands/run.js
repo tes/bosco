@@ -2,6 +2,7 @@ const _ = require('lodash');
 const async = require('async');
 const fs = require('fs-extra');
 
+const cdn = require('./cdn');
 const RunListHelper = require('../src/RunListHelper');
 const NodeRunner = require('../src/RunWrappers/Node');
 const DockerRunner = require('../src/RunWrappers/Docker');
@@ -117,7 +118,7 @@ function cmd(bosco, args, allDone) {
           if (bosco.options.verbose) {
             bosco.warn(`Service ${runConfig.name.green} is already running ...`);
           } else {
-            alreadyRunning++;
+            alreadyRunning += 1;
           }
           return cb();
         }
@@ -145,7 +146,7 @@ function cmd(bosco, args, allDone) {
           if (bosco.options.verbose) {
             bosco.warn(`Service ${runConfig.name.green} is already running ...`);
           } else {
-            alreadyRunning++;
+            alreadyRunning += 1;
           }
           return cb();
         }
@@ -159,7 +160,7 @@ function cmd(bosco, args, allDone) {
         if (bosco.options.verbose) {
           bosco.warn(`Service ${runConfig.name.green} is already running ...`);
         } else {
-          alreadyRunning++;
+          alreadyRunning += 1;
         }
         return cb();
       }
@@ -215,8 +216,8 @@ function cmd(bosco, args, allDone) {
   }
 
   function getRunningServices(next) {
-    NodeRunner.listRunning(false, (err, nodeRunning) => {
-      DockerRunner.list(false, (err, dockerRunning) => {
+    NodeRunner.listRunning(false, (nodeErr, nodeRunning) => {
+      DockerRunner.list(false, (dockerErr, dockerRunning) => {
         const flatDockerRunning = _.map(_.flatten(dockerRunning), (item) => item.replace('/', ''));
         runningServices = _.union(nodeRunning, flatDockerRunning);
         next();
@@ -261,7 +262,6 @@ function cmd(bosco, args, allDone) {
     bosco.log('All services started.');
     if (!_.includes(args, 'cdn')) return done();
 
-    const cdn = require('./cdn');
     cdn.cmd(bosco, [], () => {});
   });
 }

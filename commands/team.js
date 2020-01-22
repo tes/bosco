@@ -48,8 +48,8 @@ function getTeams(client, cb) {
     // Create tasks to get the remaining pages of teams
     const tasks = _.range(2, lastPage + 1).map(createTeamPageRequestTask);
 
-    async.parallel(tasks, (err, results) => {
-      if (err) { return cb(err); }
+    async.parallel(tasks, (tasksErr, results) => {
+      if (tasksErr) { return cb(tasksErr); }
       cb(null, teams.concat(_.flatten(results)));
     });
   });
@@ -68,7 +68,7 @@ function syncTeams(bosco, next) {
       if (!currentTeams || !currentTeams[teamKey]) {
         bosco.config.set(`teams:${teamKey}`, { id: team.id });
         bosco.log(`Added ${teamKey.green} team ...`);
-        added++;
+        added += 1;
       }
     });
 
@@ -99,7 +99,7 @@ function linkTeam(bosco, team, folder, next) {
 
   bosco.config.save(() => {
     bosco.log(`Team ${team.green} path updated to: ${teamPath.cyan}`);
-    bosco.options.workspace = bosco.findWorkspace();
+    bosco.options.workspace = bosco.findWorkspace(); // eslint-disable-line no-param-reassign
     if (next) { next(); }
   });
 }

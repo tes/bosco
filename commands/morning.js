@@ -2,18 +2,18 @@ const async = require('async');
 const moment = require('moment');
 const figlet = require('figlet');
 
+const clone = require('./clone');
+const pullGit = require('./pull-git');
+const pullDocker = require('./pull-docker');
+const install = require('./install');
+const activity = require('./activity');
+
 module.exports = {
   name: 'morning',
   description: 'Runs clone, pull, installs and provides a summary of changes since your last morning command to get you ready for action for the day',
 };
 
 function cmd(bosco, args) {
-  const clone = require('./clone');
-  const pullGit = require('./pull-git');
-  const pullDocker = require('./pull-docker');
-  const install = require('./install');
-  const activity = require('./activity');
-
   const lastMorningRunConfigKey = 'events:last-morning-run';
 
   function executeClone(next) {
@@ -33,7 +33,8 @@ function cmd(bosco, args) {
   }
 
   function showActivitySummary(next) {
-    args.since = bosco.config.get(lastMorningRunConfigKey); // If it is not set it will default to some value on the activity command
+    // If it is not set it will default to some value on the activity command
+    args.since = bosco.config.get(lastMorningRunConfigKey); // eslint-disable-line no-param-reassign
     activity.cmd(bosco, args, next);
   }
 

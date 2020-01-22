@@ -6,12 +6,13 @@ const glob = require('glob');
 const getAssetHelperFactory = require('./getAssetHelper');
 const getMinify = require('./getMinify');
 const ExternalBuild = require('./ExternalBuild');
+const Html = require('./Html');
 
-module.exports = function (bosco) {
+module.exports = (bosco) => {
   const getAssetHelper = getAssetHelperFactory(bosco);
   const minify = getMinify(bosco);
   const { doBuildWithInterpreter } = ExternalBuild(bosco);
-  const html = require('./Html')(bosco);
+  const html = Html(bosco);
   const { createAssetHtmlFiles } = html;
   const { attachFormattedRepos } = html;
 
@@ -139,8 +140,8 @@ module.exports = function (bosco) {
     const { ignoreFailure } = options;
     const failedBuilds = [];
 
-    async.map(options.repos, loadService, (err, services) => {
-      if (err) return next(err);
+    async.map(options.repos, loadService, (loadServiceErr, services) => {
+      if (loadServiceErr) return next(loadServiceErr);
 
       // Remove any service that doesnt have an assets child
       // or doesn't match repo tag
@@ -148,11 +149,11 @@ module.exports = function (bosco) {
           && (service.assets || service.files) && service.name.match(options.repoRegex));
 
       async.mapLimit(assetServices, bosco.concurrency.cpu, (service, cb) => {
-        createAssetList(service, options.buildNumber, options.minify, options.tagFilter, false, (err, preBuildAssets) => {
-          doBuildWithInterpreter(service, options, shouldBuildService(preBuildAssets), (err) => {
-            if (err) {
-              if (!ignoreFailure) return cb(err);
-              failedBuilds.push({ name: service.name, err });
+        createAssetList(service, options.buildNumber, options.minify, options.tagFilter, false, (createAssetListErr, preBuildAssets) => {
+          doBuildWithInterpreter(service, options, shouldBuildService(preBuildAssets), (doBuildWithInterpreterErr) => {
+            if (doBuildWithInterpreterErr) {
+              if (!ignoreFailure) return cb(doBuildWithInterpreterErr);
+              failedBuilds.push({ name: service.name, doBuildWithInterpreterErr });
             }
             // Do this a second time to
             createAssetList(service, options.buildNumber, options.minify, options.tagFilter, true, (err, assets) => {
@@ -188,8 +189,8 @@ module.exports = function (bosco) {
         }
 
         const concatenateOnly = !options.minify;
-        minify(staticAssets, concatenateOnly, (err, minifiedAssets) => {
-          if (err && !ignoreFailure) return next(err);
+        minify(staticAssets, concatenateOnly, (minifyErr, minifiedAssets) => {
+          if (minifyErr && !ignoreFailure) return next(minifyErr);
           createAssetHtmlFiles(minifiedAssets, options.isCdn, next);
         });
       });

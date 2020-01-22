@@ -28,14 +28,14 @@ function cmd(bosco, args) {
     });
   }
 
-  bosco.knox.list({ prefix: `${bosco.options.environment}/${toDelete}` }, (err, data) => {
+  bosco.knox.list({ prefix: `${bosco.options.environment}/${toDelete}` }, (listErr, data) => {
     const files = _.map(data.Contents, 'Key');
     if (files.length === 0) return bosco.error('There doesn\'t appear to be any files matching that push.');
 
-    confirm(`${'Are you sure you want to delete '.white + (`${files.length}`).green} files in push ${toDelete.green}?`, (err, confirmed) => {
-      if (err || !confirmed) return;
-      bosco.knox.deleteMultiple(files, (err, res) => {
-        if (err) return bosco.error(err.message);
+    confirm(`${'Are you sure you want to delete '.white + (`${files.length}`).green} files in push ${toDelete.green}?`, (confirmErr, confirmed) => {
+      if (confirmErr || !confirmed) return;
+      bosco.knox.deleteMultiple(files, (deleteErr, res) => {
+        if (deleteErr) return bosco.error(deleteErr.message);
         if (res.statusCode === '200') {
           bosco.log(`Completed deleting ${toDelete.blue}`);
         }

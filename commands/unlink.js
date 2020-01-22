@@ -71,8 +71,8 @@ function cmd(bosco, args, done) {
     const repoPath = bosco.getRepoPath(repo);
     const repoPackage = path.join(repoPath, 'package.json');
 
-    fs.readFile(path.join(repoPath, 'package.json'), (err, data) => {
-      if (err) {
+    fs.readFile(path.join(repoPath, 'package.json'), (readErr, data) => {
+      if (readErr) {
         bosco.log(util.format('skipping %s', repo));
         return cb();
       }
@@ -80,7 +80,7 @@ function cmd(bosco, args, done) {
       let packageJson;
       try {
         packageJson = JSON.parse(data.toString());
-      } catch (err) {
+      } catch (parseErr) {
         bosco.log('failed to parse json from %s', repoPackage);
         return cb();
       }

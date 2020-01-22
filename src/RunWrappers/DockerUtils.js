@@ -4,6 +4,7 @@ const path = require('path');
 const fs = require('fs');
 const sf = require('sf');
 const tar = require('tar-fs');
+const net = require('net');
 
 function getHostIp() {
   const ip = _.chain(os.networkInterfaces())
@@ -18,6 +19,7 @@ function getHostIp() {
 }
 
 function processCmdVars(optsCreate, name, cwd) {
+  const toReturn = { ...optsCreate };
   // Allow simple variable substitution in Cmds
   const processedCommands = [];
   const processedBinds = [];
@@ -26,19 +28,21 @@ function processCmdVars(optsCreate, name, cwd) {
     PATH: cwd,
   };
 
-  if (optsCreate.Cmd) {
-    optsCreate.Cmd.forEach((cmd) => {
+  if (toReturn.Cmd) {
+    toReturn.Cmd.forEach((cmd) => {
       processedCommands.push(sf(cmd, data));
     });
-    optsCreate.Cmd = processedCommands;
+    toReturn.Cmd = processedCommands;
   }
 
-  if (optsCreate.Binds) {
-    optsCreate.Binds.forEach((bind) => {
+  if (toReturn.Binds) {
+    toReturn.Binds.forEach((bind) => {
       processedBinds.push(sf(bind, data));
     });
-    optsCreate.Binds = processedBinds;
+    toReturn.Binds = processedBinds;
   }
+
+  return toReturn;
 }
 
 function stopAndRemoveContainer(container, callback) {
@@ -80,7 +84,7 @@ function createContainer(docker, fqn, options, next) {
   }
 
   // Process any variables
-  processCmdVars(optsCreate, options.name, options.cwd);
+  optsCreate = processCmdVars(optsCreate, options.name, options.cwd);
 
   function doCreate(err) {
     if (err && err.statusCode !== 404) return next(err);
@@ -99,7 +103,6 @@ function createContainer(docker, fqn, options, next) {
  * seeing if it is immediately closed or stays open long enough for us to close it.
  */
 function checkRunning(port, host, next) {
-  const net = require('net');
   const socket = net.createConnection(port, host);
   const start = new Date();
   let finished;
@@ -142,7 +145,7 @@ function startContainer(bosco, docker, fqn, options, container, next) {
   }
 
   // Process any variables
-  processCmdVars(optsStart, options.name, options.cwd);
+  optsStart = processCmdVars(optsStart, options.name, options.cwd);
 
   bosco.log(`Starting ${options.name.green}: ${fqn.magenta}...`);
 
@@ -167,8 +170,8 @@ function startContainer(bosco, docker, fqn, options, container, next) {
     const checkEnd = Date.now() + checkTimeout;
 
     function check() {
-      checkRunning(checkPort, checkHost, (err, running) => {
-        if (!err && running) {
+      checkRunning(checkPort, checkHost, (runningErr, running) => {
+        if (!runningErr && running) {
           return next();
         }
 
@@ -231,7 +234,7 @@ function locateImage(docker, repoTag, callback) {
   docker.listImages((err, list) => {
     if (err) return callback(err);
 
-    for (let i = 0, len = list.length; i < len; i++) {
+    for (let i = 0, len = list.length; i < len; i += 1) {
       if (list[i].RepoTags && list[i].RepoTags.indexOf(repoTag) !== -1) {
         return callback(null, docker.getImage(list[i].Id));
       }

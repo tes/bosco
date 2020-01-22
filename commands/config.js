@@ -12,6 +12,8 @@ function cmd(bosco, args) {
   const key = args.shift();
   let value = args.shift();
   let prevValue;
+  let github;
+  let aws;
 
   function logConfig(config) {
     bosco.console.log(prettyjson.render(config, { noColor: false }));
@@ -35,13 +37,13 @@ function cmd(bosco, args) {
       bosco.console.log('');
 
       bosco.console.log(`Config for ${'github'.green}:`);
-      var github = _.clone(bosco.config.get('github'));
+      github = _.clone(bosco.config.get('github'));
       delete github.repos;
       delete github.ignoredRepos;
       logConfig(github);
 
       bosco.console.log(`Config for ${'aws'.green}:`);
-      var aws = bosco.config.get('aws');
+      aws = bosco.config.get('aws');
       logConfig(aws || 'Not defined');
 
       bosco.console.log(`Config for ${'js'.green}:`);

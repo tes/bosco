@@ -1,3 +1,4 @@
+/* eslint-disable */
 const gulp = require('gulp');
 const marked = require('marked-man');
 const through = require('through2');

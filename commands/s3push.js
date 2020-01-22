@@ -17,7 +17,7 @@ let tag = '';
 let noprompt = false;
 
 function getS3Content(file) {
-  return file.data || new Buffer(file.content);
+  return file.data || Buffer.from(file.content);
 }
 
 function isContentEmpty(file) {
@@ -42,12 +42,12 @@ function bytesToSize(bytes) {
   if (bytes === 0) return 'n/a';
   const i = parseInt(Math.floor(Math.log(bytes) / Math.log(1024)), 10);
   if (i === 0) return `${bytes} ${sizes[i]}`;
-  return `${(bytes / Math.pow(1024, i)).toFixed(1)} ${sizes[i]}`;
+  return `${(bytes / (1024 ** i)).toFixed(1)} ${sizes[i]}`;
 }
 
 function cmd(bosco, args, callback) {
-  bosco.staticUtils = bosco.staticUtils || StaticUtils(bosco);
-  if (args.length > 0) tag = args[0];
+  bosco.staticUtils = bosco.staticUtils || StaticUtils(bosco); // eslint-disable-line no-param-reassign
+  if (args.length > 0) [tag] = args;
 
   const cdnUrl = `${bosco.config.get('aws:cdn')}/`;
   noprompt = bosco.options.noprompt;
@@ -81,7 +81,7 @@ function cmd(bosco, args, callback) {
 
     _.forEach(assets, (asset) => {
       if (asset.mimeType.includes('image') || asset.mimeType.includes('font')) {
-        imageCount++;
+        imageCount += 1;
         return;
       }
       rows.push([asset.fullPath, asset.encodings ? asset.encodings.join(',') : 'raw', `${asset.duration} ms`, bytesToSize(asset.fileSize)]);
@@ -153,10 +153,10 @@ function cmd(bosco, args, callback) {
         brotli: async.apply(brotli, file.content),
       }, (err, compressedContent) => {
         if (err) return next(err);
-        upload('gzip', '', compressedContent.gzip, (err) => {
-          if (err) return next(err);
-          upload('br', '.br', compressedContent.brotli, (err) => {
-            if (err) return next(err);
+        upload('gzip', '', compressedContent.gzip, (uploadGZErr) => {
+          if (uploadGZErr) return next(uploadGZErr);
+          upload('br', '.br', compressedContent.brotli, (uploadBRErr) => {
+            if (uploadBRErr) return next(uploadBRErr);
             return next(null, { file });
           });
         });
@@ -243,10 +243,10 @@ function cmd(bosco, args, callback) {
       isCdn: false,
     };
 
-    bosco.staticUtils.getStaticAssets(options, (err, staticAssets) => {
-      if (err) {
-        bosco.error(`There was an error: ${err.message}`);
-        return next(err);
+    bosco.staticUtils.getStaticAssets(options, (getStaticErr, staticAssets) => {
+      if (getStaticErr) {
+        bosco.error(`There was an error: ${getStaticErr.message}`);
+        return next(getStaticErr);
       }
       if (!staticAssets) {
         bosco.warn('No assets found to push ...');
@@ -260,10 +260,10 @@ function cmd(bosco, args, callback) {
         });
         return next(new Error('Errors encountered during build'));
       }
-      pushAllToS3(staticAssets, (err) => {
-        if (err) {
-          bosco.error(`There was an error: ${err.message}`);
-          return next(err);
+      pushAllToS3(staticAssets, (pushErr) => {
+        if (pushErr) {
+          bosco.error(`There was an error: ${pushErr.message}`);
+          return next(pushErr);
         }
         printAssets(assetLog);
         bosco.log('Done');

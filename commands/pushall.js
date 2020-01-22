@@ -56,8 +56,8 @@ function push(bosco, orgPath, repo, next) {
       return next();
     }
 
-    confirm(bosco, `Confirm you want to push: ${orgPath.blue} [y/N]`, (err, confirmed) => {
-      if (err) return next(err);
+    confirm(bosco, `Confirm you want to push: ${orgPath.blue} [y/N]`, (confirmErr, confirmed) => {
+      if (confirmErr) return next(confirmErr);
 
       if (!confirmed) {
         bosco.log(`Not pushing ${repo.blue}`);
@@ -66,11 +66,11 @@ function push(bosco, orgPath, repo, next) {
 
       exec('git push origin master', {
         cwd: orgPath,
-      }, (err, stdout, stderr) => {
+      }, (execErr, stdout, stderr) => {
         if (err) {
           bosco.error(`${orgPath.blue} >> ${stderr}`);
         } else if (stdout) bosco.log(`${orgPath.blue} >> ${stdout}`);
-        next(err);
+        next(execErr);
       });
     });
   });

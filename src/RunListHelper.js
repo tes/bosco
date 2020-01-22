@@ -84,7 +84,7 @@ function getServiceConfigFromGithub(bosco, repo, svcConfig, next) {
     return next(null);
   }
   if (skipRemoteRepo) {
-    svcConfig.service.type = 'skip';
+    svcConfig.service.type = 'skip'; // eslint-disable-line no-param-reassign
     return next(null, svcConfig);
   }
   if (cachedConfig && !nocache && (!isExpiredConfig(cachedConfig) || offline)) {
@@ -96,12 +96,12 @@ function getServiceConfigFromGithub(bosco, repo, svcConfig, next) {
       if (err) {
         return next(err);
       }
-      const boscoSvcContent = new Buffer(boscoSvc.content, 'base64');
+      const boscoSvcContent = Buffer.from(boscoSvc.content, 'base64');
       const boscoSvcConfig = JSON.parse(boscoSvcContent.toString());
       boscoSvcConfig.name = boscoSvcConfig.name || repo;
-      ghrepo.contents('config/default.json', (err, defaultCfg) => {
-        if (!err || defaultCfg) {
-          const defaultCfgContent = new Buffer(defaultCfg.content, 'base64');
+      ghrepo.contents('config/default.json', (ghErr, defaultCfg) => {
+        if (!ghErr || defaultCfg) {
+          const defaultCfgContent = Buffer.from(defaultCfg.content, 'base64');
           const defaultCfgConfig = JSON.parse(defaultCfgContent.toString());
           boscoSvcConfig.server = defaultCfgConfig.server || {};
         }
@@ -138,7 +138,7 @@ function getRunConfig(bosco, repo, watchRegex, next) {
   const hasBoscoService = bosco.exists(boscoService);
 
   if (hasPackageJson) {
-    pkg = require(packageJson);
+    pkg = require(packageJson); // eslint-disable-line global-require,import/no-dynamic-require
     const packageConfig = {};
     if (pkg.scripts && pkg.scripts.start) {
       packageConfig.type = 'node';
@@ -151,7 +151,7 @@ function getRunConfig(bosco, repo, watchRegex, next) {
   }
 
   if (hasBoscoService) {
-    svc = require(boscoService);
+    svc = require(boscoService); // eslint-disable-line global-require,import/no-dynamic-require
     svcConfig = _.extend(svcConfig, {
       tags: svc.tags,
       order: svc.order,
@@ -168,7 +168,7 @@ function getRunConfig(bosco, repo, watchRegex, next) {
   if (!repoExistsLocally && next) {
     getServiceConfigFromGithub(bosco, repo, svcConfig, next);
   } else {
-    return next && next(null, svcConfig) || svcConfig;
+    return (next && next(null, svcConfig)) || svcConfig;
   }
 }
 
@@ -211,7 +211,7 @@ function getRunList(bosco, repos, repoRegex, watchRegex, repoTag, displayOnly, n
   }
 
   function isInfraOnly(repoConfig) {
-    const filter = bosco.options.infra ? /^infra\-/ : /.*/;
+    const filter = bosco.options.infra ? /^infra-/ : /.*/;
     return repoConfig.name.match(filter);
   }
 
@@ -250,6 +250,7 @@ function getRunList(bosco, repos, repoRegex, watchRegex, repoTag, displayOnly, n
   }
 
   function createTree(parent, path, repo) {
+    const parentNode = parent;
     let repoConfig = getRunConfig(bosco, repo);
     if (!repoConfig.service.type) {
       repoConfig = getCachedConfig(bosco, repo, true);
@@ -273,7 +274,8 @@ function getRunList(bosco, repos, repoRegex, watchRegex, repoTag, displayOnly, n
     } else if (isInfra) {
       repoName = repoName.blue;
     }
-    parent[repoName] = {};
+
+    parentNode[repoName] = {};
 
     const dependsOn = repoConfig.service.dependsOn || [];
 
@@ -281,7 +283,7 @@ function getRunList(bosco, repos, repoRegex, watchRegex, repoTag, displayOnly, n
 
     const circularDependencies = dependsOn.filter((dependency) => path.includes(dependency)).map((dependency) => `${dependency} (circular)`);
 
-    return _.map(newDependencies.concat(circularDependencies), _.curry(createTree)(parent[repoName], path.concat(repo)));
+    return _.map(newDependencies.concat(circularDependencies), _.curry(createTree)(parentNode[repoName], path.concat(repo)));
   }
 
   const filteredRepos = _.filter(repos, matchingRepo);

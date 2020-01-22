@@ -79,13 +79,14 @@ Runner.prototype.stop = function (options, next) {
 Runner.prototype.start = function (options, next) {
   const self = this;
   const { docker } = self;
-  const dockerFqn = self.getFqn(options);
+  const optionsCopy = { ...options };
+  const dockerFqn = self.getFqn(optionsCopy);
 
   let defaultLocalHosts = self.bosco.config.get('docker:localhost') || ['local.tescloud.com', 'internal.tes-local.com', 'www.tes-local.com'];
   const defaultDependencyLocalHostDomain = self.bosco.config.get('docker:localhostDomain') || '.service.local.tescloud.com';
   const dependencyLocalHosts = [];
-  if (options.service.dependsOn && options.service.dependsOn.forEach) {
-    options.service.dependsOn.forEach((dep) => {
+  if (optionsCopy.service.dependsOn && optionsCopy.service.dependsOn.forEach) {
+    optionsCopy.service.dependsOn.forEach((dep) => {
       dependencyLocalHosts.push(`${dep + defaultDependencyLocalHostDomain}:${self.bosco.options.ip}`);
       if (_.startsWith(dep, 'service-')) {
         dependencyLocalHosts.push(`${dep.split('service-')[1] + defaultDependencyLocalHostDomain}:${self.bosco.options.ip}`);
@@ -94,16 +95,16 @@ Runner.prototype.start = function (options, next) {
   }
 
   if (Object.prototype.toString.call(defaultLocalHosts) !== '[object Array]') defaultLocalHosts = [defaultLocalHosts];
-  if (options.service.docker.HostConfig) {
-    const ExtraHosts = options.service.docker.HostConfig.ExtraHosts || [];
-    options.service.docker.HostConfig.ExtraHosts = ExtraHosts.concat(defaultLocalHosts.map((name) => `${name}:${self.bosco.options.ip}`), dependencyLocalHosts);
+  if (optionsCopy.service.docker.HostConfig) {
+    const ExtraHosts = optionsCopy.service.docker.HostConfig.ExtraHosts || [];
+    optionsCopy.service.docker.HostConfig.ExtraHosts = ExtraHosts.concat(defaultLocalHosts.map((name) => `${name}:${self.bosco.options.ip}`), dependencyLocalHosts);
   }
 
 
-  DockerUtils.prepareImage(self.bosco, docker, dockerFqn, options, (err) => {
-    if (err) return next(err);
-    DockerUtils.createContainer(docker, dockerFqn, options, (err, container) => {
-      if (err) return next(err);
+  DockerUtils.prepareImage(self.bosco, docker, dockerFqn, options, (prepareErr) => {
+    if (prepareErr) return next(prepareErr);
+    DockerUtils.createContainer(docker, dockerFqn, options, (createErr, container) => {
+      if (createErr) return next(createErr);
       DockerUtils.startContainer(self.bosco, docker, dockerFqn, options, container, next);
     });
   });

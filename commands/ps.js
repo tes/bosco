@@ -22,11 +22,11 @@ function cmd(bosco) {
   }
 
   function getRunningServices(next) {
-    NodeRunner.listRunning(true, (err, nodeRunning) => {
-      if (err) return next(err);
+    NodeRunner.listRunning(true, (nodeErr, nodeRunning) => {
+      if (nodeErr) return next(nodeErr);
       nodeList = nodeRunning;
-      DockerRunner.list(true, (err, dockerRunning) => {
-        if (err) return next(err);
+      DockerRunner.list(true, (dockerErr, dockerRunning) => {
+        if (dockerErr) return next(dockerErr);
         dockerList = dockerRunning;
         next();
       });

@@ -32,13 +32,13 @@ function execCmd(bosco, command, params, cwd, next) {
 }
 
 function getShortName(service) {
-  let shortName = service.replace(/^app\-/, '');
-  shortName = shortName.replace(/^service\-/, '');
+  let shortName = service.replace(/^app-/, '');
+  shortName = shortName.replace(/^service-/, '');
   return shortName;
 }
 
 function copyTemplateFiles(bosco, serviceName, port, serviceDirectory, next) {
-  const templateFiles = require(path.join(serviceDirectory, 'bosco-templates.json'));
+  const templateFiles = require(path.join(serviceDirectory, 'bosco-templates.json')); // eslint-disable-line global-require,import/no-dynamic-require
   const variables = {
     serviceName,
     serviceShortName: getShortName(serviceName),

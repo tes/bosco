@@ -34,7 +34,7 @@ module.exports = {
 };
 
 function cmd(bosco, args) {
-  bosco.staticUtils = bosco.staticUtils || StaticUtils(bosco);
+  bosco.staticUtils = bosco.staticUtils || StaticUtils(bosco); // eslint-disable-line no-param-reassign
   const minify = _.includes(args, 'minify');
   const port = bosco.config.get('cdn:port') || 7334;
   const repoPattern = bosco.options.repo;
@@ -50,7 +50,7 @@ function cmd(bosco, args) {
     repos = bosco.options.list.split(',');
   } else {
     if (bosco.cmdHelper.checkInService()) {
-      bosco.options.watch = bosco.options.watch || new RegExp(bosco.getRepoName());
+      bosco.options.watch = bosco.options.watch || new RegExp(bosco.getRepoName()); // eslint-disable-line no-param-reassign
       watchRegex = new RegExp(bosco.options.watch);
     }
 
@@ -118,7 +118,7 @@ function cmd(bosco, args) {
         but not what bundle-version gives us locally:
         - /app-home/local/css/logged-in.css
       */
-      const isRemoteAsset = pathname.match(/^\/([^\/]+)\/(?!local)([^\/]+)\//);
+      const isRemoteAsset = pathname.match(/^\/([^/]+)\/(?!local)([^/]+)\//);
       const serveRemoteAsset = isRemoteAsset || (isLibraryAsset && !bosco.options.localVendor);
       if (serveRemoteAsset) {
         const baseCdn = bosco.config.get('cdn:remoteUrl') || 'https://duqxiy1o2cbw6.cloudfront.net/tes';
@@ -136,7 +136,7 @@ function cmd(bosco, args) {
 
         let responseContent;
         if (useLocalCacheFile) {
-          const cacheContent = require(localCacheFile);
+          const cacheContent = require(localCacheFile); // eslint-disable-line global-require,import/no-dynamic-require
           response.writeHead(200, cacheContent.headers);
           responseContent = cacheContent.isBinary ? Buffer.from(cacheContent.body, 'base64') : cacheContent.body;
           response.end(responseContent);
@@ -152,7 +152,7 @@ function cmd(bosco, args) {
             }
             const contentType = cdnResponse.headers['content-type'];
             responseContent = body;
-            let responseHeaders;
+
             if (contentType === 'text/css' || contentType === 'application/javascript') {
               responseContent = body.toString();
               // We want to convert all of the in content urls to local bosco ones to take advantage of offline caching
@@ -160,7 +160,7 @@ function cmd(bosco, args) {
               responseContent = responseContent.replace(new RegExp(baseCdn, 'g'), baseBoscoCdnUrl);
             }
 
-            responseHeaders = _.defaults({
+            const responseHeaders = _.defaults({
               'content-type': contentType,
               'content-length': responseContent.length,
             }, corsHeaders);
@@ -222,7 +222,7 @@ function cmd(bosco, args) {
 
   if (minify) bosco.log('Running per service builds for front end assets, this can take some time ...');
 
-  getRunList((err, repoList) => {
+  getRunList((runListErr, repoList) => {
     const repoNames = _.map(repoList, 'name');
     const options = {
       repos: repoNames,

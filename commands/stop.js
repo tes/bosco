@@ -102,10 +102,10 @@ function cmd(bosco, args, done) {
   }
 
   function getRunningServices(cb) {
-    NodeRunner.listRunning(false, (err, nodeRunning) => {
-      DockerRunner.list(false, (err, dockerRunning) => {
+    NodeRunner.listRunning(false, (nodeErr, nodeRunning) => {
+      DockerRunner.list(false, (dockerErr, dockerRunning) => {
         const flatDockerRunning = _.map(_.flatten(dockerRunning), (item) => item.replace('/', ''));
-        DockerComposeRunner.list(false, (err, dockerComposeRunning) => {
+        DockerComposeRunner.list(false, (composeErr, dockerComposeRunning) => {
           runningServices = _.union(nodeRunning, flatDockerRunning, dockerComposeRunning);
           cb();
         });

@@ -14,18 +14,18 @@ function cmd(bosco, args) {
   const repoRegex = new RegExp(repoPattern);
 
   // Connect or launch PM2
-  pm2.connect((err) => {
-    if (err) {
-      bosco.error(err);
+  pm2.connect((connectErr) => {
+    if (connectErr) {
+      bosco.error(connectErr);
       return;
     }
 
     function describeRunningServices(running) {
       async.map(running, (repo, next) => {
         if (repo.match(repoRegex)) {
-          pm2.describe(repo, (err, list) => {
-            if (err) {
-              bosco.error(err);
+          pm2.describe(repo, (describeErr, list) => {
+            if (describeErr) {
+              bosco.error(describeErr);
               return;
             }
             let file = list[0].pm2_env.pm_out_log_path;

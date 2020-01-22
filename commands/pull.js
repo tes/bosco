@@ -16,12 +16,12 @@ module.exports = {
 
 
 function cmd(bosco, args, next) {
-  function executePullGit(next) {
-    pullGit.cmd(bosco, args, next);
+  function executePullGit(cb) {
+    pullGit.cmd(bosco, args, cb);
   }
 
-  function executePullDocker(next) {
-    pullDocker.cmd(bosco, args, next);
+  function executePullDocker(cb) {
+    pullDocker.cmd(bosco, args, cb);
   }
 
   async.series([

@@ -15,7 +15,7 @@ function isYarnUsed(bosco, repoPath) {
 }
 
 function getPackageManager(bosco, repoPath, interpreter) {
-  const nvm = interpreter && bosco.options.nvmUse || bosco.options.nvmUseDefault;
+  const nvm = (interpreter && bosco.options.nvmUse) || bosco.options.nvmUseDefault;
   let name;
   let command;
   if (isYarnUsed(bosco, repoPath)) {
@@ -46,13 +46,13 @@ function cleanModulesIfVersionChanged(bosco, repoPath, repo, next) {
             description: confirmationDescription,
           },
         },
-      }, (err, result) => {
+      }, (promptErr, result) => {
         if (!result || (result.confirm !== 'Y' && result.confirm !== 'y')) {
           return next();
         }
 
-        exec('rm -rf ./node_modules', { cwd: repoPath }, (err, stdout, stderr) => {
-          if (err) {
+        exec('rm -rf ./node_modules', { cwd: repoPath }, (execErr, stdout, stderr) => {
+          if (execErr) {
             bosco.error(`Failed to clear node_modules for ${repoPath.blue} >> ${stderr}`);
           } else {
             bosco.log(`Node version in ${repo.green} updated to ${currentVersion.green}`);
@@ -98,9 +98,9 @@ function install(bosco, progressbar, bar, repoPath, repo, next) {
     const packageManager = getPackageManager(bosco, repoPath, interpreter);
     exec(packageManager.command, {
       cwd: repoPath,
-    }, (err, stdout, stderr) => {
+    }, (execErr, stdout, stderr) => {
       if (progressbar) bar.tick();
-      if (err) {
+      if (execErr) {
         if (progressbar) bosco.console.log('');
         bosco.error(`${repoPath.blue} >> ${stderr}`);
       } else if (!progressbar) {

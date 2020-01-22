@@ -3,7 +3,7 @@ const hb = require('handlebars');
 const fs = require('fs');
 const createKey = require('./assetCreateKey');
 
-module.exports = function (bosco) {
+module.exports = (bosco) => {
   function isJavascript(asset) {
     if (asset.type !== 'js') return false;
     if (asset.extname !== '.js') return false;
@@ -31,7 +31,7 @@ module.exports = function (bosco) {
       const bundlesByTag = _.groupBy(serviceAssets, 'tag');
       _.forOwn(bundlesByTag, (bundleAssets, bundleTag) => {
         _.forEach(bundleAssets, (asset) => {
-          asset.url = bosco.getAssetCdnUrl(asset.assetKey);
+          asset.url = bosco.getAssetCdnUrl(asset.assetKey); // eslint-disable-line no-param-reassign
         });
         const bundle = { bundle: bundleTag, assets: bundleAssets };
         service.bundles.push(bundle);
@@ -57,7 +57,7 @@ module.exports = function (bosco) {
   }
 
   function attachFormattedRepos(repos, next) {
-    repos.formattedRepos = formattedRepos(repos);
+    repos.formattedRepos = formattedRepos(repos);// eslint-disable-line no-param-reassign
     next(null, repos);
   }
 

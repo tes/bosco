@@ -45,12 +45,12 @@ function cmd(bosco, args, next) {
       if (service === 'site-assets') {
         githubName = 'service-site-assets';
       } // Name hack
-      helper.getServiceConfigFromGithub(bosco, githubName, {}, (err, config) => {
-        if (err || !config) { return cb(); }
+      helper.getServiceConfigFromGithub(bosco, githubName, {}, (ghErr, config) => {
+        if (ghErr || !config) { return cb(); }
 
         // Pull the discrete bundles from the config
-        const assetJs = config.assets && config.assets.js && Object.keys(config.assets.js) || [];
-        const assetCss = config.assets && config.assets.css && Object.keys(config.assets.css) || [];
+        const assetJs = (config.assets && config.assets.js && Object.keys(config.assets.js)) || [];
+        const assetCss = (config.assets && config.assets.css && Object.keys(config.assets.css)) || [];
         const files = config.files && Object.keys(config.files);
         _.forEach(files, (file) => {
           if (config.files[file].js) { assetJs.push(file); }

@@ -114,11 +114,11 @@ Runner.prototype.installNode = function (bosco, options, next) {
 };
 
 Runner.prototype.getVersion = function (bosco, options, next) {
-  this.getInterpreter(bosco, options, (err, interpreter) => {
-    if (err) { return next(err); }
-    const nvm = interpreter && bosco.options.nvmUse || bosco.options.nvmUseDefault;
-    childProcess.exec(`${nvm}nvm current`, { cwd: options.cwd }, (err, stdout, stderr) => {
-      if (err || stderr) { return next(err || stderr); }
+  this.getInterpreter(bosco, options, (interpreterErr, interpreter) => {
+    if (interpreterErr) { return next(interpreterErr); }
+    const nvm = (interpreter && bosco.options.nvmUse) || bosco.options.nvmUseDefault;
+    childProcess.exec(`${nvm}nvm current`, { cwd: options.cwd }, (execErr, stdout, stderr) => {
+      if (execErr || stderr) { return next(execErr || stderr); }
       next(null, (stdout.match(/[^\n]+/g) || []).pop());
     });
   });
@@ -203,10 +203,10 @@ Runner.prototype.start = function (options, next) {
 Runner.prototype.stop = function (options, next) {
   const self = this;
   self.bosco.log(`Stopping ${options.name.cyan}`);
-  pm2.stop(options.name, (err) => {
-    if (err) return next(err);
-    pm2.delete(options.name, (err) => {
-      next(err);
+  pm2.stop(options.name, (stopErr) => {
+    if (stopErr) return next(stopErr);
+    pm2.delete(options.name, (deleteErr) => {
+      next(deleteErr);
     });
   });
 };

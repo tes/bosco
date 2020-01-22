@@ -30,7 +30,7 @@ module.exports = {
         const configFilePath = path.join(repoPath, 'config', configFile);
         let newConfig;
         if (bosco.exists(configFilePath)) {
-          const config = require(path.join(repoPath, 'config', configFile));
+          const config = require(path.join(repoPath, 'config', configFile)); // eslint-disable-line global-require,import/no-dynamic-require
           newConfig = _.defaultsDeep(merged, config);
         } else {
           newConfig = merged;
@@ -57,9 +57,9 @@ module.exports = {
       let localProblems = false;
       const packageJsonPath = path.join(repoPath, 'package.json');
       if (bosco.exists(packageJsonPath)) {
-        const pkgJson = require(packageJsonPath);
+        const pkgJson = require(packageJsonPath); // eslint-disable-line global-require,import/no-dynamic-require
         _.forEach(remoteConfig.modules, (version, module) => {
-          const repoModuleVersion = pkgJson.dependencies && pkgJson.dependencies[module] || pkgJson.devDependencies && pkgJson.devDependencies[module];
+          const repoModuleVersion = (pkgJson.dependencies && pkgJson.dependencies[module]) || (pkgJson.devDependencies && pkgJson.devDependencies[module]);
           if (repoModuleVersion && repoModuleVersion !== 'latest') {
             const satisfies = !semver.lt(repoModuleVersion.replace('^', ''), version.replace('^', ''));
             if (!satisfies) {
@@ -78,7 +78,7 @@ module.exports = {
         const repoPath = bosco.getRepoPath(repo);
         checkRemoteConnectionStrings(repo, repoPath, (err, localConnectionProblems) => {
           localProblems = localProblems || localConnectionProblems;
-          checkModuleVersions(repo, repoPath, (err, localModuleProblems) => {
+          checkModuleVersions(repo, repoPath, (moduleErr, localModuleProblems) => {
             localProblems = localProblems || localModuleProblems;
             repoCb();
           });

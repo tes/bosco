@@ -44,7 +44,7 @@ function dockerPull(bosco, progressbar, bar, repoPath, repo, next) {
   const boscoService = [repoPath, 'bosco-service.json'].join('/');
   if (!bosco.exists(boscoService)) return next();
 
-  const definition = require(boscoService);
+  const definition = require(boscoService); // eslint-disable-line global-require,import/no-dynamic-require
   dockerPullService(bosco, definition, next);
 }
 
