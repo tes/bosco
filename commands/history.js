@@ -1,27 +1,27 @@
-var async = require('async');
-var execFile = require('child_process').execFile;
+const async = require('async');
+const { execFile } = require('child_process');
 
 module.exports = {
   name: 'history',
   description: 'search for mention of <search term> in any previous commit, by running git log -S across your repos, use -- to separate bosco options from git log options',
-  usage: '<search term>'
+  usage: '<search term>',
 };
 
 function searchRepoHistory(bosco, args, repo, repoPath, callback) {
-  var gitArgs = ['log', '-S'].concat(args);
+  const gitArgs = ['log', '-S'].concat(args);
 
   execFile('git', gitArgs, {
-    cwd: repoPath
-  }, function (err, stdout) {
+    cwd: repoPath,
+  }, (err, stdout) => {
     if (err) return callback(err);
 
-    var result = null;
+    let result = null;
 
     if (stdout) {
-      bosco.log(repo.blue + ':\n' + stdout);
+      bosco.log(`${repo.blue}:\n${stdout}`);
       result = {
-        repo: repo,
-        history: stdout
+        repo,
+        history: stdout,
       };
     }
 
@@ -30,21 +30,21 @@ function searchRepoHistory(bosco, args, repo, repoPath, callback) {
 }
 
 function cmd(bosco, args, next) {
-  var repoPattern = bosco.options.repo;
-  var repoRegex = new RegExp(repoPattern);
+  const repoPattern = bosco.options.repo;
+  const repoRegex = new RegExp(repoPattern);
 
-  var repos = bosco.getRepos();
+  const repos = bosco.getRepos();
   if (!repos) return bosco.error('You are repo-less :( You need to initialise bosco first, try \'bosco clone\'.');
 
   bosco.log('Running git log -S across all repos...');
 
   function searchRepoHistories(callback) {
-    async.mapLimit(repos, bosco.concurrency.network, function (repo, historyCallback) {
+    async.mapLimit(repos, bosco.concurrency.network, (repo, historyCallback) => {
       if (!repo.match(repoRegex)) return historyCallback();
 
-      var repoPath = bosco.getRepoPath(repo);
+      const repoPath = bosco.getRepoPath(repo);
 
-      searchRepoHistory(bosco, args, repo, repoPath, function (err, result) {
+      searchRepoHistory(bosco, args, repo, repoPath, (err, result) => {
         // err.code is 1 when nothing is found.
         if (err && err.code !== 1) bosco.error(err.message.substring(0, err.message.indexOf('\n')));
         historyCallback(null, result);
@@ -52,7 +52,7 @@ function cmd(bosco, args, next) {
     }, callback);
   }
 
-  searchRepoHistories(function (err, results) {
+  searchRepoHistories((err, results) => {
     if (err) bosco.error(err);
     if (next) next(err, results);
   });

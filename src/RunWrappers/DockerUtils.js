@@ -1,17 +1,16 @@
-var _ = require('lodash');
-var os = require('os');
-var path = require('path');
-var fs = require('fs');
-var sf = require('sf');
-var tar = require('tar-fs');
+const _ = require('lodash');
+const os = require('os');
+const path = require('path');
+const fs = require('fs');
+const sf = require('sf');
+const tar = require('tar-fs');
+const net = require('net');
 
 function getHostIp() {
-  var ip = _.chain(os.networkInterfaces())
+  const ip = _.chain(os.networkInterfaces())
     .values()
     .flatten()
-    .filter(function (val) {
-      return (val.family === 'IPv4' && val.internal === false);
-    })
+    .filter((val) => (val.family === 'IPv4' && val.internal === false))
     .map('address')
     .first()
     .value();
@@ -20,33 +19,36 @@ function getHostIp() {
 }
 
 function processCmdVars(optsCreate, name, cwd) {
+  const toReturn = { ...optsCreate };
   // Allow simple variable substitution in Cmds
-  var processedCommands = [];
-  var processedBinds = [];
-  var data = {
+  const processedCommands = [];
+  const processedBinds = [];
+  const data = {
     HOST_IP: getHostIp(),
-    PATH: cwd
+    PATH: cwd,
   };
 
-  if (optsCreate.Cmd) {
-    optsCreate.Cmd.forEach(function (cmd) {
+  if (toReturn.Cmd) {
+    toReturn.Cmd.forEach((cmd) => {
       processedCommands.push(sf(cmd, data));
     });
-    optsCreate.Cmd = processedCommands;
+    toReturn.Cmd = processedCommands;
   }
 
-  if (optsCreate.Binds) {
-    optsCreate.Binds.forEach(function (bind) {
+  if (toReturn.Binds) {
+    toReturn.Binds.forEach((bind) => {
       processedBinds.push(sf(bind, data));
     });
-    optsCreate.Binds = processedBinds;
+    toReturn.Binds = processedBinds;
   }
+
+  return toReturn;
 }
 
 function stopAndRemoveContainer(container, callback) {
-  container.inspect().then(function (data) {
+  container.inspect().then((data) => {
     if (data.State.Running) {
-      container.stop().then(function () {
+      container.stop().then(() => {
         container.remove(callback);
       });
     } else {
@@ -56,7 +58,7 @@ function stopAndRemoveContainer(container, callback) {
 }
 
 function createContainer(docker, fqn, options, next) {
-  var optsCreate = {
+  let optsCreate = {
     name: options.service.name,
     Image: fqn,
     Hostname: '',
@@ -68,7 +70,7 @@ function createContainer(docker, fqn, options, next) {
     OpenStdin: false,
     StdinOnce: false,
     Env: null,
-    Volumes: null
+    Volumes: null,
   };
 
   if (options.service.docker && options.service.docker.Config) {
@@ -82,14 +84,14 @@ function createContainer(docker, fqn, options, next) {
   }
 
   // Process any variables
-  processCmdVars(optsCreate, options.name, options.cwd);
+  optsCreate = processCmdVars(optsCreate, options.name, options.cwd);
 
   function doCreate(err) {
     if (err && err.statusCode !== 404) return next(err);
     docker.createContainer(optsCreate, next);
   }
-  var container = docker.getContainer(optsCreate.name);
-  container.inspect(function (err, data) {
+  const container = docker.getContainer(optsCreate.name);
+  container.inspect((err, data) => {
     if (err) return doCreate();
     if (data && data.Id) stopAndRemoveContainer(container, doCreate);
     else doCreate();
@@ -101,29 +103,28 @@ function createContainer(docker, fqn, options, next) {
  * seeing if it is immediately closed or stays open long enough for us to close it.
  */
 function checkRunning(port, host, next) {
-  var net = require('net');
-  var socket = net.createConnection(port, host);
-  var start = new Date();
-  var finished;
+  const socket = net.createConnection(port, host);
+  const start = new Date();
+  let finished;
 
   socket.setTimeout(200);
-  socket.on('timeout', function () {
+  socket.on('timeout', () => {
     socket.end();
   });
-  socket.on('data', function () {
+  socket.on('data', () => {
     finished = true;
     socket.end();
     next(null, true);
   });
-  socket.on('close', function (hadError) {
+  socket.on('close', (hadError) => {
     if (hadError) return;
-    var closed = new Date() - start;
+    const closed = new Date() - start;
     if (!finished) {
       finished = true;
       next(null, closed > 100);
     }
   });
-  socket.on('error', function () {
+  socket.on('error', () => {
     if (!finished) {
       finished = true;
       next(new Error('Failed to connect'), false);
@@ -133,9 +134,9 @@ function checkRunning(port, host, next) {
 
 function startContainer(bosco, docker, fqn, options, container, next) {
   // We need to get the SSH port?
-  var optsStart = {
+  let optsStart = {
     NetworkMode: 'bridge',
-    VolumesFrom: null
+    VolumesFrom: null,
   };
 
   if (options.service.docker && options.service.docker.HostConfig) {
@@ -144,72 +145,72 @@ function startContainer(bosco, docker, fqn, options, container, next) {
   }
 
   // Process any variables
-  processCmdVars(optsStart, options.name, options.cwd);
+  optsStart = processCmdVars(optsStart, options.name, options.cwd);
 
-  bosco.log('Starting ' + options.name.green + ': ' + fqn.magenta + '...');
+  bosco.log(`Starting ${options.name.green}: ${fqn.magenta}...`);
 
-  container.start(function (err) {
+  container.start((err) => {
     if (err) {
-      bosco.error('Failed to start Docker image: ' + err.message);
+      bosco.error(`Failed to start Docker image: ${err.message}`);
       return next(err);
     }
 
-    var checkPort;
-    _.forOwn(optsStart.PortBindings, function (value) {
+    let checkPort;
+    _.forOwn(optsStart.PortBindings, (value) => {
       if (!checkPort && value[0].HostPort) checkPort = value[0].HostPort; // Check first port
     });
 
     if (!checkPort) {
-      bosco.warn('Could not detect if ' + options.name.green + ' had started, no port specified');
+      bosco.warn(`Could not detect if ${options.name.green} had started, no port specified`);
       return next();
     }
 
-    var checkHost = bosco.config.get('dockerHost') || 'localhost';
-    var checkTimeout = options.service.checkTimeout || 10000;
-    var checkEnd = Date.now() + checkTimeout;
+    const checkHost = bosco.config.get('dockerHost') || 'localhost';
+    const checkTimeout = options.service.checkTimeout || 10000;
+    const checkEnd = Date.now() + checkTimeout;
 
     function check() {
-      checkRunning(checkPort, checkHost, function (err, running) {
-        if (!err && running) {
+      checkRunning(checkPort, checkHost, (runningErr, running) => {
+        if (!runningErr && running) {
           return next();
         }
 
         if (Date.now() > checkEnd) {
-          bosco.warn('Could not detect if ' + options.name.green + ' had started on port ' + ('' + checkPort).magenta + ' after ' + checkTimeout + 'ms');
+          bosco.warn(`Could not detect if ${options.name.green} had started on port ${(`${checkPort}`).magenta} after ${checkTimeout}ms`);
           return next();
         }
         setTimeout(check, 200);
       });
     }
-    bosco.log('Waiting for ' + options.name.green + ' to respond at ' + checkHost.magenta + ' on port ' + ('' + checkPort).magenta);
+    bosco.log(`Waiting for ${options.name.green} to respond at ${checkHost.magenta} on port ${(`${checkPort}`).magenta}`);
     check();
   });
 }
 
 function ensureManifest(bosco, name, cwd) {
-  var manifest = path.join(cwd, 'manifest.json');
+  const manifest = path.join(cwd, 'manifest.json');
   if (fs.existsSync(manifest)) { return; }
   bosco.log('Adding default manifest file for docker build ...');
-  var manifestContent = { service: name, build: 'local' };
+  const manifestContent = { service: name, build: 'local' };
   fs.writeFileSync(manifest, JSON.stringify(manifestContent));
 }
 
 function buildImage(bosco, docker, fqn, options, next) {
-  var buildPath = sf(options.service.docker.build, { PATH: options.cwd });
+  const buildPath = sf(options.service.docker.build, { PATH: options.cwd });
 
   ensureManifest(bosco, options.service.name, options.cwd);
 
   // TODO(geophree): obey .dockerignore
-  var tarStream = tar.pack(buildPath);
+  const tarStream = tar.pack(buildPath);
   tarStream.once('error', next);
 
-  bosco.log('Building image for ' + options.service.name + ' ...');
-  var lastStream = '';
-  docker.buildImage(tarStream, { t: fqn }, function (err, stream) {
+  bosco.log(`Building image for ${options.service.name} ...`);
+  let lastStream = '';
+  docker.buildImage(tarStream, { t: fqn }, (err, stream) => {
     if (err) return next(err);
 
-    stream.on('data', function (data) {
-      var json = JSON.parse(data);
+    stream.on('data', (data) => {
+      const json = JSON.parse(data);
       if (json.error) {
         bosco.error(json.error);
       } else if (json.stream) {
@@ -217,8 +218,8 @@ function buildImage(bosco, docker, fqn, options, next) {
         process.stdout.write('.');
       }
     });
-    stream.once('end', function () {
-      var id = lastStream.match(/Successfully built ([a-f0-9]+)/);
+    stream.once('end', () => {
+      const id = lastStream.match(/Successfully built ([a-f0-9]+)/);
       if (id && id[1]) {
         process.stdout.write('\n');
         return next(null, docker.getImage(id[1]));
@@ -230,10 +231,10 @@ function buildImage(bosco, docker, fqn, options, next) {
 }
 
 function locateImage(docker, repoTag, callback) {
-  docker.listImages(function (err, list) {
+  docker.listImages((err, list) => {
     if (err) return callback(err);
 
-    for (var i = 0, len = list.length; i < len; i++) {
+    for (let i = 0, len = list.length; i < len; i += 1) {
       if (list[i].RepoTags && list[i].RepoTags.indexOf(repoTag) !== -1) {
         return callback(null, docker.getImage(list[i].Id));
       }
@@ -244,36 +245,36 @@ function locateImage(docker, repoTag, callback) {
 }
 
 function pullImage(bosco, docker, repoTag, next) {
-  var prettyError;
+  let prettyError;
 
   function handler() {
-    locateImage(docker, repoTag, function (err, image) {
+    locateImage(docker, repoTag, (err, image) => {
       if (err || prettyError) return next(prettyError || err);
       next(null, image);
     });
   }
 
-  bosco.log('Pulling image ' + repoTag.green + ' ...');
+  bosco.log(`Pulling image ${repoTag.green} ...`);
 
-  docker.pull(repoTag, function (err, stream) {
-    var currentLayers = {};
+  docker.pull(repoTag, (err, stream) => {
+    const currentLayers = {};
 
     if (err || prettyError) return next(prettyError || err);
 
     function newBar(id) {
-      var logged = false;
+      let logged = false;
       return {
-        tick: function () {
+        tick() {
           if (!logged) {
-            bosco.log('Downloading layer ' + id + '...');
+            bosco.log(`Downloading layer ${id}...`);
             logged = true;
           }
-        }
+        },
       };
     }
 
-    stream.on('data', function (data) {
-      var json;
+    stream.on('data', (data) => {
+      let json;
       try {
         json = JSON.parse(data);
       } catch (ex) {
@@ -289,7 +290,7 @@ function pullImage(bosco, docker, repoTag, next) {
           currentLayers[json.id].progress.tick();
         }
       } else if (json.status === 'Pull complete') {
-        bosco.log('Pull complete for layer ' + json.id);
+        bosco.log(`Pull complete for layer ${json.id}`);
       }
     });
     stream.once('end', handler);
@@ -300,7 +301,7 @@ function prepareImage(bosco, docker, fqn, options, next) {
   if (options.service.docker && options.service.docker.build) {
     return buildImage(bosco, docker, fqn, options, next);
   }
-  locateImage(docker, fqn, function (err, image) {
+  locateImage(docker, fqn, (err, image) => {
     if (err || image) return next(err, image);
 
     // Image not available
@@ -309,10 +310,10 @@ function prepareImage(bosco, docker, fqn, options, next) {
 }
 
 module.exports = {
-  buildImage: buildImage,
-  createContainer: createContainer,
-  locateImage: locateImage,
-  prepareImage: prepareImage,
-  pullImage: pullImage,
-  startContainer: startContainer
+  buildImage,
+  createContainer,
+  locateImage,
+  prepareImage,
+  pullImage,
+  startContainer,
 };

@@ -1,12 +1,12 @@
-var _ = require('lodash');
-var async = require('async');
-var fs = require('fs');
-var path = require('path');
-var http = require('http');
-var url = require('url');
-var requestLib = require('request');
-var RunListHelper = require('../src/RunListHelper');
-var StaticUtils = require('../src/StaticUtils');
+const _ = require('lodash');
+const async = require('async');
+const fs = require('fs');
+const path = require('path');
+const http = require('http');
+const url = require('url');
+const requestLib = require('request');
+const RunListHelper = require('../src/RunListHelper');
+const StaticUtils = require('../src/StaticUtils');
 
 module.exports = {
   name: 'cdn',
@@ -17,40 +17,40 @@ module.exports = {
     name: 'tag',
     alias: 't',
     type: 'string',
-    desc: 'Filter by a tag defined within bosco-service.json'
+    desc: 'Filter by a tag defined within bosco-service.json',
   },
   {
     name: 'watch',
     alias: 'w',
     type: 'string',
-    desc: 'Filter by a regex of services to watch (similar to -r in run)'
+    desc: 'Filter by a regex of services to watch (similar to -r in run)',
   },
   {
     name: 'local-vendor',
     alias: 'lv',
     type: 'boolean',
-    desc: 'Force vendor library files to come from local cdn instead of remote cdn'
-  }]
+    desc: 'Force vendor library files to come from local cdn instead of remote cdn',
+  }],
 };
 
 function cmd(bosco, args) {
-  bosco.staticUtils = bosco.staticUtils || StaticUtils(bosco);
-  var minify = _.includes(args, 'minify');
-  var port = bosco.config.get('cdn:port') || 7334;
-  var repoPattern = bosco.options.repo;
-  var repoRegex = new RegExp(repoPattern);
-  var watchPattern = bosco.options.watch || '$a';
-  var watchRegex = new RegExp(watchPattern);
-  var repoTag = bosco.options.tag;
-  var repos;
+  bosco.staticUtils = bosco.staticUtils || StaticUtils(bosco); // eslint-disable-line no-param-reassign
+  const minify = _.includes(args, 'minify');
+  const port = bosco.config.get('cdn:port') || 7334;
+  const repoPattern = bosco.options.repo;
+  const repoRegex = new RegExp(repoPattern);
+  const watchPattern = bosco.options.watch || '$a';
+  let watchRegex = new RegExp(watchPattern);
+  const repoTag = bosco.options.tag;
+  let repos;
 
-  bosco.log('Starting pseudo CDN on port: ' + (port + '').blue);
+  bosco.log(`Starting pseudo CDN on port: ${(`${port}`).blue}`);
 
   if (bosco.options.list) {
     repos = bosco.options.list.split(',');
   } else {
     if (bosco.cmdHelper.checkInService()) {
-      bosco.options.watch = bosco.options.watch || new RegExp(bosco.getRepoName());
+      bosco.options.watch = bosco.options.watch || new RegExp(bosco.getRepoName()); // eslint-disable-line no-param-reassign
       watchRegex = new RegExp(bosco.options.watch);
     }
 
@@ -64,10 +64,10 @@ function cmd(bosco, args) {
   }
 
   function startServer(staticAssets, staticRepos, serverPort) {
-    var isWatchedFile = function (asset) {
-      var hasSourceFiles = asset.sourceFiles && asset.sourceFiles.length > 0;
-      var assetPath = hasSourceFiles ? asset.sourceFiles[0] : asset.path;
-      var watched;
+    const isWatchedFile = function (asset) {
+      const hasSourceFiles = asset.sourceFiles && asset.sourceFiles.length > 0;
+      const assetPath = hasSourceFiles ? asset.sourceFiles[0] : asset.path;
+      let watched;
       try {
         watched = assetPath && !fs.lstatSync(assetPath).isDirectory() && assetPath.match(watchRegex);
       } catch (ex) {
@@ -77,39 +77,39 @@ function cmd(bosco, args) {
     };
 
     function getAsset(assetUrl) {
-      var key = assetUrl.replace('/', '');
+      const key = assetUrl.replace('/', '');
       return _.find(staticAssets, { assetKey: key });
     }
 
-    var corsHeaders = {
+    const corsHeaders = {
       'Access-Control-Allow-Origin': '*',
       'Access-Control-Allow-Methods': 'POST, GET, PUT, DELETE, OPTIONS',
       'Access-Control-Allow-Credentials': true,
       'Access-Control-Max-Age': '86400', // 24 hours
-      'Access-Control-Allow-Headers': 'X-Requested-With, Access-Control-Allow-Origin, X-HTTP-Method-Override, Content-Type, Authorization, Accept'
+      'Access-Control-Allow-Headers': 'X-Requested-With, Access-Control-Allow-Origin, X-HTTP-Method-Override, Content-Type, Authorization, Accept',
     };
 
-    var server = http.createServer(function (request, response) {
+    const server = http.createServer((request, response) => {
       if (request.method === 'OPTIONS') {
         response.writeHead(200, corsHeaders);
         return response.end();
       }
 
-      var headers = {
+      const headers = {
         'Cache-Control': 'no-cache, must-revalidate',
         Pragma: 'no-cache',
         Expires: 'Sat, 21 May 1952 00:00:00 GMT',
-        'Access-Control-Allow-Origin': '*'
+        'Access-Control-Allow-Origin': '*',
       };
 
-      var pathname = url.parse(request.url).pathname;
+      const { pathname } = url.parse(request.url);
       if (pathname === '/repos') {
         headers['Content-Type'] = 'text/html';
         response.writeHead(200, headers);
         return response.end(staticRepos.formattedRepos);
       }
 
-      var isLibraryAsset = pathname.indexOf('/vendor/library/') >= 0;
+      const isLibraryAsset = pathname.indexOf('/vendor/library/') >= 0;
       /*
         Path matches something that is service-name/build e.g:
         - /app-home/720/css/logged-in.css
@@ -118,41 +118,41 @@ function cmd(bosco, args) {
         but not what bundle-version gives us locally:
         - /app-home/local/css/logged-in.css
       */
-      var isRemoteAsset = pathname.match(/^\/([^\/]+)\/(?!local)([^\/]+)\//);
-      var serveRemoteAsset = isRemoteAsset || (isLibraryAsset && !bosco.options.localVendor);
+      const isRemoteAsset = pathname.match(/^\/([^/]+)\/(?!local)([^/]+)\//);
+      const serveRemoteAsset = isRemoteAsset || (isLibraryAsset && !bosco.options.localVendor);
       if (serveRemoteAsset) {
-        var baseCdn = bosco.config.get('cdn:remoteUrl') || 'https://duqxiy1o2cbw6.cloudfront.net/tes';
-        var cdnUrl = baseCdn + pathname;
-        var localCacheFolder = path.join(bosco.findConfigFolder(), 'cache');
-        var cachePrefix = 'v1-';
-        var localCacheFile = path.join(localCacheFolder, cachePrefix + pathname.replace(/\//g, '_') + '.json');
+        const baseCdn = bosco.config.get('cdn:remoteUrl') || 'https://duqxiy1o2cbw6.cloudfront.net/tes';
+        const cdnUrl = baseCdn + pathname;
+        const localCacheFolder = path.join(bosco.findConfigFolder(), 'cache');
+        const cachePrefix = 'v1-';
+        const localCacheFile = path.join(localCacheFolder, `${cachePrefix + pathname.replace(/\//g, '_')}.json`);
 
         // Ensure local cache folder exists
         if (!fs.existsSync(localCacheFolder)) {
           fs.mkdirSync(localCacheFolder);
         }
 
-        var useLocalCacheFile = !bosco.options.nocache && fs.existsSync(localCacheFile);
+        const useLocalCacheFile = !bosco.options.nocache && fs.existsSync(localCacheFile);
 
-        var responseContent;
+        let responseContent;
         if (useLocalCacheFile) {
-          var cacheContent = require(localCacheFile);
+          const cacheContent = require(localCacheFile); // eslint-disable-line global-require,import/no-dynamic-require
           response.writeHead(200, cacheContent.headers);
           responseContent = cacheContent.isBinary ? Buffer.from(cacheContent.body, 'base64') : cacheContent.body;
           response.end(responseContent);
         } else {
-          var baseBoscoCdnUrl = bosco.getBaseCdnUrl();
+          const baseBoscoCdnUrl = bosco.getBaseCdnUrl();
           requestLib.get({
-            uri: cdnUrl, gzip: true, timeout: 5000, encoding: null
-          }, function (err, cdnResponse, body) { // body is a buffer
+            uri: cdnUrl, gzip: true, timeout: 5000, encoding: null,
+          }, (err, cdnResponse, body) => { // body is a buffer
             if (err) {
-              bosco.error('Error proxying asset for: ' + cdnUrl + ', Error: ' + err.message);
+              bosco.error(`Error proxying asset for: ${cdnUrl}, Error: ${err.message}`);
               response.writeHead(500);
               return response.end();
             }
-            var contentType = cdnResponse.headers['content-type'];
+            const contentType = cdnResponse.headers['content-type'];
             responseContent = body;
-            var responseHeaders;
+
             if (contentType === 'text/css' || contentType === 'application/javascript') {
               responseContent = body.toString();
               // We want to convert all of the in content urls to local bosco ones to take advantage of offline caching
@@ -160,18 +160,18 @@ function cmd(bosco, args) {
               responseContent = responseContent.replace(new RegExp(baseCdn, 'g'), baseBoscoCdnUrl);
             }
 
-            responseHeaders = _.defaults({
+            const responseHeaders = _.defaults({
               'content-type': contentType,
-              'content-length': responseContent.length
+              'content-length': responseContent.length,
             }, corsHeaders);
 
             response.writeHead(200, responseHeaders);
             response.end(responseContent);
 
-            var cacheContentToSave = {
+            const cacheContentToSave = {
               headers: responseHeaders,
               body: typeof responseContent === 'string' ? responseContent : responseContent.toString('base64'),
-              isBinary: typeof responseContent !== 'string'
+              isBinary: typeof responseContent !== 'string',
             };
             fs.writeSync(fs.openSync(localCacheFile, 'w'), JSON.stringify(cacheContentToSave, null, 2));
           });
@@ -179,7 +179,7 @@ function cmd(bosco, args) {
         return 'served-remote';
       }
 
-      var asset = getAsset(pathname);
+      const asset = getAsset(pathname);
       if (!asset) {
         headers['Content-Type'] = 'text/html';
         response.writeHead(404, headers);
@@ -189,19 +189,19 @@ function cmd(bosco, args) {
       headers['content-Type'] = asset.mimeType;
       response.writeHead(200, headers);
 
-      var hasSourceFiles = asset.sourceFiles && asset.sourceFiles.length > 0;
+      const hasSourceFiles = asset.sourceFiles && asset.sourceFiles.length > 0;
 
       if (isWatchedFile(asset)) {
         if (hasSourceFiles && !minify) {
-          async.reduce(asset.sourceFiles, '', function (memo, item, callback) {
-            fs.readFile(item, function (err, content) {
+          async.reduce(asset.sourceFiles, '', (memo, item, callback) => {
+            fs.readFile(item, (err, content) => {
               callback(null, memo + content);
             });
-          }, function (err, content) {
+          }, (err, content) => {
             response.end(content);
           });
         } else {
-          fs.readFile(asset.path, function (err, content) {
+          fs.readFile(asset.path, (err, content) => {
             response.end(content);
           });
         }
@@ -212,39 +212,39 @@ function cmd(bosco, args) {
 
     server.listen(serverPort);
 
-    bosco.log('Server is listening on ' + serverPort);
+    bosco.log(`Server is listening on ${serverPort}`);
   }
 
   function watchCallback(err, service) {
     if (err) { return bosco.error(err); }
-    bosco.log('Local CDN ready after build for service: ' + service.name.green);
+    bosco.log(`Local CDN ready after build for service: ${service.name.green}`);
   }
 
   if (minify) bosco.log('Running per service builds for front end assets, this can take some time ...');
 
-  getRunList(function (err, repoList) {
-    var repoNames = _.map(repoList, 'name');
-    var options = {
+  getRunList((runListErr, repoList) => {
+    const repoNames = _.map(repoList, 'name');
+    const options = {
       repos: repoNames,
       buildNumber: 'local',
-      minify: minify,
+      minify,
       tagFilter: null,
       watchBuilds: true,
       reloadOnly: false,
       ignoreFailure: true,
-      watchRegex: watchRegex,
-      repoRegex: repoRegex,
-      repoTag: repoTag,
-      watchCallback: watchCallback,
-      isCdn: true
+      watchRegex,
+      repoRegex,
+      repoTag,
+      watchCallback,
+      isCdn: true,
     };
 
-    var executeAsync = {
+    const executeAsync = {
       staticAssets: bosco.staticUtils.getStaticAssets.bind(null, options),
-      staticRepos: bosco.staticUtils.getStaticRepos.bind(null, options)
+      staticRepos: bosco.staticUtils.getStaticRepos.bind(null, options),
     };
 
-    async.parallel(executeAsync, function (err, results) {
+    async.parallel(executeAsync, (err, results) => {
       startServer(results.staticAssets, results.staticRepos, port);
     });
   });

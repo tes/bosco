@@ -1,38 +1,39 @@
 
-var _ = require('lodash');
-var github = require('octonode');
-var async = require('async');
-var treeify = require('treeify');
-var warnOrganisationMissing = true;
+const _ = require('lodash');
+const github = require('octonode');
+const async = require('async');
+const treeify = require('treeify');
+
+let warnOrganisationMissing = true;
 
 function getGithubRepo(bosco, repo) {
-  var team = bosco.getTeam();
-  var organisation = !team ? bosco.config.get('github:org') : team.split('/')[0];
-  var githubRepo;
+  const team = bosco.getTeam();
+  const organisation = !team ? bosco.config.get('github:org') : team.split('/')[0];
+  let githubRepo;
   if (!organisation) {
     if (warnOrganisationMissing) {
-      bosco.warn('Ensure you configured your github organisation: ' + 'bosco config set github:org <organisation>'.yellow);
-      bosco.warn('Ensure you configured your team: ' + 'bosco team setup'.yellow);
+      bosco.warn(`Ensure you configured your github organisation: ${'bosco config set github:org <organisation>'.yellow}`);
+      bosco.warn(`Ensure you configured your team: ${'bosco team setup'.yellow}`);
       warnOrganisationMissing = false;
     }
   } else {
-    githubRepo = organisation + '/' + repo;
+    githubRepo = `${organisation}/${repo}`;
   }
   return githubRepo;
 }
 
 function getCachedConfig(bosco, repo, returnDefault) {
-  var unknownDefault = { name: repo, service: { name: repo, type: 'unknown' } };
-  var githubRepo = getGithubRepo(bosco, repo);
-  var configKey = 'cache:github:' + githubRepo;
-  var cachedConfig = bosco.config.get(configKey);
+  const unknownDefault = { name: repo, service: { name: repo, type: 'unknown' } };
+  const githubRepo = getGithubRepo(bosco, repo);
+  const configKey = `cache:github:${githubRepo}`;
+  const cachedConfig = bosco.config.get(configKey);
   return cachedConfig || (returnDefault && unknownDefault);
 }
 
 function getServiceDockerConfig(bosco, runConfig, svcConfig) {
-  var dockerConfig;
+  let dockerConfig;
   if (runConfig && svcConfig) {
-    var defaultConfig = bosco.config.get('docker:defaults') || {
+    const defaultConfig = bosco.config.get('docker:defaults') || {
       type: 'docker',
       name: runConfig.name,
       registry: 'docker-registry.tescloud.com',
@@ -40,22 +41,22 @@ function getServiceDockerConfig(bosco, runConfig, svcConfig) {
       version: 'latest',
       docker: {
         Config: {
-          Env: ['TSL_ENV=local']
+          Env: ['TSL_ENV=local'],
         },
         HostConfig: {
           ExposedPorts: {},
           PortBindings: {},
-          ExtraHosts: []
-        }
-      }
+          ExtraHosts: [],
+        },
+      },
     };
     if (svcConfig.server && svcConfig.server.port) {
-      var exposedPort = svcConfig.server.port + '/tcp';
+      const exposedPort = `${svcConfig.server.port}/tcp`;
       dockerConfig = _.clone(defaultConfig);
       dockerConfig.docker.HostConfig.ExposedPorts[exposedPort] = {};
       dockerConfig.docker.HostConfig.PortBindings[exposedPort] = [{
         HostIp: '0.0.0.0',
-        HostPort: '' + svcConfig.server.port
+        HostPort: `${svcConfig.server.port}`,
       }];
       if (svcConfig.service) {
         dockerConfig.name = svcConfig.service.name;
@@ -71,37 +72,37 @@ function isExpiredConfig(config) {
 }
 
 function getServiceConfigFromGithub(bosco, repo, svcConfig, next) {
-  var client = github.client(bosco.config.get('github:authToken'), { hostname: bosco.config.get('github:apiHostname') });
-  var githubRepo = getGithubRepo(bosco, repo);
-  var cachedConfig = getCachedConfig(bosco, repo, false);
-  var configKey = 'cache:github:' + githubRepo;
-  var nocache = bosco.options.nocache;
-  var offline = bosco.options.offline;
-  var isInfraRepo = repo.indexOf('infra-') >= 0;
-  var skipRemoteRepo = (bosco.options.teamOnly && !isInfraRepo) || bosco.command === 'cdn';
+  const client = github.client(bosco.config.get('github:authToken'), { hostname: bosco.config.get('github:apiHostname') });
+  const githubRepo = getGithubRepo(bosco, repo);
+  const cachedConfig = getCachedConfig(bosco, repo, false);
+  const configKey = `cache:github:${githubRepo}`;
+  const { nocache } = bosco.options;
+  const { offline } = bosco.options;
+  const isInfraRepo = repo.indexOf('infra-') >= 0;
+  const skipRemoteRepo = (bosco.options.teamOnly && !isInfraRepo) || bosco.command === 'cdn';
   if (!githubRepo) {
     return next(null);
   }
   if (skipRemoteRepo) {
-    svcConfig.service.type = 'skip';
+    svcConfig.service.type = 'skip'; // eslint-disable-line no-param-reassign
     return next(null, svcConfig);
   }
   if (cachedConfig && !nocache && (!isExpiredConfig(cachedConfig) || offline)) {
     next(null, cachedConfig);
   } else {
-    bosco.log('Downloading remote service config from github: ' + githubRepo.cyan);
-    var ghrepo = client.repo(githubRepo);
-    ghrepo.contents('bosco-service.json', function (err, boscoSvc) {
+    bosco.log(`Downloading remote service config from github: ${githubRepo.cyan}`);
+    const ghrepo = client.repo(githubRepo);
+    ghrepo.contents('bosco-service.json', (err, boscoSvc) => {
       if (err) {
         return next(err);
       }
-      var boscoSvcContent = new Buffer(boscoSvc.content, 'base64');
-      var boscoSvcConfig = JSON.parse(boscoSvcContent.toString());
+      const boscoSvcContent = Buffer.from(boscoSvc.content, 'base64');
+      const boscoSvcConfig = JSON.parse(boscoSvcContent.toString());
       boscoSvcConfig.name = boscoSvcConfig.name || repo;
-      ghrepo.contents('config/default.json', function (err, defaultCfg) {
-        if (!err || defaultCfg) {
-          var defaultCfgContent = new Buffer(defaultCfg.content, 'base64');
-          var defaultCfgConfig = JSON.parse(defaultCfgContent.toString());
+      ghrepo.contents('config/default.json', (ghErr, defaultCfg) => {
+        if (!ghErr || defaultCfg) {
+          const defaultCfgContent = Buffer.from(defaultCfg.content, 'base64');
+          const defaultCfgConfig = JSON.parse(defaultCfgContent.toString());
           boscoSvcConfig.server = defaultCfgConfig.server || {};
         }
         if (!boscoSvcConfig.service || boscoSvcConfig.service.type !== 'docker') {
@@ -110,7 +111,7 @@ function getServiceConfigFromGithub(bosco, repo, svcConfig, next) {
 
         boscoSvcConfig.cachedTime = new Date();
         bosco.config.set(configKey, boscoSvcConfig);
-        bosco.config.save(function () {
+        bosco.config.save(() => {
           next(null, boscoSvcConfig);
         });
       });
@@ -119,26 +120,26 @@ function getServiceConfigFromGithub(bosco, repo, svcConfig, next) {
 }
 
 function getRunConfig(bosco, repo, watchRegex, next) {
-  var repoPath = bosco.getRepoPath(repo);
-  var watch = !!repo.match(watchRegex);
-  var packageJson = [repoPath, 'package.json'].join('/');
-  var boscoService = [repoPath, 'bosco-service.json'].join('/');
-  var svcConfig = {
+  const repoPath = bosco.getRepoPath(repo);
+  const watch = !!repo.match(watchRegex);
+  const packageJson = [repoPath, 'package.json'].join('/');
+  const boscoService = [repoPath, 'bosco-service.json'].join('/');
+  let svcConfig = {
     name: repo,
     cwd: repoPath,
-    watch: watch,
+    watch,
     order: 50,
-    service: {}
+    service: {},
   };
-  var pkg;
-  var svc;
-  var repoExistsLocally = bosco.exists(repoPath);
-  var hasPackageJson = bosco.exists(packageJson);
-  var hasBoscoService = bosco.exists(boscoService);
+  let pkg;
+  let svc;
+  const repoExistsLocally = bosco.exists(repoPath);
+  const hasPackageJson = bosco.exists(packageJson);
+  const hasBoscoService = bosco.exists(boscoService);
 
   if (hasPackageJson) {
-    pkg = require(packageJson);
-    var packageConfig = {};
+    pkg = require(packageJson); // eslint-disable-line global-require,import/no-dynamic-require
+    const packageConfig = {};
     if (pkg.scripts && pkg.scripts.start) {
       packageConfig.type = 'node';
       packageConfig.start = pkg.scripts.start;
@@ -150,10 +151,10 @@ function getRunConfig(bosco, repo, watchRegex, next) {
   }
 
   if (hasBoscoService) {
-    svc = require(boscoService);
+    svc = require(boscoService); // eslint-disable-line global-require,import/no-dynamic-require
     svcConfig = _.extend(svcConfig, {
       tags: svc.tags,
-      order: svc.order
+      order: svc.order,
     });
     if (svc.service) {
       svcConfig.service = _.extend(svcConfig.service, svc.service);
@@ -167,13 +168,13 @@ function getRunConfig(bosco, repo, watchRegex, next) {
   if (!repoExistsLocally && next) {
     getServiceConfigFromGithub(bosco, repo, svcConfig, next);
   } else {
-    return next && next(null, svcConfig) || svcConfig;
+    return (next && next(null, svcConfig)) || svcConfig;
   }
 }
 
 function getRunList(bosco, repos, repoRegex, watchRegex, repoTag, displayOnly, next) {
-  var configs = {};
-  var tree = {};
+  const configs = {};
+  const tree = {};
 
   function isCurrentService(repo) {
     return (bosco.options.inService && repo === bosco.options.inServiceRepo);
@@ -205,30 +206,30 @@ function getRunList(bosco, repos, repoRegex, watchRegex, repoTag, displayOnly, n
   }
 
   function matchingRepo(repo) {
-    var config = getConfig(repo);
+    const config = getConfig(repo);
     return matchesRegexOrTag(repo, config.tags);
   }
 
   function isInfraOnly(repoConfig) {
-    var filter = bosco.options.infra ? /^infra\-/ : /.*/;
+    const filter = bosco.options.infra ? /^infra-/ : /.*/;
     return repoConfig.name.match(filter);
   }
 
   function exclude(repoConfig) {
-    var filter = bosco.options.exclude ? new RegExp(bosco.options.exclude) : /$a/;
+    const filter = bosco.options.exclude ? new RegExp(bosco.options.exclude) : /$a/;
     return !repoConfig.name.match(filter);
   }
 
   // in order to understand recursion one must understand recursion
   function resolveDependencies(repoList, resolved, cb) {
-    async.reduce(repoList, resolved, function (memo, repo, cb2) {
+    async.reduce(repoList, resolved, (memo, repo, cb2) => {
       if (_.includes(memo, repo)) {
         return cb2(null, memo);
       }
       memo.push(repo);
-      getRunConfig(bosco, repo, watchRegex, function (err, svcConfig) {
+      getRunConfig(bosco, repo, watchRegex, (err, svcConfig) => {
         if (err) {
-          bosco.error('Unable to retrieve config from github for: ' + repo.cyan + ' because: ' + err.message);
+          bosco.error(`Unable to retrieve config from github for: ${repo.cyan} because: ${err.message}`);
           return cb2(null, memo);
         }
         if (!svcConfig) {
@@ -241,9 +242,7 @@ function getRunList(bosco, repos, repoRegex, watchRegex, repoTag, displayOnly, n
           cb2(null, memo);
         }
       });
-    }, function (err, result) {
-      return cb(null, result);
-    });
+    }, (err, result) => cb(null, result));
   }
 
   function getOrder(config) {
@@ -251,20 +250,21 @@ function getRunList(bosco, repos, repoRegex, watchRegex, repoTag, displayOnly, n
   }
 
   function createTree(parent, path, repo) {
-    var repoConfig = getRunConfig(bosco, repo);
+    const parentNode = parent;
+    let repoConfig = getRunConfig(bosco, repo);
     if (!repoConfig.service.type) {
       repoConfig = getCachedConfig(bosco, repo, true);
     }
-    var isInfra = repo.indexOf('infra-') >= 0;
-    var isService = repo.indexOf('service-') >= 0;
-    var isApp = repo.indexOf('app-') >= 0;
-    var isDocker = repoConfig.service.type === 'docker';
-    var isNonTeamServiceOrApp = isDocker && (isService || isApp);
-    var skipRemoteRepo = bosco.options.teamOnly && isNonTeamServiceOrApp;
+    const isInfra = repo.indexOf('infra-') >= 0;
+    const isService = repo.indexOf('service-') >= 0;
+    const isApp = repo.indexOf('app-') >= 0;
+    const isDocker = repoConfig.service.type === 'docker';
+    const isNonTeamServiceOrApp = isDocker && (isService || isApp);
+    const skipRemoteRepo = bosco.options.teamOnly && isNonTeamServiceOrApp;
     if (skipRemoteRepo) {
       return [];
     }
-    var repoName = isNonTeamServiceOrApp ? repo + '*' : repo;
+    let repoName = isNonTeamServiceOrApp ? `${repo}*` : repo;
     if (isNonTeamServiceOrApp) {
       repoName = repoName.grey;
     } else if (isApp && !isNonTeamServiceOrApp) {
@@ -274,27 +274,22 @@ function getRunList(bosco, repos, repoRegex, watchRegex, repoTag, displayOnly, n
     } else if (isInfra) {
       repoName = repoName.blue;
     }
-    parent[repoName] = {};
 
-    var dependsOn = repoConfig.service.dependsOn || [];
+    parentNode[repoName] = {};
 
-    var newDependencies = dependsOn.filter(function (dependency) {
-      return !path.includes(dependency);
-    });
+    const dependsOn = repoConfig.service.dependsOn || [];
 
-    var circularDependencies = dependsOn.filter(function (dependency) {
-      return path.includes(dependency);
-    }).map(function (dependency) {
-      return dependency + ' (circular)';
-    });
+    const newDependencies = dependsOn.filter((dependency) => !path.includes(dependency));
 
-    return _.map(newDependencies.concat(circularDependencies), _.curry(createTree)(parent[repoName], path.concat(repo)));
+    const circularDependencies = dependsOn.filter((dependency) => path.includes(dependency)).map((dependency) => `${dependency} (circular)`);
+
+    return _.map(newDependencies.concat(circularDependencies), _.curry(createTree)(parentNode[repoName], path.concat(repo)));
   }
 
-  var filteredRepos = _.filter(repos, matchingRepo);
+  const filteredRepos = _.filter(repos, matchingRepo);
 
-  resolveDependencies(filteredRepos, [], function (err, repoList) {
-    var runList = _.chain(repoList)
+  resolveDependencies(filteredRepos, [], (err, repoList) => {
+    const runList = _.chain(repoList)
       .filter(boscoOptionFilter('deps-only', notCurrentService))
       .filter(boscoOptionFilter('docker-only', isType('remote')))
       .map(getConfig)
@@ -318,14 +313,14 @@ function getRunList(bosco, repos, repoRegex, watchRegex, repoTag, displayOnly, n
 }
 
 function getRepoRunList(bosco, repos, repoRegex, watchRegex, repoTag, displayOnly, next) {
-  getRunList(bosco, repos, repoRegex, watchRegex, repoTag, displayOnly, function (err, runList) {
-    next(null, _.map(runList, function (repo) { return { name: repo.name, type: repo.service.type }; }));
+  getRunList(bosco, repos, repoRegex, watchRegex, repoTag, displayOnly, (err, runList) => {
+    next(null, _.map(runList, (repo) => ({ name: repo.name, type: repo.service.type })));
   });
 }
 
 module.exports = {
-  getRunList: getRunList,
-  getRepoRunList: getRepoRunList,
-  getServiceConfigFromGithub: getServiceConfigFromGithub,
-  getServiceDockerConfig: getServiceDockerConfig
+  getRunList,
+  getRepoRunList,
+  getServiceConfigFromGithub,
+  getServiceDockerConfig,
 };

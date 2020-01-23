@@ -1,4 +1,4 @@
-var crypto = require('crypto');
+const crypto = require('crypto');
 
 function checksum(str, algorithm, encoding) {
   return crypto

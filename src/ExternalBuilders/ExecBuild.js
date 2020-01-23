@@ -1,9 +1,9 @@
-var exec = require('child_process').exec;
-var execFile = require('child_process').execFile;
+const { exec } = require('child_process');
+const { execFile } = require('child_process');
 
 module.exports = function (bosco) {
   return function (service, command, cwd, verbose, buildFinished) {
-    bosco.log('Running build command for ' + service.name.blue + ': ' + command.log);
+    bosco.log(`Running build command for ${service.name.blue}: ${command.log}`);
     if (command.args) {
       return execFile(command.command, command.args, cwd, buildFinished);
     }
