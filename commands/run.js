@@ -1,5 +1,5 @@
 const _ = require('lodash');
-const async = require('async');
+const Promise = require('bluebird');
 const fs = require('fs-extra');
 
 const cdn = require('./cdn');
@@ -69,8 +69,7 @@ module.exports = {
   ],
 };
 
-function cmd(bosco, args, allDone) {
-  const done = allDone || function () {};
+async function cmd(bosco, args) {
   const repoPattern = bosco.options.repo;
   const repoRegex = new RegExp(repoPattern);
   const watchPattern = bosco.options.watch || '$a';
@@ -85,33 +84,31 @@ function cmd(bosco, args, allDone) {
     repos = bosco.getRepos();
   }
 
-  function initialiseRunners(next) {
+  function initialiseRunners() {
     const runners = [NodeRunner, DockerRunner, DockerComposeRunner];
-    async.map(runners, (runner, cb) => {
-      runner.init(bosco, cb);
-    }, next);
+    return Promise.map(runners, (runner) => (runner.init(bosco)));
   }
 
-  function disconnectRunners(next) {
+  function disconnectRunners() {
     const runners = [NodeRunner, DockerRunner];
-    async.map(runners, (runner, cb) => {
-      runner.disconnect(cb);
-    }, next);
+    return Promise.map(runners, (runner) => (runner.disconnect()));
   }
 
-  function getRunList(next) {
-    RunListHelper.getRunList(bosco, repos, repoRegex, watchRegex, repoTag, false, next);
+  function getRunList() {
+    return new Promise((resolve, reject) => (
+      RunListHelper.getRunList(bosco, repos, repoRegex, watchRegex, repoTag, false, (err, ...rest) => (
+        err ? reject(err) : resolve(...rest)
+      ))
+    ));
   }
 
-  function startRunnableServices(next) {
+  async function startRunnableServices() {
     let alreadyRunning = 0;
 
-    function runService(runConfig, cb) {
+    async function runService(runConfig) {
       const type = runConfig.service && runConfig.service.type;
 
-      if (!type || type === 'unknown' || type === 'skip') {
-        return cb();
-      }
+      if (!type || type === 'unknown' || type === 'skip') return;
 
       if (type === 'docker') {
         if (_.includes(runningServices, runConfig.name)) {
@@ -120,17 +117,14 @@ function cmd(bosco, args, allDone) {
           } else {
             alreadyRunning += 1;
           }
-          return cb();
+          return;
         }
         if (bosco.options.verbose) {
           bosco.log(`Running docker service ${runConfig.name.green} ...`);
         }
-        return DockerRunner.start(runConfig, (err) => {
+        return DockerRunner.start(runConfig).catch((err) => {
           // Log errors from docker but do not stop all tasks
-          if (err) {
-            bosco.error(`There was an error running ${runConfig.name}: ${err}`);
-          }
-          cb();
+          bosco.error(`There was an error running ${runConfig.name}: ${err}`);
         });
       }
 
@@ -138,7 +132,7 @@ function cmd(bosco, args, allDone) {
         if (bosco.options.verbose) {
           bosco.log(`Running docker-compose ${runConfig.name.green} ...`);
         }
-        return DockerComposeRunner.start(runConfig, cb);
+        return DockerComposeRunner.start(runConfig);
       }
 
       if (type === 'node') {
@@ -148,12 +142,12 @@ function cmd(bosco, args, allDone) {
           } else {
             alreadyRunning += 1;
           }
-          return cb();
+          return;
         }
         if (bosco.options.verbose) {
           bosco.log(`Running node service ${runConfig.name.green} ...`);
         }
-        return NodeRunner.start(runConfig, cb);
+        return NodeRunner.start(runConfig);
       }
 
       if (_.includes(runningServices, runConfig.name)) {
@@ -162,108 +156,115 @@ function cmd(bosco, args, allDone) {
         } else {
           alreadyRunning += 1;
         }
-        return cb();
+        return;
       }
 
       bosco.warn(`Service ${runConfig.name.orange} could not be run because it was of an unknown type: ${type.red}`);
-
-      return cb();
     }
 
-    function runServices(runList, cb) {
-      if (runList.services.length < 1) {
-        cb();
-        return;
-      }
+    function runServices(runList) {
+      if (runList.services.length < 1) return;
+
       bosco.log(`Launching ${(`${runList.services.length}`).green} ${runList.type.cyan} processes with parallel limit of ${(`${runList.limit}`).cyan} ...`);
-      async.mapLimit(runList.services, runList.limit, runService, (err) => {
-        if (alreadyRunning > 0 && !bosco.options.verbose) {
-          bosco.log(`Did not start ${(`${alreadyRunning}`).cyan} services that were already running.  Use --verbose to see more detail.`);
-        }
-        cb(err);
-      });
+
+      return Promise.map(runList.services, runService, { concurrency: runList.limit })
+        .then(() => {
+          if (alreadyRunning > 0 && !bosco.options.verbose) {
+            bosco.log(`Did not start ${(`${alreadyRunning}`).cyan} services that were already running.  Use --verbose to see more detail.`);
+          }
+        });
     }
 
-    getRunList((err, runList) => {
-      if (err) return next(err);
-      const dockerServices = _.filter(runList, (i) => i.service.type === 'docker' && _.startsWith(i.name, 'infra-'));
-      const dockerComposeServices = _.filter(runList, (i) => i.service.type === 'docker-compose');
-      const nodeServices = _.filter(runList, (i) => _.startsWith(i.name, 'service-') && i.service.type !== 'skip');
-      const nodeApps = _.filter(runList, (i) => _.startsWith(i.name, 'app-') && i.service.type !== 'skip');
-      const unknownServices = _.filter(runList, (i) => !_.includes(['docker', 'docker-compose', 'node', 'skip'], i.service.type));
-      if (unknownServices.length > 0) {
-        bosco.error(`Unable to run services of un-recognised type: ${_.map(unknownServices, 'name').join(', ').cyan}. Check their bosco-service.json configuration.`);
-        bosco.warn('This may be due to either:');
-        bosco.warn(`- Team not being configured: ${'bosco team setup'.yellow}`);
-        bosco.warn(`- Github oauth token with insufficient priveleges: ${'https://github.com/settings/tokens/new'.yellow}`);
-        bosco.warn(`- Out of date cached content: ${'bosco run --nocache'.yellow}`);
-        bosco.warn(`- Missing github configuration: ${'bosco config set github:org <organisation>'.yellow}`);
-      }
-      async.mapSeries([
-        { services: dockerServices, type: 'docker', limit: bosco.concurrency.cpu },
-        { services: dockerComposeServices, type: 'docker-compose', limit: bosco.concurrency.cpu },
-        { services: nodeServices, type: 'service', limit: bosco.concurrency.cpu },
-        { services: nodeApps, type: 'app', limit: bosco.concurrency.cpu },
-      ], runServices, next);
-    });
+    const runList = await getRunList();
+    const dockerServices = _.filter(runList, (i) => i.service.type === 'docker' && _.startsWith(i.name, 'infra-'));
+    const dockerComposeServices = _.filter(runList, (i) => i.service.type === 'docker-compose');
+    const nodeServices = _.filter(runList, (i) => _.startsWith(i.name, 'service-') && i.service.type !== 'skip');
+    const nodeApps = _.filter(runList, (i) => _.startsWith(i.name, 'app-') && i.service.type !== 'skip');
+    const unknownServices = _.filter(runList, (i) => !_.includes(['docker', 'docker-compose', 'node', 'skip'], i.service.type));
+    if (unknownServices.length > 0) {
+      bosco.error(`Unable to run services of un-recognised type: ${_.map(unknownServices, 'name').join(', ').cyan}. Check their bosco-service.json configuration.`);
+      bosco.warn('This may be due to either:');
+      bosco.warn(`- Team not being configured: ${'bosco team setup'.yellow}`);
+      bosco.warn(`- Github oauth token with insufficient priveleges: ${'https://github.com/settings/tokens/new'.yellow}`);
+      bosco.warn(`- Out of date cached content: ${'bosco run --nocache'.yellow}`);
+      bosco.warn(`- Missing github configuration: ${'bosco config set github:org <organisation>'.yellow}`);
+    }
+
+    return Promise.mapSeries([
+      { services: dockerServices, type: 'docker', limit: bosco.concurrency.cpu },
+      { services: dockerComposeServices, type: 'docker-compose', limit: bosco.concurrency.cpu },
+      { services: nodeServices, type: 'service', limit: bosco.concurrency.cpu },
+      { services: nodeApps, type: 'app', limit: bosco.concurrency.cpu },
+    ], runServices);
   }
 
-  function stopNotRunningServices(next) {
+  function stopNotRunningServices() {
     bosco.log('Removing stopped/dead services');
-    async.each(notRunningServices, (service, cb) => {
-      NodeRunner.stop({ name: service }, cb);
-    }, next);
+    return Promise.each(notRunningServices, (service) => NodeRunner.stop({ name: service }));
   }
 
-  function getRunningServices(next) {
-    NodeRunner.listRunning(false, (nodeErr, nodeRunning) => {
-      DockerRunner.list(false, (dockerErr, dockerRunning) => {
-        const flatDockerRunning = _.map(_.flatten(dockerRunning), (item) => item.replace('/', ''));
-        runningServices = _.union(nodeRunning, flatDockerRunning);
-        next();
+  function getRunningServices() {
+    return new Promise((resolve, reject) => {
+      NodeRunner.listRunning(false, (nodeErr, nodeRunning) => {
+        if (nodeErr) return reject(nodeErr);
+        DockerRunner.list(false, (dockerErr, dockerRunning) => {
+          if (dockerErr) return reject(dockerErr);
+          const flatDockerRunning = _.map(_.flatten(dockerRunning), (item) => item.replace('/', ''));
+          runningServices = _.union(nodeRunning, flatDockerRunning);
+          resolve();
+        });
       });
     });
   }
 
-  function getStoppedServices(next) {
-    NodeRunner.listNotRunning(false, (err, nodeNotRunning) => {
-      notRunningServices = nodeNotRunning;
-      next();
+  function getStoppedServices() {
+    return new Promise((resolve, reject) => {
+      NodeRunner.listNotRunning(false, (err, nodeNotRunning) => {
+        if (err) return reject(err);
+        notRunningServices = nodeNotRunning;
+        resolve();
+      });
     });
   }
 
-  function ensurePM2(next) {
+  function ensurePM2() {
     // Ensure that the ~/.pm2 folders exist
     const folders = [
       `${process.env.HOME}/.pm2/logs`,
       `${process.env.HOME}/.pm2/pids`,
     ];
 
-    async.map(folders, (folder, cb) => {
-      fs.mkdirp(folder, cb);
-    }, (err) => {
-      next(err);
-    });
+    return Promise.map(folders, (folder) => fs.mkdirp(folder));
   }
 
   if (bosco.options.show) {
     bosco.log('Dependency tree for current repo filter:');
-    return RunListHelper.getRunList(bosco, repos, repoRegex, watchRegex, repoTag, true, done);
+    return new Promise((resolve, reject) => {
+      RunListHelper.getRunList(bosco, repos, repoRegex, watchRegex, repoTag, true, (err, ...rest) => {
+        if (err) return reject(err);
+        resolve(...rest);
+      });
+    });
   }
 
   bosco.log(`Run each microservice, will inject ip into docker: ${bosco.options.ip.cyan}`);
 
-  async.series([ensurePM2, initialiseRunners, getRunningServices, getStoppedServices, stopNotRunningServices, startRunnableServices, disconnectRunners], (err) => {
-    if (err) {
-      bosco.error(err);
-      return done();
-    }
+  try {
+    await ensurePM2();
+    await initialiseRunners();
+    await getRunningServices();
+    await getStoppedServices();
+    await stopNotRunningServices();
+    await startRunnableServices();
+    await disconnectRunners();
 
     bosco.log('All services started.');
-    if (!_.includes(args, 'cdn')) return done();
+    if (!_.includes(args, 'cdn')) return;
 
-    cdn.cmd(bosco, [], () => {});
-  });
+    return cdn.cmd(bosco, [], () => {});
+  } catch (err) {
+    bosco.error(err);
+  }
 }
 
 module.exports.cmd = cmd;

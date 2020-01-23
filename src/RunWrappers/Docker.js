@@ -1,7 +1,7 @@
 const url = require('url');
 const fs = require('fs');
 const _ = require('lodash');
-const async = require('async');
+const Promise = require('bluebird');
 const Docker = require('dockerode');
 const DockerUtils = require('./DockerUtils');
 
@@ -38,11 +38,11 @@ Runner.prototype.init = function (bosco, next) {
     // Assume we are on linux and so connect on a socket
     this.docker = new Docker({ socketPath: '/var/run/docker.sock' });
   }
-  next();
+  return next ? next() : Promise.resolve();
 };
 
 Runner.prototype.disconnect = function (next) {
-  return next();
+  return next ? next() : Promise.resolve();
 };
 
 Runner.prototype.list = function (detailed, next) {
@@ -56,27 +56,23 @@ Runner.prototype.list = function (detailed, next) {
   });
 };
 
-Runner.prototype.stop = function (options, next) {
+Runner.prototype.stop = async function (options) {
   const self = this;
   const { docker } = self;
-  docker.listContainers({
-    all: false,
-  }, (err, containers) => {
-    const toStop = [];
-    containers.forEach((container) => {
-      if (self.containerNameMatches(container, options.service.name)) {
-        const cnt = docker.getContainer(container.Id);
-        self.bosco.log(`Stopping ${options.service.name.green}`);
-        toStop.push(cnt);
-      }
-    });
-    async.map(toStop, (container, cb) => {
-      container.stop(cb);
-    }, next);
+  const containers = await docker.listContainers({ all: false });
+  const toStop = [];
+  containers.forEach((container) => {
+    if (self.containerNameMatches(container, options.service.name)) {
+      const cnt = docker.getContainer(container.Id);
+      self.bosco.log(`Stopping ${options.service.name.green}`);
+      toStop.push(cnt);
+    }
   });
+
+  return Promise.map(toStop, (container) => container.stop());
 };
 
-Runner.prototype.start = function (options, next) {
+Runner.prototype.start = function (options) {
   const self = this;
   const { docker } = self;
   const optionsCopy = { ...options };
@@ -100,12 +96,16 @@ Runner.prototype.start = function (options, next) {
     optionsCopy.service.docker.HostConfig.ExtraHosts = ExtraHosts.concat(defaultLocalHosts.map((name) => `${name}:${self.bosco.options.ip}`), dependencyLocalHosts);
   }
 
-
-  DockerUtils.prepareImage(self.bosco, docker, dockerFqn, options, (prepareErr) => {
-    if (prepareErr) return next(prepareErr);
-    DockerUtils.createContainer(docker, dockerFqn, options, (createErr, container) => {
-      if (createErr) return next(createErr);
-      DockerUtils.startContainer(self.bosco, docker, dockerFqn, options, container, next);
+  return new Promise((resolve, reject) => {
+    DockerUtils.prepareImage(self.bosco, docker, dockerFqn, options, (prepareErr) => {
+      if (prepareErr) return reject(prepareErr);
+      DockerUtils.createContainer(docker, dockerFqn, options, (createErr, container) => {
+        if (createErr) return reject(createErr);
+        DockerUtils.startContainer(self.bosco, docker, dockerFqn, options, container, (startErr, ...rest) => {
+          if (startErr) return reject(startErr);
+          resolve(...rest);
+        });
+      });
     });
   });
 };

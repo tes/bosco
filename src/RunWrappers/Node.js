@@ -14,10 +14,22 @@ function Runner() {
 
 Runner.prototype.init = function (bosco, next) {
   this.bosco = bosco;
+  if (next === undefined) {
+    return new Promise((resolve, reject) => (
+      pm2.connect((err, ...rest) => (err ? reject(err) : resolve(...rest)))
+    ));
+  }
+
   pm2.connect(next);
 };
 
 Runner.prototype.disconnect = function (next) {
+  if (next === undefined) {
+    return new Promise((resolve, reject) => (
+      pm2.disconnect((err, ...rest) => (err ? reject(err) : resolve(...rest)))
+    ));
+  }
+
   pm2.disconnect(next);
 };
 
@@ -141,7 +153,7 @@ Runner.prototype.getHashes = function (bosco, files, options, next) {
  * Start a specific service
  * options = {cmd, cwd, name}
  */
-Runner.prototype.start = function (options, next) {
+Runner.prototype.start = async function (options) {
   const self = this;
 
   // Remove node from the start script as not req'd for PM2
@@ -172,42 +184,49 @@ Runner.prototype.start = function (options, next) {
 
   if (!self.bosco.exists(`${options.cwd}/${location}`)) {
     self.bosco.error(`Can't start ${options.name.red}, as I can't find script: ${location.red}`);
-    return next();
+    return Promise.resolve();
   }
 
   const startOptions = {
     name: options.name, cwd: options.cwd, watch: options.watch, executeCommand, autorestart: false, force: true, scriptArgs,
   };
 
-  self.getInterpreter(this.bosco, options, (err, interpreter) => {
-    if (err) { return next(err); }
+  const interpreter = await new Promise((resolve, reject) => {
+    self.getInterpreter(this.bosco, options, (err, int) => {
+      if (err) return reject(err);
+      resolve(int);
+    });
+  });
 
-    if (interpreter) {
-      if (!self.bosco.exists(interpreter)) {
-        self.bosco.warn(`Unable to locate node version requested: ${interpreter.cyan}.  Reverting to default.`);
-      } else {
-        startOptions.interpreter = interpreter;
-        self.bosco.log(`Starting ${options.name.cyan} via ${interpreter} ...`);
-      }
+  if (interpreter) {
+    if (!self.bosco.exists(interpreter)) {
+      self.bosco.warn(`Unable to locate node version requested: ${interpreter.cyan}.  Reverting to default.`);
     } else {
-      self.bosco.log(`Starting ${options.name.cyan}`);
+      startOptions.interpreter = interpreter;
+      self.bosco.log(`Starting ${options.name.cyan} via ${interpreter} ...`);
     }
+  } else {
+    self.bosco.log(`Starting ${options.name.cyan}`);
+  }
 
-    pm2.start(location, startOptions, next);
+  await new Promise((resolve, reject) => {
+    pm2.start(location, startOptions, (err, ...rest) => (err ? reject(err) : resolve(...rest)));
   });
 };
 
 /**
  * List running services
  */
-Runner.prototype.stop = function (options, next) {
+Runner.prototype.stop = async function (options) {
   const self = this;
   self.bosco.log(`Stopping ${options.name.cyan}`);
-  pm2.stop(options.name, (stopErr) => {
-    if (stopErr) return next(stopErr);
-    pm2.delete(options.name, (deleteErr) => {
-      next(deleteErr);
-    });
+
+  await new Promise((resolve, reject) => {
+    pm2.stop(options.name, (stopErr) => (stopErr ? reject(stopErr) : resolve()));
+  });
+
+  await new Promise((resolve, reject) => {
+    pm2.delete(options.name, (deleteErr) => (deleteErr ? reject(deleteErr) : resolve()));
   });
 };
 
