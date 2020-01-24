@@ -24,8 +24,9 @@ function cmd(bosco, args) {
     pullGit.cmd(bosco, args, next);
   }
 
-  function executePullDocker(next) {
-    pullDocker.cmd(bosco, args, next);
+  async function executePullDocker(next) {
+    await pullDocker.cmd(bosco, args);
+    next();
   }
 
   function executeInstall(next) {

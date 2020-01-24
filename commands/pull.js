@@ -20,8 +20,9 @@ function cmd(bosco, args, next) {
     pullGit.cmd(bosco, args, cb);
   }
 
-  function executePullDocker(cb) {
-    pullDocker.cmd(bosco, args, cb);
+  async function executePullDocker(cb) {
+    await pullDocker.cmd(bosco, args);
+    cb();
   }
 
   async.series([
