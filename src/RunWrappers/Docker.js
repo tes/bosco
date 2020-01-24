@@ -110,14 +110,16 @@ Runner.prototype.start = function (options) {
   });
 };
 
-Runner.prototype.update = function (options, next) {
+Runner.prototype.update = function (options) {
   const self = this;
   const { docker } = self;
 
-  if (options.service.docker && options.service.docker.build) return next();
+  if (options.service.docker && options.service.docker.build) return Promise.resolve();
 
   const dockerFqn = self.getFqn(options);
-  DockerUtils.pullImage(self.bosco, docker, dockerFqn, next);
+  return new Promise((resolve, reject) => (
+    DockerUtils.pullImage(self.bosco, docker, dockerFqn, (err, ...rest) => (err ? reject(err) : resolve(...rest)))
+  ));
 };
 
 Runner.prototype.getFqn = function (options) {

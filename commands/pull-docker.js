@@ -1,4 +1,4 @@
-const async = require('async');
+const Promise = require('bluebird');
 const _ = require('lodash');
 const DockerRunner = require('../src/RunWrappers/Docker');
 const RunListHelper = require('../src/RunListHelper');
@@ -23,32 +23,33 @@ module.exports = {
   }],
 };
 
-function dockerPullService(bosco, definition, next) {
-  if (!definition.service || definition.service.type !== 'docker') return next();
-  DockerRunner.update(definition, (err) => {
-    if (err) {
-      const errMessage = err.reason ? err.reason : err;
-      bosco.error(`Error pulling ${definition.name}, reason: ${errMessage}`);
-    }
-    next();
-  });
+function dockerPullService(bosco, definition) {
+  if (!definition.service || definition.service.type !== 'docker') return Promise.resolve();
+
+  return DockerRunner.update(definition)
+    .catch((err) => {
+      if (err) {
+        const errMessage = err.reason ? err.reason : err;
+        bosco.error(`Error pulling ${definition.name}, reason: ${errMessage}`);
+      }
+    });
 }
 
-function dockerPullRemote(bosco, repos, runConfig, next) {
+function dockerPullRemote(bosco, repos, runConfig) {
   const isLocalRepo = _.includes(repos, runConfig.name);
-  if (isLocalRepo) return next();
-  dockerPullService(bosco, runConfig, next);
+  if (isLocalRepo) return Promise.resolve();
+  return dockerPullService(bosco, runConfig);
 }
 
-function dockerPull(bosco, progressbar, bar, repoPath, repo, next) {
+function dockerPull(bosco, progressbar, bar, repoPath) {
   const boscoService = [repoPath, 'bosco-service.json'].join('/');
-  if (!bosco.exists(boscoService)) return next();
+  if (!bosco.exists(boscoService)) return Promise.resolve();
 
   const definition = require(boscoService); // eslint-disable-line global-require,import/no-dynamic-require
-  dockerPullService(bosco, definition, next);
+  return dockerPullService(bosco, definition);
 }
 
-function cmd(bosco, args, next) {
+async function cmd(bosco) {
   const repoPattern = bosco.options.repo;
   const repoRegex = new RegExp(repoPattern);
   const watchNothing = '$a';
@@ -58,7 +59,7 @@ function cmd(bosco, args, next) {
   const repos = bosco.getRepos();
   if (!repos) return bosco.error('You are repo-less :( You need to initialise bosco first, try \'bosco clone\'.');
 
-  function pullDockerImages(cb) {
+  function pullDockerImages() {
     bosco.log('Checking for local docker images to pull ...');
 
     const progressbar = bosco.config.get('progress') === 'bar';
@@ -72,48 +73,47 @@ function cmd(bosco, args, next) {
     }) : null;
 
     // Get the dependencies
-    async.mapSeries(repos, (repo, repoCb) => {
-      if (!repo.match(repoRegex)) return repoCb();
+    return Promise.mapSeries(repos, (repo) => {
+      if (!repo.match(repoRegex)) return;
       const repoPath = bosco.getRepoPath(repo);
-      dockerPull(bosco, progressbar, bar, repoPath, repo, repoCb);
-    }, () => {
-      cb();
+      return dockerPull(bosco, progressbar, bar, repoPath);
     });
   }
 
-  function pullDependentDockerImages(cb) {
+  async function pullDependentDockerImages() {
     if (noRemote) {
       bosco.log('Skipping check and pull of remote images ...'.cyan);
-      return cb();
+      return Promise.resolve();
     }
     bosco.log('Checking for remote docker images to pull ...');
-    RunListHelper.getRunList(bosco, repos, repoRegex, watchNothing, null, false, (err, services) => {
-      if (err) {
-        return next(err);
-      }
-      async.mapSeries(services, (runConfig, pullCb) => {
-        dockerPullRemote(bosco, repos, runConfig, pullCb);
-      }, cb);
+    const services = await new Promise((resolve, reject) => {
+      RunListHelper.getRunList(bosco, repos, repoRegex, watchNothing, null, false, (err, list) => {
+        if (err) return reject(err);
+        resolve(list);
+      });
     });
+
+    await Promise.mapSeries(services, (runConfig) => dockerPullRemote(bosco, repos, runConfig));
   }
 
-  function initialiseRunners(cb) {
-    DockerRunner.init(bosco, cb);
+  function initialiseRunners() {
+    return DockerRunner.init(bosco);
   }
 
-  function disconnectRunners(cb) {
-    DockerRunner.disconnect(cb);
+  function disconnectRunners() {
+    DockerRunner.disconnect();
   }
 
-  async.series([
-    initialiseRunners,
-    pullDockerImages,
-    pullDependentDockerImages,
-    disconnectRunners,
-  ], () => {
-    bosco.log('Complete!');
-    if (next) next();
-  });
+  try {
+    await initialiseRunners();
+    await pullDockerImages();
+    await pullDependentDockerImages();
+    await disconnectRunners();
+  } catch (err) {
+    bosco.error(err);
+  }
+
+  bosco.log('Complete!');
 }
 
 module.exports.cmd = cmd;
