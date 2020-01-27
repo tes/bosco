@@ -1,5 +1,4 @@
-
-const async = require('async');
+const Promise = require('bluebird');
 const Table = require('cli-table');
 const _ = require('lodash');
 const NodeRunner = require('../src/RunWrappers/Node');
@@ -13,22 +12,22 @@ module.exports = {
   description: 'Lists all running services',
 };
 
-function cmd(bosco) {
-  function initialiseRunners(next) {
+async function cmd(bosco) {
+  function initialiseRunners() {
     const runners = [NodeRunner, DockerRunner];
-    async.map(runners, (runner, cb) => {
-      runner.init(bosco, cb);
-    }, next);
+    return Promise.map(runners, (runner) => (runner.init(bosco)));
   }
 
-  function getRunningServices(next) {
-    NodeRunner.listRunning(true, (nodeErr, nodeRunning) => {
-      if (nodeErr) return next(nodeErr);
-      nodeList = nodeRunning;
-      DockerRunner.list(true, (dockerErr, dockerRunning) => {
-        if (dockerErr) return next(dockerErr);
-        dockerList = dockerRunning;
-        next();
+  function getRunningServices() {
+    return new Promise((resolve, reject) => {
+      NodeRunner.listRunning(true, (nodeErr, nodeRunning) => {
+        if (nodeErr) return reject(nodeErr);
+        nodeList = nodeRunning;
+        DockerRunner.list(true, (dockerErr, dockerRunning) => {
+          if (dockerErr) return reject(dockerErr);
+          dockerList = dockerRunning;
+          resolve();
+        });
       });
     });
   }
@@ -81,16 +80,19 @@ function cmd(bosco) {
 
   bosco.log('Getting running microservices ...');
 
-  async.series([initialiseRunners, getRunningServices], () => {
+  try {
+    await initialiseRunners();
+    await getRunningServices();
+
     bosco.console.log('');
     bosco.log('Running NodeJS Services (via PM2):');
     printNodeServices('Node', nodeList);
 
     bosco.log('Running Docker Images:');
     printDockerServices('Docker', dockerList);
-
-    process.exit(0);
-  });
+  } catch (err) {
+    bosco.error(err);
+  }
 }
 
 module.exports.cmd = cmd;
