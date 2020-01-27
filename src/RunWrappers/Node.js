@@ -36,24 +36,30 @@ Runner.prototype.disconnect = function (next) {
 /**
  * List running services
  */
-Runner.prototype.listRunning = function (detailed, next) {
-  pm2.list((err, list) => {
-    const filteredList = _.filter(list, (pm2Process) => pm2Process.pm2_env.status === 'online' || pm2Process.pm2_env.status === 'errored');
+Runner.prototype.listRunning = function (detailed) {
+  return new Promise((resolve, reject) => {
+    pm2.list((err, list) => {
+      if (err) return reject(err);
+      const filteredList = _.filter(list, (pm2Process) => pm2Process.pm2_env.status === 'online' || pm2Process.pm2_env.status === 'errored');
 
-    if (!detailed) return next(err, _.map(filteredList, 'name'));
-    next(err, filteredList);
+      if (!detailed) return resolve(_.map(filteredList, 'name'));
+      resolve(filteredList);
+    });
   });
 };
 
 /**
  * List services that have been created but are not running
  */
-Runner.prototype.listNotRunning = function (detailed, next) {
-  pm2.list((err, list) => {
-    const filteredList = _.filter(list, (pm2Process) => pm2Process.pm2_env.status !== 'online');
+Runner.prototype.listNotRunning = function (detailed) {
+  return new Promise((resolve, reject) => {
+    pm2.list((err, list) => {
+      if (err) return reject(err);
+      const filteredList = _.filter(list, (pm2Process) => pm2Process.pm2_env.status !== 'online');
 
-    if (!detailed) return next(err, _.map(filteredList, 'name'));
-    next(err, filteredList);
+      if (!detailed) return resolve(_.map(filteredList, 'name'));
+      resolve(filteredList);
+    });
   });
 };
 

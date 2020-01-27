@@ -14,15 +14,18 @@ Runner.prototype.hasConfig = function (cwd) {
   return this.bosco.exists(path.join(cwd, 'docker-compose.yml')) || this.bosco.exists(path.join(cwd, 'docker-compose.yaml'));
 };
 
-Runner.prototype.list = function (options, next) {
+Runner.prototype.list = function (options) {
   let installed = true;
-  spawn('docker-compose', ['--version'], { cwd: options.cwd, stdio: 'ignore' })
-    .on('error', () => {
-      installed = false;
-      return next(null, []);
-    }).on('exit', () => {
-      if (installed) { return next(null, ['docker-compose']); }
-    });
+
+  return new Promise((resolve) => {
+    spawn('docker-compose', ['--version'], { cwd: options.cwd, stdio: 'ignore' })
+      .on('error', () => {
+        installed = false;
+        return resolve([]);
+      }).on('exit', () => {
+        if (installed) { return resolve(['docker-compose']); }
+      });
+  });
 };
 
 Runner.prototype.stop = function (options) {

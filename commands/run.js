@@ -203,28 +203,16 @@ async function cmd(bosco, args) {
     return Promise.each(notRunningServices, (service) => NodeRunner.stop({ name: service }));
   }
 
-  function getRunningServices() {
-    return new Promise((resolve, reject) => {
-      NodeRunner.listRunning(false, (nodeErr, nodeRunning) => {
-        if (nodeErr) return reject(nodeErr);
-        DockerRunner.list(false, (dockerErr, dockerRunning) => {
-          if (dockerErr) return reject(dockerErr);
-          const flatDockerRunning = _.map(_.flatten(dockerRunning), (item) => item.replace('/', ''));
-          runningServices = _.union(nodeRunning, flatDockerRunning);
-          resolve();
-        });
-      });
-    });
+  async function getRunningServices() {
+    const nodeRunning = await NodeRunner.listRunning(false);
+    const dockerRunning = await DockerRunner.list(false);
+
+    const flatDockerRunning = _.map(_.flatten(dockerRunning), (item) => item.replace('/', ''));
+    runningServices = _.union(nodeRunning, flatDockerRunning);
   }
 
-  function getStoppedServices() {
-    return new Promise((resolve, reject) => {
-      NodeRunner.listNotRunning(false, (err, nodeNotRunning) => {
-        if (err) return reject(err);
-        notRunningServices = nodeNotRunning;
-        resolve();
-      });
-    });
+  async function getStoppedServices() {
+    notRunningServices = await NodeRunner.listNotRunning(false);
   }
 
   function ensurePM2() {

@@ -102,21 +102,13 @@ async function cmd(bosco, args) {
       });
   }
 
-  function getRunningServices() {
-    return new Promise((resolve, reject) => {
-      NodeRunner.listRunning(false, (nodeErr, nodeRunning) => {
-        if (nodeErr) return reject(nodeErr);
-        DockerRunner.list(false, (dockerErr, dockerRunning) => {
-          if (dockerErr) return reject(dockerErr);
-          const flatDockerRunning = _.map(_.flatten(dockerRunning), (item) => item.replace('/', ''));
-          DockerComposeRunner.list(false, (composeErr, dockerComposeRunning) => {
-            if (composeErr) return reject(composeErr);
-            runningServices = _.union(nodeRunning, flatDockerRunning, dockerComposeRunning);
-            resolve();
-          });
-        });
-      });
-    });
+  async function getRunningServices() {
+    const nodeRunning = await NodeRunner.listRunning(false);
+    const dockerRunning = await DockerRunner.list(false);
+    const flatDockerRunning = _.map(_.flatten(dockerRunning), (item) => item.replace('/', ''));
+    const dockerComposeRunning = await DockerComposeRunner.list(false);
+
+    runningServices = _.union(nodeRunning, flatDockerRunning, dockerComposeRunning);
   }
 
   bosco.log(`Stop each microservice ${args}`);

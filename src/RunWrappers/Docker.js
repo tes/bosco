@@ -45,14 +45,15 @@ Runner.prototype.disconnect = function (next) {
   return next ? next() : Promise.resolve();
 };
 
-Runner.prototype.list = function (detailed, next) {
+Runner.prototype.list = function (detailed) {
   const self = this;
   const { docker } = self;
-  docker.listContainers({
+
+  return docker.listContainers({
     all: false,
-  }, (err, containers) => {
-    if (!detailed) return next(err, _.map(containers, 'Names'));
-    next(err, containers);
+  }).then((containers) => {
+    if (!detailed) return _.map(containers, 'Names');
+    return containers;
   });
 };
 

@@ -18,18 +18,9 @@ async function cmd(bosco) {
     return Promise.map(runners, (runner) => (runner.init(bosco)));
   }
 
-  function getRunningServices() {
-    return new Promise((resolve, reject) => {
-      NodeRunner.listRunning(true, (nodeErr, nodeRunning) => {
-        if (nodeErr) return reject(nodeErr);
-        nodeList = nodeRunning;
-        DockerRunner.list(true, (dockerErr, dockerRunning) => {
-          if (dockerErr) return reject(dockerErr);
-          dockerList = dockerRunning;
-          resolve();
-        });
-      });
-    });
+  async function getRunningServices() {
+    nodeList = await NodeRunner.listRunning(true);
+    dockerList = await DockerRunner.list(true);
   }
 
   function calcFluidColumnWidth(fixedColumnWidths, numberOfColumns) {
