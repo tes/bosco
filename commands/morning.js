@@ -28,9 +28,7 @@ async function cmd(bosco, args) {
   }
 
   function executeInstall() {
-    return new Promise((resolve, reject) => {
-      install.cmd(bosco, args, (err, ...rest) => (err ? reject(err) : resolve(...rest)));
-    });
+    return install.cmd(bosco, args);
   }
 
   function showActivitySummary() {

@@ -4,7 +4,7 @@
 const childProcess = require('child_process');
 const _ = require('lodash');
 const path = require('path');
-const async = require('async');
+const Promise = require('bluebird');
 const pm2 = require('pm2');
 
 require('colors');
@@ -131,28 +131,31 @@ Runner.prototype.installNode = function (bosco, options, next) {
   }
 };
 
-Runner.prototype.getVersion = function (bosco, options, next) {
-  this.getInterpreter(bosco, options, (interpreterErr, interpreter) => {
-    if (interpreterErr) { return next(interpreterErr); }
-    const nvm = (interpreter && bosco.options.nvmUse) || bosco.options.nvmUseDefault;
-    childProcess.exec(`${nvm}nvm current`, { cwd: options.cwd }, (execErr, stdout, stderr) => {
-      if (execErr || stderr) { return next(execErr || stderr); }
-      next(null, (stdout.match(/[^\n]+/g) || []).pop());
+Runner.prototype.getVersion = function (bosco, options) {
+  return new Promise((resolve, reject) => {
+    this.getInterpreter(bosco, options, (interpreterErr, interpreter) => {
+      if (interpreterErr) { return reject(interpreterErr); }
+      const nvm = (interpreter && bosco.options.nvmUse) || bosco.options.nvmUseDefault;
+      childProcess.exec(`${nvm}nvm current`, { cwd: options.cwd }, (execErr, stdout, stderr) => {
+        if (execErr || stderr) { return reject(execErr || new Error(stderr)); }
+        resolve((stdout.match(/[^\n]+/g) || []).pop());
+      });
     });
   });
 };
 
-Runner.prototype.getHashes = function (bosco, files, options, next) {
-  function getHash(file, cb) {
-    childProcess.exec(`git hash-object ${path.join(options.cwd, file)}`, { cwd: options.cwd }, (err, stdout, stderr) => {
-      if (err || stderr) { return cb(err || stderr); }
-      cb(null, stdout.replace('\n', ''));
+Runner.prototype.getHashes = function (bosco, files, options) {
+  function getHash(file) {
+    return new Promise((resolve) => {
+      childProcess.exec(`git hash-object ${path.join(options.cwd, file)}`, { cwd: options.cwd }, (err, stdout) => {
+        resolve(stdout.replace('\n', ''));
+      });
     });
   }
 
-  async.mapSeries(files, getHash, (err, hashes) => {
-    next(null, hashes.join('.'));
-  });
+  return Promise.mapSeries(files, getHash)
+    .then((hashes) => hashes.join('.'))
+    .catch(() => '');
 };
 
 /**

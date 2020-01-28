@@ -7,7 +7,7 @@ module.exports = {
   description: 'Runs clone and then install to get your environment ready for action.',
 };
 
-async function cmd(bosco, args) {
+async function cmd(bosco) {
   try {
     await new Promise((resolve) => {
       team.cmd(bosco, ['sync'], () => {
@@ -16,7 +16,7 @@ async function cmd(bosco, args) {
     });
     await clone.cmd(bosco);
 
-    await new Promise((resolve) => install.cmd(bosco, args, resolve));
+    await install.cmd(bosco);
   } catch (err) {
     bosco.error(err);
   }
