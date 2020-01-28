@@ -16,9 +16,7 @@ async function cmd(bosco, args) {
   const lastMorningRunConfigKey = 'events:last-morning-run';
 
   function executeClone() {
-    return new Promise((resolve, reject) => {
-      clone.cmd(bosco, args, (err, ...rest) => (err ? reject(err) : resolve(...rest)));
-    });
+    return clone.cmd(bosco, args);
   }
 
   function executePullGit() {
