@@ -153,7 +153,7 @@ module.exports = (bosco) => {
           doBuildWithInterpreter(service, options, shouldBuildService(preBuildAssets), (doBuildWithInterpreterErr) => {
             if (doBuildWithInterpreterErr) {
               if (!ignoreFailure) return cb(doBuildWithInterpreterErr);
-              failedBuilds.push({ name: service.name, doBuildWithInterpreterErr });
+              failedBuilds.push({ name: service.name, err: doBuildWithInterpreterErr });
             }
             // Do this a second time to
             createAssetList(service, options.buildNumber, options.minify, options.tagFilter, true, (err, assets) => {
