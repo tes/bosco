@@ -114,23 +114,16 @@ async function cmd(bosco) {
     });
   }
 
-  function setRunRepos() {
+  async function setRunRepos() {
     if (!bosco.cmdHelper.checkInService()) {
       return Promise.resolve();
     }
 
-    return new Promise((resolve, reject) => {
-      RunListHelper.getRepoRunList(bosco, bosco.getRepos(), repoRegex, watchNothing, null, false, (err, runRepos) => {
-        if (err) return reject(err);
-
-        repos = _.chain(runRepos)
-          .filter((repo) => repo.type !== 'remote')
-          .map('name')
-          .value();
-
-        resolve();
-      });
-    });
+    const runRepos = await RunListHelper.getRepoRunList(bosco, bosco.getRepos(), repoRegex, watchNothing, null, false);
+    repos = _.chain(runRepos)
+      .filter((repo) => repo.type !== 'remote')
+      .map('name')
+      .value();
   }
 
   try {

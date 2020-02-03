@@ -1,7 +1,6 @@
-
+const Promise = require('bluebird');
 const _ = require('lodash');
 const github = require('octonode');
-const async = require('async');
 const treeify = require('treeify');
 
 let warnOrganisationMissing = true;
@@ -119,7 +118,7 @@ function getServiceConfigFromGithub(bosco, repo, svcConfig, next) {
   }
 }
 
-function getRunConfig(bosco, repo, watchRegex, next) {
+function getRunConfig(bosco, repo, watchRegex) {
   const repoPath = bosco.getRepoPath(repo);
   const watch = !!repo.match(watchRegex);
   const packageJson = [repoPath, 'package.json'].join('/');
@@ -165,14 +164,16 @@ function getRunConfig(bosco, repo, watchRegex, next) {
     svcConfig.service.type = 'skip';
   }
 
-  if (!repoExistsLocally && next) {
-    getServiceConfigFromGithub(bosco, repo, svcConfig, next);
-  } else {
-    return (next && next(null, svcConfig)) || svcConfig;
+  if (!repoExistsLocally) {
+    return new Promise((resolve, reject) => {
+      getServiceConfigFromGithub(bosco, repo, svcConfig, (err, ...rest) => (err ? reject(err) : resolve(...rest)));
+    });
   }
+
+  return svcConfig;
 }
 
-function getRunList(bosco, repos, repoRegex, watchRegex, repoTag, displayOnly, next) {
+async function getRunList(bosco, repos, repoRegex, watchRegex, repoTag, displayOnly) {
   const configs = {};
   const tree = {};
 
@@ -221,37 +222,40 @@ function getRunList(bosco, repos, repoRegex, watchRegex, repoTag, displayOnly, n
   }
 
   // in order to understand recursion one must understand recursion
-  function resolveDependencies(repoList, resolved, cb) {
-    async.reduce(repoList, resolved, (memo, repo, cb2) => {
+  async function resolveDependencies(repoList, resolved) {
+    return Promise.reduce(repoList, async (memo, repo) => {
       if (_.includes(memo, repo)) {
-        return cb2(null, memo);
+        return memo;
       }
       memo.push(repo);
-      getRunConfig(bosco, repo, watchRegex, (err, svcConfig) => {
-        if (err) {
-          bosco.error(`Unable to retrieve config from github for: ${repo.cyan} because: ${err.message}`);
-          return cb2(null, memo);
-        }
-        if (!svcConfig) {
-          return cb2(null, memo);
-        }
-        configs[repo] = svcConfig;
-        if (svcConfig && svcConfig.service && svcConfig.service.dependsOn) {
-          resolveDependencies(svcConfig.service.dependsOn, memo, cb2);
-        } else {
-          cb2(null, memo);
-        }
-      });
-    }, (err, result) => cb(null, result));
+
+      let svcConfig;
+      try {
+        svcConfig = await getRunConfig(bosco, repo, watchRegex);
+      } catch (err) {
+        bosco.error(`Unable to retrieve config from github for: ${repo.cyan} because: ${err.message}`);
+        return memo;
+      }
+
+      if (!svcConfig) return memo;
+
+      configs[repo] = svcConfig;
+      if (svcConfig && svcConfig.service && svcConfig.service.dependsOn) {
+        return resolveDependencies(svcConfig.service.dependsOn, memo);
+      }
+
+      return memo;
+    }, resolved);
   }
 
   function getOrder(config) {
     return config.order || (_.includes(['docker', 'docker-compose'], config.service.type) ? 100 : 500);
   }
 
-  function createTree(parent, path, repo) {
+  async function createTree(parent, path, repo) {
+    if (repo.endsWith('(circular)')) return []; // Else we seemingly try to hit our cache or github for this again with (circular) as part of the repo name...
     const parentNode = parent;
-    let repoConfig = getRunConfig(bosco, repo);
+    let repoConfig = await getRunConfig(bosco, repo);
     if (!repoConfig.service.type) {
       repoConfig = getCachedConfig(bosco, repo, true);
     }
@@ -283,39 +287,33 @@ function getRunList(bosco, repos, repoRegex, watchRegex, repoTag, displayOnly, n
 
     const circularDependencies = dependsOn.filter((dependency) => path.includes(dependency)).map((dependency) => `${dependency} (circular)`);
 
-    return _.map(newDependencies.concat(circularDependencies), _.curry(createTree)(parentNode[repoName], path.concat(repo)));
+    return Promise.mapSeries(newDependencies.concat(circularDependencies), (dep) => createTree(parentNode[repoName], path.concat(repo), dep));
   }
 
   const filteredRepos = _.filter(repos, matchingRepo);
 
-  resolveDependencies(filteredRepos, [], (err, repoList) => {
-    const runList = _.chain(repoList)
-      .filter(boscoOptionFilter('deps-only', notCurrentService))
-      .filter(boscoOptionFilter('docker-only', isType('remote')))
-      .map(getConfig)
-      .filter(isInfraOnly)
-      .filter(exclude)
-      .sortBy(getOrder)
-      .value();
+  const repoList = await resolveDependencies(filteredRepos, []);
 
-    if (displayOnly) {
-      _.chain(repos)
-        .map(_.curry(createTree)(tree, []))
-        .value();
-      /* eslint-disable no-console */
-      console.log(treeify.asTree(tree));
-      /* eslint-enable no-console */
-      next();
-    } else {
-      next(null, runList);
-    }
-  });
+  const runList = _.chain(repoList)
+    .filter(boscoOptionFilter('deps-only', notCurrentService))
+    .filter(boscoOptionFilter('docker-only', isType('remote')))
+    .map(getConfig)
+    .filter(isInfraOnly)
+    .filter(exclude)
+    .sortBy(getOrder)
+    .value();
+
+  if (displayOnly) {
+    await Promise.mapSeries(repos, (repo) => createTree(tree, [], repo));
+    console.log(treeify.asTree(tree)); /* eslint-disable-line no-console */
+    return Promise.resolve();
+  }
+  return runList;
 }
 
-function getRepoRunList(bosco, repos, repoRegex, watchRegex, repoTag, displayOnly, next) {
-  getRunList(bosco, repos, repoRegex, watchRegex, repoTag, displayOnly, (err, runList) => {
-    next(null, _.map(runList, (repo) => ({ name: repo.name, type: repo.service.type })));
-  });
+function getRepoRunList(bosco, repos, repoRegex, watchRegex, repoTag, displayOnly) {
+  return getRunList(bosco, repos, repoRegex, watchRegex, repoTag, displayOnly)
+    .then((runList) => _.map(runList, (repo) => ({ name: repo.name, type: repo.service.type })));
 }
 
 module.exports = {

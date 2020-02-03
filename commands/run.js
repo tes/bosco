@@ -95,11 +95,7 @@ async function cmd(bosco, args) {
   }
 
   function getRunList() {
-    return new Promise((resolve, reject) => (
-      RunListHelper.getRunList(bosco, repos, repoRegex, watchRegex, repoTag, false, (err, ...rest) => (
-        err ? reject(err) : resolve(...rest)
-      ))
-    ));
+    return RunListHelper.getRunList(bosco, repos, repoRegex, watchRegex, repoTag, false);
   }
 
   async function startRunnableServices() {
@@ -227,12 +223,7 @@ async function cmd(bosco, args) {
 
   if (bosco.options.show) {
     bosco.log('Dependency tree for current repo filter:');
-    return new Promise((resolve, reject) => {
-      RunListHelper.getRunList(bosco, repos, repoRegex, watchRegex, repoTag, true, (err, ...rest) => {
-        if (err) return reject(err);
-        resolve(...rest);
-      });
-    });
+    return RunListHelper.getRunList(bosco, repos, repoRegex, watchRegex, repoTag, true);
   }
 
   bosco.log(`Run each microservice, will inject ip into docker: ${bosco.options.ip.cyan}`);

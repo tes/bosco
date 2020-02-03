@@ -80,12 +80,7 @@ async function cmd(bosco, args) {
   }
 
   async function stopRunningServices() {
-    const services = await new Promise((resolve, reject) => {
-      RunListHelper.getRunList(bosco, repos, repoRegex, null, repoTag, false, (err, ...rest) => {
-        if (err) return reject(err);
-        resolve(...rest);
-      });
-    });
+    const services = await RunListHelper.getRunList(bosco, repos, repoRegex, null, repoTag, false);
 
     return Promise.map(services, (boscoService) => {
       const repo = boscoService.name;

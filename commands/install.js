@@ -138,17 +138,12 @@ async function cmd(bosco) {
     if (!bosco.cmdHelper.checkInService()) {
       return;
     }
+    const runRepos = await RunListHelper.getRepoRunList(bosco, bosco.getRepos(), repoRegex, '$^', null, false);
 
-    return new Promise((resolve, reject) => {
-      RunListHelper.getRepoRunList(bosco, bosco.getRepos(), repoRegex, '$^', null, false, (err, runRepos) => {
-        if (err) return reject(err);
-        repos = _.chain(runRepos)
-          .filter((repo) => repo.type !== 'docker')
-          .map('name')
-          .value();
-        resolve();
-      });
-    });
+    repos = _.chain(runRepos)
+      .filter((repo) => repo.type !== 'docker')
+      .map('name')
+      .value();
   }
 
   function shouldInstallRepos() {
