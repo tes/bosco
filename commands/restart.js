@@ -1,5 +1,3 @@
-const async = require('async');
-
 const stop = require('./stop');
 const run = require('./run');
 
@@ -9,20 +7,11 @@ module.exports = {
   usage: '[-r <repoPattern>] [-t <tag>]',
 };
 
-function cmd(bosco, args) {
-  function executeStop(next) {
-    stop.cmd(bosco, args, next);
-  }
-
-  function executeRun(repos, next) {
-    if (repos.length === 0) return next();
-    bosco.options.list = repos.join(','); // eslint-disable-line no-param-reassign
-    run.cmd(bosco, args, next);
-  }
-
-  async.waterfall([executeStop, executeRun], () => {
-    // Done
-  });
+async function cmd(bosco, args) {
+  const repos = await stop.cmd(bosco, args);
+  if (repos.length === 0) return;
+  bosco.options.list = repos.join(','); // eslint-disable-line no-param-reassign
+  await run.cmd(bosco, args);
 }
 
 module.exports.cmd = cmd;

@@ -1,5 +1,5 @@
 const _ = require('lodash');
-const async = require('async');
+const Promise = require('bluebird');
 const fs = require('fs-extra');
 const github = require('octonode');
 const path = require('path');
@@ -19,73 +19,101 @@ module.exports = {
   }],
 };
 
-function getRepoList(client, teamConfig, page, next) {
-  if (teamConfig.isUser) {
-    client.get('/user/repos', { per_page: 20, page }, (err, status, body, headers) => {
-      next(err, _.map(body, 'name'), _.includes(headers.link, 'rel="next"'));
+
+async function getRepoList(client, teamConfig) {
+  const url = teamConfig.isUser ? '/user/repos' : `/teams/${teamConfig.id}/repos`;
+  const options = { per_page: 20 };
+
+  let page = 1;
+  let hasNext = false;
+
+  let toReturn = await client.getAsync(url, { ...options, page })
+    .then(([, body, headers]) => {
+      hasNext = _.includes(headers.link, 'rel="next"');
+      return _.map(body, 'name');
     });
-  } else {
-    client.get(`/teams/${teamConfig.id}/repos`, { per_page: 20, page }, (err, status, body, headers) => {
-      next(err, _.map(body, 'name'), _.includes(headers.link, 'rel="next"'));
-    });
+
+  while (hasNext) {
+    page += 1;
+    // eslint-disable-next-line no-await-in-loop
+    const [result, responseHasNext] = await client.getAsync(url, { ...options, page })
+      .then(([, body, headers]) => {
+        const hasNextInHeaders = _.includes(headers.link, 'rel="next"');
+        return [_.map(body, 'name'), hasNextInHeaders];
+      });
+
+    toReturn = _.union(toReturn, result);
+    hasNext = responseHasNext;
   }
+
+  return toReturn;
 }
 
-function checkCanDelete(bosco, repoPath, next) {
-  function reducer(memo, command, cb) {
-    exec(command, {
-      cwd: repoPath,
-    }, (err, stdout) => cb(err, memo && !err && !stdout));
+function checkCanDelete(bosco, repoPath) {
+  function reducer(memo, command) {
+    return new Promise((resolve, reject) => {
+      exec(command, {
+        cwd: repoPath,
+      }, (err, stdout) => {
+        if (err) return reject(err);
+        resolve(memo && !stdout);
+      });
+    });
   }
 
-  async.reduce([
+  return Promise.reduce([
     'git stash list',
     'git branch --no-merged origin/master',
     'git status --porcelain',
-  ], true, reducer, (err, result) => {
-    next(err, result);
-  });
+  ], reducer, true);
 }
 
-function clone(bosco, progressbar, bar, repoUrl, orgPath, next) {
+function clone(bosco, progressbar, bar, repoUrl, orgPath) {
   if (!progressbar) bosco.log(`Cloning ${repoUrl.blue} into ${orgPath.blue}`);
-  exec(`git clone ${repoUrl}`, {
-    cwd: orgPath,
-  }, (err, stdout, stderr) => {
-    if (progressbar) bar.tick();
-    if (err) {
-      if (progressbar) bosco.console.log('');
-      bosco.error(`${repoUrl.blue} >> ${stderr}`);
-    } else if (!progressbar && stdout) bosco.log(`${repoUrl.blue} >> ${stdout}`);
-    next();
+  return new Promise((resolve) => {
+    exec(`git clone ${repoUrl}`, {
+      cwd: orgPath,
+    }, (err, stdout, stderr) => {
+      if (progressbar) bar.tick();
+      if (err) {
+        if (progressbar) bosco.console.log('');
+        bosco.error(`${repoUrl.blue} >> ${stderr}`);
+      } else if (!progressbar && stdout) bosco.log(`${repoUrl.blue} >> ${stdout}`);
+      resolve();
+    });
   });
 }
 
-function fetch(bosco, team, repos, repoRegex, args, next) {
+async function fetch(bosco, team, repos, repoRegex) {
   const orgPath = bosco.getOrgPath();
 
-  function saveRepos(cb) {
+  function saveRepos() {
     bosco.config.set(`teams:${team}:repos`, repos);
-    bosco.config.save(cb);
+    return new Promise((resolve, reject) => {
+      bosco.config.save((err, ...rest) => (err ? reject(err) : resolve(...rest)));
+    });
   }
 
-  function checkOrphans(cb) {
-    function warnOrphan(orphan, cb2) {
+  async function checkOrphans() {
+    function warnOrphan(orphan) {
       bosco.warn(`I am concerned that you still have the repo ${orphan.red} as it is no longer in the github team, run "bosco clone --clean" to remove them.`);
-      cb2();
     }
 
-    function removeOrphan(orphan, cb2) {
+    async function removeOrphan(orphan) {
       const orphanPath = bosco.getRepoPath(orphan);
-      checkCanDelete(bosco, orphanPath, (err, canDelete) => {
-        if (err || !canDelete) {
+      try {
+        const canDelete = await checkCanDelete(bosco, orphanPath);
+        if (!canDelete) {
           bosco.warn(`Not deleting project ${orphan.red} as you have uncommited or unpushed local changes.`);
-          return cb2();
+          return Promise.resolve();
         }
 
+        await fs.remove(orphanPath);
         bosco.log(`Deleted project ${orphan.green} as it is no longer in the github team and you have no local changes.`);
-        fs.remove(orphanPath, cb2);
-      });
+      } catch (err) {
+        bosco.warn(`Not deleting project ${orphan.red} as you have uncommited or unpushed local changes.`);
+        return Promise.resolve();
+      }
     }
 
     let orphanAction = warnOrphan;
@@ -93,19 +121,17 @@ function fetch(bosco, team, repos, repoRegex, args, next) {
       orphanAction = removeOrphan;
     }
 
-    fs.readdir(bosco.getOrgPath(), (err, files) => {
-      const orphans = _.chain(files)
-        .map((file) => path.join(bosco.getOrgPath(), file))
-        .filter((file) => fs.statSync(file).isDirectory() && bosco.exists(path.join(file, '.git')))
-        .map((file) => path.relative(bosco.getOrgPath(), file))
-        .difference(repos)
-        .value();
-
-      async.map(orphans, orphanAction, cb);
-    });
+    const files = await fs.promises.readdir(bosco.getOrgPath());
+    const orphans = _.chain(files)
+      .map((file) => path.join(bosco.getOrgPath(), file))
+      .filter((file) => fs.statSync(file).isDirectory() && bosco.exists(path.join(file, '.git')))
+      .map((file) => path.relative(bosco.getOrgPath(), file))
+      .difference(repos)
+      .value();
+    return Promise.map(orphans, orphanAction);
   }
 
-  function getRepos(cb) {
+  async function getRepos() {
     const progressbar = bosco.config.get('progress') === 'bar';
     const total = repos.length;
     let pullFlag = false;
@@ -117,8 +143,8 @@ function fetch(bosco, team, repos, repoRegex, args, next) {
       total,
     }) : null;
 
-    async.mapLimit(repos, bosco.concurrency.network, (repo, repoCb) => {
-      if (!repo.match(repoRegex)) return repoCb();
+    await Promise.map(repos, (repo) => {
+      if (!repo.match(repoRegex)) return Promise.resolve();
 
       const repoPath = bosco.getRepoPath(repo);
       const repoUrl = bosco.getRepoUrl(repo);
@@ -126,36 +152,34 @@ function fetch(bosco, team, repos, repoRegex, args, next) {
       if (bosco.exists(repoPath)) {
         pullFlag = true;
         if (progressbar) bar.tick();
-        repoCb();
-      } else {
-        clone(bosco, progressbar, bar, repoUrl, orgPath, repoCb);
+        return Promise.resolve();
       }
-    }, () => {
-      if (pullFlag) {
-        bosco.warn('Some repositories already existed, to pull changes use \'bosco pull\'');
-      }
-      cb();
-    });
+
+      return clone(bosco, progressbar, bar, repoUrl, orgPath);
+    }, { concurrency: bosco.concurrency.network });
+
+    if (pullFlag) {
+      bosco.warn('Some repositories already existed, to pull changes use \'bosco pull\'');
+    }
   }
 
-  function gitIgnoreRepos(cb) {
+  async function gitIgnoreRepos() {
     // Ensure repo folders are in workspace gitignore
     const gi = [bosco.getWorkspacePath(), '.gitignore'].join('/');
-    fs.readFile(gi, (err, contents) => {
-      if (err) return cb(err);
-      const ignore = (contents || '').toString().split('\n');
-      const newIgnore = _.union(ignore, repos, ['.DS_Store', 'node_modules', '.bosco/bosco.json', '']);
-      fs.writeFile(gi, `${newIgnore.join('\n')}\n`, cb);
-    });
+    const contents = await fs.readFile(gi);
+    const ignore = (contents || '').toString().split('\n');
+    const newIgnore = _.union(ignore, repos, ['.DS_Store', 'node_modules', '.bosco/bosco.json', '']);
+    return fs.writeFile(gi, `${newIgnore.join('\n')}\n`);
   }
 
-  async.series([saveRepos, checkOrphans, getRepos, gitIgnoreRepos], () => {
-    bosco.log('Complete');
-    if (next) next();
-  });
+  await saveRepos();
+  await checkOrphans();
+  await getRepos();
+  await gitIgnoreRepos();
+  bosco.log('Complete');
 }
 
-function cmd(bosco, args, next) {
+async function cmd(bosco) {
   const repoPattern = bosco.options.repo;
   const repoRegex = new RegExp(repoPattern);
   const team = bosco.getTeam() || 'no-team';
@@ -175,31 +199,14 @@ function cmd(bosco, args, next) {
   }
 
   bosco.log(`Fetching repository list from Github for ${team.green} team ...`);
-  let more = true;
-  let page = 1;
-  let repoList = [];
-  async.whilst(
-    () => more,
-    (callback) => {
-      getRepoList(client, teamConfig, page, (err, repos, isMore) => {
-        if (err) { return callback(err); }
-        repoList = _.union(repoList, repos);
-        if (isMore) {
-          page += 1;
-        } else {
-          more = false;
-        }
-        callback();
-      });
-    },
-    (err) => {
-      if (err) {
-        return bosco.error(err.message);
-      }
-      bosco.log(`Cloning ${(`${repoList.length}`).green} repositories from Github for ${team.green} team ...`);
-      fetch(bosco, team, repoList, repoRegex, args, next);
-    },
-  );
+
+  try {
+    const repoList = await getRepoList(client, teamConfig);
+    bosco.log(`Cloning ${(`${repoList.length}`).green} repositories from Github for ${team.green} team ...`);
+    await fetch(bosco, team, repoList, repoRegex);
+  } catch (err) {
+    bosco.error(err);
+  }
 }
 
 module.exports.cmd = cmd;

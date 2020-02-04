@@ -1,4 +1,3 @@
-const async = require('async');
 const pullGit = require('./pull-git');
 const pullDocker = require('./pull-docker');
 
@@ -15,22 +14,23 @@ module.exports = {
 };
 
 
-function cmd(bosco, args, next) {
-  function executePullGit(cb) {
-    pullGit.cmd(bosco, args, cb);
+async function cmd(bosco, args) {
+  function executePullGit() {
+    return pullGit.cmd(bosco, args);
   }
 
-  function executePullDocker(cb) {
-    pullDocker.cmd(bosco, args, cb);
+  function executePullDocker() {
+    return pullDocker.cmd(bosco, args);
   }
 
-  async.series([
-    executePullGit,
-    executePullDocker,
-  ], () => {
+  try {
+    await executePullGit();
+    await executePullDocker();
+
     bosco.log('Complete!');
-    if (next) next();
-  });
+  } catch (err) {
+    bosco.err(err);
+  }
 }
 
 module.exports.cmd = cmd;

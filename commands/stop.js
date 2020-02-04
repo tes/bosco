@@ -1,5 +1,5 @@
 const _ = require('lodash');
-const async = require('async');
+const Promise = require('bluebird');
 const RunListHelper = require('../src/RunListHelper');
 const NodeRunner = require('../src/RunWrappers/Node');
 const DockerRunner = require('../src/RunWrappers/Docker');
@@ -41,7 +41,7 @@ module.exports = {
   ],
 };
 
-function cmd(bosco, args, done) {
+async function cmd(bosco, args) {
   const repoPattern = bosco.options.repo;
   const repoRegex = new RegExp(repoPattern);
   const repoTag = bosco.options.tag;
@@ -55,69 +55,69 @@ function cmd(bosco, args, done) {
     repos = bosco.getRepos();
   }
 
-  function initialiseRunners(cb) {
+  function initialiseRunners() {
     const runners = [NodeRunner, DockerRunner, DockerComposeRunner];
-    async.map(runners, (runner, lcb) => {
-      runner.init(bosco, lcb);
-    }, cb);
+    return Promise.map(runners, (runner) => (runner.init(bosco)));
   }
 
-  function disconnectRunners(next) {
+  function disconnectRunners() {
     const runners = [NodeRunner, DockerRunner];
-    async.map(runners, (runner, cb) => {
-      runner.disconnect(cb);
-    }, next);
+    return Promise.map(runners, (runner) => (runner.disconnect()));
   }
 
-  function stopService(repo, boscoService, services, cb) {
+  function stopService(repo, boscoService, services) {
     if (boscoService.service && boscoService.service.type === 'docker') {
       if (_.includes(services, boscoService.service.name)) {
-        return DockerRunner.stop(boscoService, cb);
+        return DockerRunner.stop(boscoService);
       }
     } else if (boscoService.service && boscoService.service.type === 'docker-compose') {
       if (_.includes(services, 'docker-compose')) {
-        return DockerComposeRunner.stop(boscoService, cb);
+        return DockerComposeRunner.stop(boscoService);
       }
     } else if (_.includes(services, repo)) {
-      return NodeRunner.stop({ name: repo }, cb);
+      return NodeRunner.stop({ name: repo });
     }
-    return cb();
   }
 
-  function stopRunningServices(cb) {
-    RunListHelper.getRunList(bosco, repos, repoRegex, null, repoTag, false, (err, services) => {
-      async.mapLimit(services, bosco.concurrency.network, (boscoService, next) => {
-        const repo = boscoService.name;
-        if (!repo.match(repoRegex)) return next();
-        if (boscoService.service) {
-          return stopService(repo, boscoService, runningServices, next);
-        }
-      }, () => {
+  async function stopRunningServices() {
+    const services = await RunListHelper.getRunList(bosco, repos, repoRegex, null, repoTag, false);
+
+    return Promise.map(services, (boscoService) => {
+      const repo = boscoService.name;
+      if (!repo.match(repoRegex)) return;
+      if (boscoService.service) {
+        return stopService(repo, boscoService, runningServices);
+      }
+    }, { concurrency: bosco.concurrency.network })
+      .then(() => {
         // Special case for bosco-cdn, room for improvement to make this
         // generic for all custom bosco services.
-        if (!_.includes(runningServices, 'bosco-cdn')) return cb();
-        NodeRunner.stop({ name: 'bosco-cdn' }, cb);
+        if (!_.includes(runningServices, 'bosco-cdn')) return;
+        return NodeRunner.stop({ name: 'bosco-cdn' });
       });
-    });
   }
 
-  function getRunningServices(cb) {
-    NodeRunner.listRunning(false, (nodeErr, nodeRunning) => {
-      DockerRunner.list(false, (dockerErr, dockerRunning) => {
-        const flatDockerRunning = _.map(_.flatten(dockerRunning), (item) => item.replace('/', ''));
-        DockerComposeRunner.list(false, (composeErr, dockerComposeRunning) => {
-          runningServices = _.union(nodeRunning, flatDockerRunning, dockerComposeRunning);
-          cb();
-        });
-      });
-    });
+  async function getRunningServices() {
+    const nodeRunning = await NodeRunner.listRunning(false);
+    const dockerRunning = await DockerRunner.list(false);
+    const flatDockerRunning = _.map(_.flatten(dockerRunning), (item) => item.replace('/', ''));
+    const dockerComposeRunning = await DockerComposeRunner.list(false);
+
+    runningServices = _.union(nodeRunning, flatDockerRunning, dockerComposeRunning);
   }
 
   bosco.log(`Stop each microservice ${args}`);
 
-  async.series([initialiseRunners, getRunningServices, stopRunningServices, disconnectRunners], () => {
-    if (done) return done(null, runningServices);
-  });
+  try {
+    await initialiseRunners();
+    await getRunningServices();
+    await stopRunningServices();
+    await disconnectRunners();
+
+    return runningServices;
+  } catch (err) {
+    bosco.error(err);
+  }
 }
 
 module.exports.cmd = cmd;

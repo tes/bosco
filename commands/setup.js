@@ -7,14 +7,19 @@ module.exports = {
   description: 'Runs clone and then install to get your environment ready for action.',
 };
 
-function cmd(bosco, args) {
-  team.cmd(bosco, ['sync'], () => {
-    team.cmd(bosco, ['setup'], () => {
-      clone.cmd(bosco, [], () => {
-        install.cmd(bosco, args);
+async function cmd(bosco) {
+  try {
+    await new Promise((resolve) => {
+      team.cmd(bosco, ['sync'], () => {
+        team.cmd(bosco, ['setup'], resolve);
       });
     });
-  });
+    await clone.cmd(bosco);
+
+    await install.cmd(bosco);
+  } catch (err) {
+    bosco.error(err);
+  }
 }
 
 module.exports.cmd = cmd;
