@@ -123,9 +123,9 @@ async function fetch(bosco, team, repos, repoRegex) {
 
     const files = await fs.promises.readdir(bosco.getOrgPath());
     const orphans = _.chain(files)
-      .map(file => path.join(bosco.getOrgPath(), file))
-      .filter(file => fs.statSync(file).isDirectory() && bosco.exists(path.join(file, '.git')))
-      .map(file => path.relative(bosco.getOrgPath(), file))
+      .map((file) => path.join(bosco.getOrgPath(), file))
+      .filter((file) => fs.statSync(file).isDirectory() && bosco.exists(path.join(file, '.git')))
+      .map((file) => path.relative(bosco.getOrgPath(), file))
       .difference(repos)
       .value();
     return Promise.map(orphans, orphanAction);

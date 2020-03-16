@@ -283,11 +283,11 @@ async function getRunList(bosco, repos, repoRegex, watchRegex, repoTag, displayO
 
     const dependsOn = repoConfig.service.dependsOn || [];
 
-    const newDependencies = dependsOn.filter(dependency => !path.includes(dependency));
+    const newDependencies = dependsOn.filter((dependency) => !path.includes(dependency));
 
-    const circularDependencies = dependsOn.filter(dependency => path.includes(dependency)).map(dependency => `${dependency} (circular)`);
+    const circularDependencies = dependsOn.filter((dependency) => path.includes(dependency)).map((dependency) => `${dependency} (circular)`);
 
-    return Promise.mapSeries(newDependencies.concat(circularDependencies), dep => createTree(parentNode[repoName], path.concat(repo), dep));
+    return Promise.mapSeries(newDependencies.concat(circularDependencies), (dep) => createTree(parentNode[repoName], path.concat(repo), dep));
   }
 
   const filteredRepos = _.filter(repos, matchingRepo);
@@ -304,7 +304,7 @@ async function getRunList(bosco, repos, repoRegex, watchRegex, repoTag, displayO
     .value();
 
   if (displayOnly) {
-    await Promise.mapSeries(repos, repo => createTree(tree, [], repo));
+    await Promise.mapSeries(repos, (repo) => createTree(tree, [], repo));
     console.log(treeify.asTree(tree)); /* eslint-disable-line no-console */
     return Promise.resolve();
   }
@@ -313,7 +313,7 @@ async function getRunList(bosco, repos, repoRegex, watchRegex, repoTag, displayO
 
 function getRepoRunList(bosco, repos, repoRegex, watchRegex, repoTag, displayOnly) {
   return getRunList(bosco, repos, repoRegex, watchRegex, repoTag, displayOnly)
-    .then(runList => _.map(runList, repo => ({ name: repo.name, type: repo.service.type })));
+    .then((runList) => _.map(runList, (repo) => ({ name: repo.name, type: repo.service.type })));
 }
 
 module.exports = {

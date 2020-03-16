@@ -10,7 +10,7 @@ function getHostIp() {
   const ip = _.chain(os.networkInterfaces())
     .values()
     .flatten()
-    .filter(val => (val.family === 'IPv4' && val.internal === false))
+    .filter((val) => (val.family === 'IPv4' && val.internal === false))
     .map('address')
     .first()
     .value();

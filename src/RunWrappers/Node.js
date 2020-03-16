@@ -40,7 +40,7 @@ Runner.prototype.listRunning = function (detailed) {
   return new Promise((resolve, reject) => {
     pm2.list((err, list) => {
       if (err) return reject(err);
-      const filteredList = _.filter(list, pm2Process => pm2Process.pm2_env.status === 'online' || pm2Process.pm2_env.status === 'errored');
+      const filteredList = _.filter(list, (pm2Process) => pm2Process.pm2_env.status === 'online' || pm2Process.pm2_env.status === 'errored');
 
       if (!detailed) return resolve(_.map(filteredList, 'name'));
       resolve(filteredList);
@@ -55,7 +55,7 @@ Runner.prototype.listNotRunning = function (detailed) {
   return new Promise((resolve, reject) => {
     pm2.list((err, list) => {
       if (err) return reject(err);
-      const filteredList = _.filter(list, pm2Process => pm2Process.pm2_env.status !== 'online');
+      const filteredList = _.filter(list, (pm2Process) => pm2Process.pm2_env.status !== 'online');
 
       if (!detailed) return resolve(_.map(filteredList, 'name'));
       resolve(filteredList);
@@ -154,7 +154,7 @@ Runner.prototype.getHashes = function (bosco, files, options) {
   }
 
   return Promise.mapSeries(files, getHash)
-    .then(hashes => hashes.join('.'))
+    .then((hashes) => hashes.join('.'))
     .catch(() => '');
 };
 
@@ -231,11 +231,11 @@ Runner.prototype.stop = async function (options) {
   self.bosco.log(`Stopping ${options.name.cyan}`);
 
   await new Promise((resolve, reject) => {
-    pm2.stop(options.name, stopErr => (stopErr ? reject(stopErr) : resolve()));
+    pm2.stop(options.name, (stopErr) => (stopErr ? reject(stopErr) : resolve()));
   });
 
   await new Promise((resolve, reject) => {
-    pm2.delete(options.name, deleteErr => (deleteErr ? reject(deleteErr) : resolve()));
+    pm2.delete(options.name, (deleteErr) => (deleteErr ? reject(deleteErr) : resolve()));
   });
 };
 

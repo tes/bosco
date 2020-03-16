@@ -70,7 +70,7 @@ Runner.prototype.stop = async function (options) {
     }
   });
 
-  return Promise.map(toStop, container => container.stop());
+  return Promise.map(toStop, (container) => container.stop());
 };
 
 Runner.prototype.start = function (options) {
@@ -94,7 +94,7 @@ Runner.prototype.start = function (options) {
   if (Object.prototype.toString.call(defaultLocalHosts) !== '[object Array]') defaultLocalHosts = [defaultLocalHosts];
   if (optionsCopy.service.docker.HostConfig) {
     const ExtraHosts = optionsCopy.service.docker.HostConfig.ExtraHosts || [];
-    optionsCopy.service.docker.HostConfig.ExtraHosts = ExtraHosts.concat(defaultLocalHosts.map(name => `${name}:${self.bosco.options.ip}`), dependencyLocalHosts);
+    optionsCopy.service.docker.HostConfig.ExtraHosts = ExtraHosts.concat(defaultLocalHosts.map((name) => `${name}:${self.bosco.options.ip}`), dependencyLocalHosts);
   }
 
   return new Promise((resolve, reject) => {
@@ -153,7 +153,7 @@ Runner.prototype.matchWithoutVersion = function (a, b) {
 };
 
 Runner.prototype.containerNameMatches = function (container, name) {
-  return _.some(container.Names, val => val === `/${name}`);
+  return _.some(container.Names, (val) => val === `/${name}`);
 };
 
 module.exports = new Runner();
