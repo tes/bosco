@@ -50,7 +50,7 @@ function cmd(bosco, args, callback) {
   if (args.length > 0) [tag] = args;
 
   const cdnUrl = `${bosco.config.get('aws:cdn')}/`;
-  noprompt = bosco.options.noprompt;
+  noprompt = bosco.options.noprompt; // eslint-disable-line prefer-destructuring
 
   let maxAge = bosco.config.get('aws:maxage');
   if (typeof maxAge !== 'number') maxAge = 365000000;

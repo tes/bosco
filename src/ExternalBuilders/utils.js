@@ -16,7 +16,7 @@ module.exports = function (bosco) {
       command = watchConfig.command || buildConfig.command;
       commandForLog = command;
     } else {
-      command = buildConfig.command;
+      command = buildConfig.command; // eslint-disable-line prefer-destructuring
       commandForLog = command;
       const arrayCommand = Array.isArray(command);
       if (arrayCommand) {
