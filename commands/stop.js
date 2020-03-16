@@ -57,12 +57,12 @@ async function cmd(bosco, args) {
 
   function initialiseRunners() {
     const runners = [NodeRunner, DockerRunner, DockerComposeRunner];
-    return Promise.map(runners, (runner) => (runner.init(bosco)));
+    return Promise.map(runners, runner => (runner.init(bosco)));
   }
 
   function disconnectRunners() {
     const runners = [NodeRunner, DockerRunner];
-    return Promise.map(runners, (runner) => (runner.disconnect()));
+    return Promise.map(runners, runner => (runner.disconnect()));
   }
 
   function stopService(repo, boscoService, services) {
@@ -100,7 +100,7 @@ async function cmd(bosco, args) {
   async function getRunningServices() {
     const nodeRunning = await NodeRunner.listRunning(false);
     const dockerRunning = await DockerRunner.list(false);
-    const flatDockerRunning = _.map(_.flatten(dockerRunning), (item) => item.replace('/', ''));
+    const flatDockerRunning = _.map(_.flatten(dockerRunning), item => item.replace('/', ''));
     const dockerComposeRunning = await DockerComposeRunner.list(false);
 
     runningServices = _.union(nodeRunning, flatDockerRunning, dockerComposeRunning);

@@ -57,8 +57,8 @@ function cmd(bosco, args, next) {
           if (config.files[file].css) { assetCss.push(file); }
         });
         const configuredBundles = _.union(
-          _.map(assetJs, (i) => `${i}.js`),
-          _.map(assetCss, (i) => `${i}.css`),
+          _.map(assetJs, i => `${i}.js`),
+          _.map(assetCss, i => `${i}.css`),
         );
 
         // Remove the used ones to get those unused

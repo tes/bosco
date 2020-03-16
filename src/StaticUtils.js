@@ -145,7 +145,7 @@ module.exports = (bosco) => {
 
       // Remove any service that doesnt have an assets child
       // or doesn't match repo tag
-      const assetServices = _.filter(services, (service) => (!repoTag || _.includes(service.tags, repoTag))
+      const assetServices = _.filter(services, service => (!repoTag || _.includes(service.tags, repoTag))
           && (service.assets || service.files) && service.name.match(options.repoRegex));
 
       async.mapLimit(assetServices, bosco.concurrency.cpu, (service, cb) => {

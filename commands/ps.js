@@ -15,7 +15,7 @@ module.exports = {
 async function cmd(bosco) {
   function initialiseRunners() {
     const runners = [NodeRunner, DockerRunner];
-    return Promise.map(runners, (runner) => (runner.init(bosco)));
+    return Promise.map(runners, runner => (runner.init(bosco)));
   }
 
   async function getRunningServices() {
@@ -59,7 +59,7 @@ async function cmd(bosco) {
 
     list.forEach((item) => {
       table.push([
-        _.map(item.Names, (i) => i.replace('/', '')).join(', '),
+        _.map(item.Names, i => i.replace('/', '')).join(', '),
         item.Status,
         item.Image,
       ]);

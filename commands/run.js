@@ -86,12 +86,12 @@ async function cmd(bosco, args) {
 
   function initialiseRunners() {
     const runners = [NodeRunner, DockerRunner, DockerComposeRunner];
-    return Promise.map(runners, (runner) => (runner.init(bosco)));
+    return Promise.map(runners, runner => (runner.init(bosco)));
   }
 
   function disconnectRunners() {
     const runners = [NodeRunner, DockerRunner];
-    return Promise.map(runners, (runner) => (runner.disconnect()));
+    return Promise.map(runners, runner => (runner.disconnect()));
   }
 
   function getRunList() {
@@ -172,11 +172,11 @@ async function cmd(bosco, args) {
     }
 
     const runList = await getRunList();
-    const dockerServices = _.filter(runList, (i) => i.service.type === 'docker' && _.startsWith(i.name, 'infra-'));
-    const dockerComposeServices = _.filter(runList, (i) => i.service.type === 'docker-compose');
-    const nodeServices = _.filter(runList, (i) => _.startsWith(i.name, 'service-') && i.service.type !== 'skip');
-    const nodeApps = _.filter(runList, (i) => _.startsWith(i.name, 'app-') && i.service.type !== 'skip');
-    const unknownServices = _.filter(runList, (i) => !_.includes(['docker', 'docker-compose', 'node', 'skip'], i.service.type));
+    const dockerServices = _.filter(runList, i => i.service.type === 'docker' && _.startsWith(i.name, 'infra-'));
+    const dockerComposeServices = _.filter(runList, i => i.service.type === 'docker-compose');
+    const nodeServices = _.filter(runList, i => _.startsWith(i.name, 'service-') && i.service.type !== 'skip');
+    const nodeApps = _.filter(runList, i => _.startsWith(i.name, 'app-') && i.service.type !== 'skip');
+    const unknownServices = _.filter(runList, i => !_.includes(['docker', 'docker-compose', 'node', 'skip'], i.service.type));
     if (unknownServices.length > 0) {
       bosco.error(`Unable to run services of un-recognised type: ${_.map(unknownServices, 'name').join(', ').cyan}. Check their bosco-service.json configuration.`);
       bosco.warn('This may be due to either:');
@@ -196,14 +196,14 @@ async function cmd(bosco, args) {
 
   function stopNotRunningServices() {
     bosco.log('Removing stopped/dead services');
-    return Promise.each(notRunningServices, (service) => NodeRunner.stop({ name: service }));
+    return Promise.each(notRunningServices, service => NodeRunner.stop({ name: service }));
   }
 
   async function getRunningServices() {
     const nodeRunning = await NodeRunner.listRunning(false);
     const dockerRunning = await DockerRunner.list(false);
 
-    const flatDockerRunning = _.map(_.flatten(dockerRunning), (item) => item.replace('/', ''));
+    const flatDockerRunning = _.map(_.flatten(dockerRunning), item => item.replace('/', ''));
     runningServices = _.union(nodeRunning, flatDockerRunning);
   }
 
@@ -218,7 +218,7 @@ async function cmd(bosco, args) {
       `${process.env.HOME}/.pm2/pids`,
     ];
 
-    return Promise.map(folders, (folder) => fs.mkdirp(folder));
+    return Promise.map(folders, folder => fs.mkdirp(folder));
   }
 
   if (bosco.options.show) {

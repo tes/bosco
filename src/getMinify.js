@@ -180,8 +180,8 @@ module.exports = (bosco) => {
   function minify(staticAssets, concatenateOnly, next) {
     const jsAssets = _.filter(staticAssets, { type: 'js' });
     const cssAssets = _.filter(staticAssets, { type: 'css' });
-    const remainingAssets = _.filter(staticAssets, (item) => item.type !== 'js' && item.type !== 'css');
-    const noCssAssets = _.filter(staticAssets, (item) => item.type !== 'css');
+    const remainingAssets = _.filter(staticAssets, item => item.type !== 'js' && item.type !== 'css');
+    const noCssAssets = _.filter(staticAssets, item => item.type !== 'css');
 
     compileJs(concatenateOnly ? noCssAssets : remainingAssets, jsAssets, concatenateOnly, (err, minifiedStaticAssets) => {
       if (err) { return next(err); }

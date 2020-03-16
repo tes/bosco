@@ -141,7 +141,7 @@ async function cmd(bosco) {
     const runRepos = await RunListHelper.getRepoRunList(bosco, bosco.getRepos(), repoRegex, '$^', null, false);
 
     repos = _.chain(runRepos)
-      .filter((repo) => repo.type !== 'docker')
+      .filter(repo => repo.type !== 'docker')
       .map('name')
       .value();
   }

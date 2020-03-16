@@ -121,7 +121,7 @@ async function cmd(bosco) {
 
     const runRepos = await RunListHelper.getRepoRunList(bosco, bosco.getRepos(), repoRegex, watchNothing, null, false);
     repos = _.chain(runRepos)
-      .filter((repo) => repo.type !== 'remote')
+      .filter(repo => repo.type !== 'remote')
       .map('name')
       .value();
   }

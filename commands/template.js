@@ -78,7 +78,7 @@ function newServiceFromTemplate(bosco, args, next) {
     return bosco.log(`You need to specify a template, a target service name and a port: ${'bosco template create <githubRepo> <serviceName> <port>'.green}`);
   }
 
-  const template = _.filter(templates, (item) => item.match(new RegExp(templateRepoName)))[0];
+  const template = _.filter(templates, item => item.match(new RegExp(templateRepoName)))[0];
 
   if (!template) {
     bosco.log(`Couldnt find a service that matched: ${templateRepoName.red}`);

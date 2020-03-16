@@ -87,7 +87,7 @@ async function cmd(bosco) {
     }
     bosco.log('Checking for remote docker images to pull ...');
     const services = await RunListHelper.getRunList(bosco, repos, repoRegex, watchNothing, null, false);
-    await Promise.mapSeries(services, (runConfig) => dockerPullRemote(bosco, repos, runConfig));
+    await Promise.mapSeries(services, runConfig => dockerPullRemote(bosco, repos, runConfig));
   }
 
   function initialiseRunners() {
