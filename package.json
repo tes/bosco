@@ -64,7 +64,6 @@
   "author": "clifton.cunningham@tes.co.uk",
   "license": "MIT",
   "dependencies": {
-    "asciify": "^1.3.5",
     "async": "^1.4.2",
     "bluebird": "^3.7.2",
     "bosco-core": "^0.2.0",
