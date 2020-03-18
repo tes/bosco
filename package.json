@@ -110,7 +110,6 @@
     "marked": "^0.7.0",
     "marked-man": "^0.6.0",
     "mocha": "^5.2.0",
-    "npm-audit-helper": "^2.3.16",
     "nyc": "^15.0.0",
     "sinon": "^1.17.1"
   }
