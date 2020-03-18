@@ -85,7 +85,7 @@
     "octonode": "^0.9.5",
     "parse-link-header": "^0.4.1",
     "pm2": "^4.2.3",
-    "prettyjson": "^1.0.0",
+    "prettyjson": "^1.2.1",
     "request": "^2.40.0",
     "semver": "^5.0.3",
     "sf": "^0.1.7",
