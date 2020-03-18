@@ -9,7 +9,7 @@ const through = require('through2');
 function markedMan() {
   const stream = through.obj(function (file, enc, callback) {
     if (file.isBuffer()) {
-      file.contents = new Buffer(marked(file.contents.toString('utf8')));
+      file.contents = Buffer.from(marked(file.contents.toString('utf8')));
     }
 
     file.extname = '';

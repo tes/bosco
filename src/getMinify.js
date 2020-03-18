@@ -19,6 +19,7 @@ module.exports = (bosco) => {
       let tag;
       let minificationConfig;
 
+      /* eslint-disable prefer-destructuring */
       // On first item retrieve shared properties
       if (!serviceName) {
         const firstItem = items[0];
@@ -27,6 +28,7 @@ module.exports = (bosco) => {
         tag = firstItem.tag;
         minificationConfig = firstItem.minificationConfig;
       }
+      /* eslint-enable prefer-destructuring */
 
       function addSourceMap(content) {
         if (!content) return;
@@ -129,12 +131,14 @@ module.exports = (bosco) => {
 
       if (items.length === 0) { return; }
 
+      /* eslint-disable prefer-destructuring */
       if (!serviceName) {
         const firstItem = items[0];
         serviceName = firstItem.serviceName;
         buildNumber = firstItem.buildNumber;
         tag = firstItem.tag;
       }
+      /* eslint-enable prefer-destructuring */
 
       if (!concatenateOnly) {
         bosco.log(`Compiling ${_.size(items)} ${bundleKey.blue} CSS assets ...`);
