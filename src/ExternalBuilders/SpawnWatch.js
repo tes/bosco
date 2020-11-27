@@ -1,8 +1,8 @@
 const { spawn } = require('child_process');
 const _ = require('lodash');
 
-module.exports = function (bosco) {
-  return function (service, command, cwd, verbose, buildFinished) {
+module.exports = function SpawnWatch(bosco) {
+  return (service, command, cwd, verbose, buildFinished) => {
     bosco.log(`Spawning ${'watch'.cyan} command for ${service.name.blue}: ${command.log}`);
     const wc = spawn(process.env.SHELL, ['-c', command.command], cwd);
     let output = {

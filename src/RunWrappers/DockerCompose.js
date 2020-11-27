@@ -4,17 +4,17 @@ const path = require('path');
 function Runner() {
 }
 
-Runner.prototype.init = function (bosco, next) {
+Runner.prototype.init = (bosco, next) => {
   this.bosco = bosco;
   if (next) next();
 };
 
-Runner.prototype.hasConfig = function (cwd) {
+Runner.prototype.hasConfig = (cwd) => {
   if (!cwd) { return false; }
   return this.bosco.exists(path.join(cwd, 'docker-compose.yml')) || this.bosco.exists(path.join(cwd, 'docker-compose.yaml'));
 };
 
-Runner.prototype.list = function (options) {
+Runner.prototype.list = (options) => {
   let installed = true;
 
   return new Promise((resolve) => {
@@ -28,7 +28,7 @@ Runner.prototype.list = function (options) {
   });
 };
 
-Runner.prototype.stop = function (options) {
+Runner.prototype.stop = (options) => {
   const hasConfigFile = this.hasConfig(options.cwd);
   if (!hasConfigFile) {
     this.bosco.error(`Service ${options.name.cyan} claims to be docker-compose but doesnt have a docker-compose.yaml file! Skipping ...`);
@@ -40,7 +40,7 @@ Runner.prototype.stop = function (options) {
   });
 };
 
-Runner.prototype.start = function (options) {
+Runner.prototype.start = (options) => {
   const hasConfigFile = this.hasConfig(options.cwd);
   if (!hasConfigFile) {
     this.bosco.error(`Service ${options.name.cyan} claims to be docker-compose but doesnt have a docker-compose.yaml file! Skipping ...`);

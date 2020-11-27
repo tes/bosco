@@ -68,7 +68,7 @@ function cmd(bosco, args) {
   }
 
   function startServer(staticAssets, staticRepos, serverPort) {
-    const isWatchedFile = function (asset) {
+    const isWatchedFile = (asset) => {
       const hasSourceFiles = asset.sourceFiles && asset.sourceFiles.length > 0;
       const assetPath = hasSourceFiles ? asset.sourceFiles[0] : asset.path;
       let watched;

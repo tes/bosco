@@ -14,8 +14,8 @@ module.exports = {
     ecmaVersion: 2018,
   },
   rules: {
-    "no-underscore-dangle": 0,
-    "consistent-return": 0,
-    "max-len": 0,
+    'no-underscore-dangle': 0,
+    'consistent-return': 0,
+    'max-len': 0,
   },
 };

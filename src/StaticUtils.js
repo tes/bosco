@@ -8,7 +8,7 @@ const getMinify = require('./getMinify');
 const ExternalBuild = require('./ExternalBuild');
 const Html = require('./Html');
 
-module.exports = (bosco) => {
+module.exports = function StaticUtils(bosco) {
   const getAssetHelper = getAssetHelperFactory(bosco);
   const minify = getMinify(bosco);
   const { doBuildWithInterpreter } = ExternalBuild(bosco);

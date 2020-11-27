@@ -4,7 +4,7 @@ const UglifyJS = require('uglify-js');
 const CleanCSS = require('clean-css');
 const createKey = require('./assetCreateKey');
 
-module.exports = (bosco) => {
+module.exports = function Minify(bosco) {
   function compileJs(staticAssets, jsAssets, concatenateOnly, next) {
     const bundleKeys = _.uniq(_.map(jsAssets, 'bundleKey'));
     let err;
@@ -93,17 +93,23 @@ module.exports = (bosco) => {
         const uglifyConfig = bosco.config.get('js:uglify');
 
         const uglifyOptions = {
-          output: uglifyConfig ? uglifyConfig.outputOptions : null,
-          compressor: uglifyConfig ? uglifyConfig.compressorOptions : null,
-          mangle: uglifyConfig ? uglifyConfig.mangle : null,
-          outSourceMap: `${tag}.js.map`,
-          sourceMapIncludeSources: true,
+          output: (uglifyConfig && uglifyConfig.outputOptions) || {},
+          compress: (uglifyConfig && uglifyConfig.compressorOptions) || null,
+          mangle: (uglifyConfig && uglifyConfig.mangle) || null,
+          sourceMap: {
+            url: `${tag}.js.map`,
+          },
         };
 
-        try {
-          compiled = UglifyJS.minify(_.values(_.map(items, 'path')), uglifyOptions);
-        } catch (ex) {
-          const errorMsg = `There was an error minifying files in ${bundleKey.blue}, error: ${ex.message}`;
+        const files = _.reduce(items, (acc, i) => ({
+          ...acc,
+          [i.path]: i.data.toString(),
+        }), {});
+
+        compiled = UglifyJS.minify(files, uglifyOptions);
+
+        if (compiled.error) {
+          const errorMsg = `There was an error minifying files in ${bundleKey.blue}, error: ${compiled.error.message}`;
           err = new Error(errorMsg);
           compiled = {
             code: '',

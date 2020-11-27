@@ -2,7 +2,7 @@
 
 var _ = require('lodash');
 var async = require('async');
-var expect = require('expect.js');
+var { expect } = require('chai');
 var fs = require('fs');
 
 var boscoMock = require('./boscoMock');
@@ -323,7 +323,7 @@ describe('Bosco Static Asset Handling - Custom Building', function() {
     var utils = StaticUtils(boscoMock());
 
     utils.getStaticAssets(options, function(err, assets) {
-      expect(err).to.be.an(Error);
+      expect(err).to.be.an.instanceof(Error);
       expect(err).to.have.property('code', 1);
       done();
     });
@@ -369,7 +369,7 @@ describe('Bosco Static Asset Handling - Custom Building', function() {
     var utils = StaticUtils(boscoMock());
 
     utils.getStaticAssets(options, function(err, assets) {
-      expect(err).to.be.an(Error);
+      expect(err).to.be.an.instanceof(Error);
       expect(err).to.have.property('code', 1);
       done();
     });

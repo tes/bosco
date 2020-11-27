@@ -13,7 +13,6 @@ module.exports = {
   }],
 };
 
-
 async function cmd(bosco, args) {
   function executePullGit() {
     return pullGit.cmd(bosco, args);

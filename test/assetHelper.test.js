@@ -1,6 +1,6 @@
 'use strict';
 
-var expect = require('expect.js');
+var { expect } = require('chai');
 
 describe('Asset Helper', function() {
   it("Warns the user if an asset can't be located, but continues anyway", function(done) {

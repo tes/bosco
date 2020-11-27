@@ -26,7 +26,7 @@ function cmd(bosco, args, done) {
   const packageRepos = {};
   const dependencyMap = {};
   const dependentsMap = {};
-  const next = done || function (err) { throw err; };
+  const next = done || ((err) => { throw err; });
 
   function addDependency(dependency, dependent) {
     if (!(dependency in dependencyMap)) {

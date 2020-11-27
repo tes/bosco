@@ -1,7 +1,7 @@
 'use strict';
 
 var _ = require('lodash');
-var expect = require('expect.js');
+var { expect } = require('chai');
 var zlib = require('zlib');
 
 var boscoMock = require('./boscoMock');
@@ -26,7 +26,7 @@ describe('s3push', function() {
     localBosco.staticUtils = StaticUtils(localBosco);
 
     s3push.cmd(localBosco, [], function(err) {
-      expect(err).to.be.an(Error);
+      expect(err).to.be.an.instanceof(Error);
       expect(err).to.have.property('code', 1);
       done();
     });
@@ -47,7 +47,7 @@ describe('s3push', function() {
     localBosco.staticUtils = StaticUtils(localBosco);
 
     s3push.cmd(localBosco, [], function(err) {
-      expect(err).to.be.an(Error);
+      expect(err).to.be.an.instanceof(Error);
       done();
     });
   });
@@ -66,7 +66,7 @@ describe('s3push', function() {
     localBosco.staticUtils = StaticUtils(localBosco);
 
     s3push.cmd(localBosco, [], function(err) {
-      expect(err).to.be.an(Error);
+      expect(err).to.be.an.instanceof(Error);
       done();
     });
   });
@@ -85,7 +85,7 @@ describe('s3push', function() {
     localBosco.staticUtils = StaticUtils(localBosco);
 
     s3push.cmd(localBosco, [], function(err) {
-      expect(err).to.be(undefined);
+      expect(err).to.equal(undefined);
       done();
     });
   });
@@ -108,7 +108,7 @@ describe('s3push', function() {
     var localBosco = boscoMock(options);
     localBosco.staticUtils = StaticUtils(localBosco);
     s3push.cmd(localBosco, [], function(err) {
-      expect(err).to.be.an(Error);
+      expect(err).to.be.an.instanceof(Error);
       expect(err).to.have.property('message', message);
       done();
     });
@@ -127,7 +127,7 @@ describe('s3push', function() {
     var localBosco = boscoMock(options);
     localBosco.staticUtils = StaticUtils(localBosco);
     s3push.cmd(localBosco, [], function(err) {
-      expect(err).to.be.an(Error);
+      expect(err).to.be.an.instanceof(Error);
       done();
     });
   });
@@ -152,17 +152,17 @@ describe('s3push', function() {
     localBosco.staticUtils = StaticUtils(localBosco);
 
     s3push.cmd(localBosco, [], function(err) {
-      expect(err).to.be.an(Error);
+      expect(err).to.be.an.instanceof(Error);
       expect(err).to.have.property('statusCode', 300);
 
       statusCode = 400;
       s3push.cmd(localBosco, [], function(err) {
-        expect(err).to.be.an(Error);
+        expect(err).to.be.an.instanceof(Error);
         expect(err).to.have.property('statusCode', 400);
 
         statusCode = 500;
         s3push.cmd(localBosco, [], function(err) {
-          expect(err).to.be.an(Error);
+          expect(err).to.be.an.instanceof(Error);
           expect(err).to.have.property('statusCode', 500);
           done();
         });

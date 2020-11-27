@@ -1,4 +1,4 @@
-module.exports = function (bosco) {
+module.exports = function Utils(bosco) {
   function ensureCorrectNodeVersion(rawCommand, interpreter) {
     return (interpreter ? bosco.options.nvmUse : bosco.options.nvmUseDefault) + rawCommand;
   }

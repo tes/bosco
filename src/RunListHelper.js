@@ -191,9 +191,7 @@ async function getRunList(bosco, repos, repoRegex, watchRegex, repoTag, displayO
 
   function boscoOptionFilter(option, fn) {
     if (bosco.options[option]) return fn;
-    return function () {
-      return true;
-    };
+    return () => true;
   }
 
   function getConfig(repo) {
@@ -201,9 +199,7 @@ async function getRunList(bosco, repos, repoRegex, watchRegex, repoTag, displayO
   }
 
   function isType(type) {
-    return function (repo) {
-      return getConfig(repo).service.type === type;
-    };
+    return (repo) => getConfig(repo).service.type === type;
   }
 
   function matchingRepo(repo) {

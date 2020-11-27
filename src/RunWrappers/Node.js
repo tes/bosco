@@ -12,7 +12,7 @@ require('colors');
 function Runner() {
 }
 
-Runner.prototype.init = function (bosco, next) {
+Runner.prototype.init = (bosco, next) => {
   this.bosco = bosco;
   if (next === undefined) {
     return new Promise((resolve, reject) => (
@@ -23,7 +23,7 @@ Runner.prototype.init = function (bosco, next) {
   pm2.connect(next);
 };
 
-Runner.prototype.disconnect = function (next) {
+Runner.prototype.disconnect = (next) => {
   if (next === undefined) {
     return new Promise((resolve, reject) => (
       pm2.disconnect((err, ...rest) => (err ? reject(err) : resolve(...rest)))
@@ -36,34 +36,30 @@ Runner.prototype.disconnect = function (next) {
 /**
  * List running services
  */
-Runner.prototype.listRunning = function (detailed) {
-  return new Promise((resolve, reject) => {
-    pm2.list((err, list) => {
-      if (err) return reject(err);
-      const filteredList = _.filter(list, (pm2Process) => pm2Process.pm2_env.status === 'online' || pm2Process.pm2_env.status === 'errored');
+Runner.prototype.listRunning = (detailed) => new Promise((resolve, reject) => {
+  pm2.list((err, list) => {
+    if (err) return reject(err);
+    const filteredList = _.filter(list, (pm2Process) => pm2Process.pm2_env.status === 'online' || pm2Process.pm2_env.status === 'errored');
 
-      if (!detailed) return resolve(_.map(filteredList, 'name'));
-      resolve(filteredList);
-    });
+    if (!detailed) return resolve(_.map(filteredList, 'name'));
+    resolve(filteredList);
   });
-};
+});
 
 /**
  * List services that have been created but are not running
  */
-Runner.prototype.listNotRunning = function (detailed) {
-  return new Promise((resolve, reject) => {
-    pm2.list((err, list) => {
-      if (err) return reject(err);
-      const filteredList = _.filter(list, (pm2Process) => pm2Process.pm2_env.status !== 'online');
+Runner.prototype.listNotRunning = (detailed) => new Promise((resolve, reject) => {
+  pm2.list((err, list) => {
+    if (err) return reject(err);
+    const filteredList = _.filter(list, (pm2Process) => pm2Process.pm2_env.status !== 'online');
 
-      if (!detailed) return resolve(_.map(filteredList, 'name'));
-      resolve(filteredList);
-    });
+    if (!detailed) return resolve(_.map(filteredList, 'name'));
+    resolve(filteredList);
   });
-};
+});
 
-Runner.prototype.getInterpreter = function (bosco, options, next) {
+Runner.prototype.getInterpreter = (bosco, options, next) => {
   const self = this;
   let interpreter;
   let hadError;
@@ -119,7 +115,7 @@ Runner.prototype.getInterpreter = function (bosco, options, next) {
   }
 };
 
-Runner.prototype.installNode = function (bosco, options, next) {
+Runner.prototype.installNode = (bosco, options, next) => {
   bosco.log(`${options.name} installing required node version ...`);
   const hasNvmRc = bosco.exists(path.join(options.cwd, '.nvmrc'));
   if (hasNvmRc) {
@@ -131,20 +127,18 @@ Runner.prototype.installNode = function (bosco, options, next) {
   }
 };
 
-Runner.prototype.getVersion = function (bosco, options) {
-  return new Promise((resolve, reject) => {
-    this.getInterpreter(bosco, options, (interpreterErr, interpreter) => {
-      if (interpreterErr) { return reject(interpreterErr); }
-      const nvm = (interpreter && bosco.options.nvmUse) || bosco.options.nvmUseDefault;
-      childProcess.exec(`${nvm}nvm current`, { cwd: options.cwd }, (execErr, stdout, stderr) => {
-        if (execErr || stderr) { return reject(execErr || new Error(stderr)); }
-        resolve((stdout.match(/[^\n]+/g) || []).pop());
-      });
+Runner.prototype.getVersion = (bosco, options) => new Promise((resolve, reject) => {
+  this.getInterpreter(bosco, options, (interpreterErr, interpreter) => {
+    if (interpreterErr) { return reject(interpreterErr); }
+    const nvm = (interpreter && bosco.options.nvmUse) || bosco.options.nvmUseDefault;
+    childProcess.exec(`${nvm}nvm current`, { cwd: options.cwd }, (execErr, stdout, stderr) => {
+      if (execErr || stderr) { return reject(execErr || new Error(stderr)); }
+      resolve((stdout.match(/[^\n]+/g) || []).pop());
     });
   });
-};
+});
 
-Runner.prototype.getHashes = function (bosco, files, options) {
+Runner.prototype.getHashes = (bosco, files, options) => {
   function getHash(file) {
     return new Promise((resolve) => {
       childProcess.exec(`git hash-object ${path.join(options.cwd, file)}`, { cwd: options.cwd }, (err, stdout) => {
@@ -162,7 +156,7 @@ Runner.prototype.getHashes = function (bosco, files, options) {
  * Start a specific service
  * options = {cmd, cwd, name}
  */
-Runner.prototype.start = async function (options) {
+Runner.prototype.start = async (options) => {
   const self = this;
 
   // Remove node from the start script as not req'd for PM2
@@ -226,7 +220,7 @@ Runner.prototype.start = async function (options) {
 /**
  * List running services
  */
-Runner.prototype.stop = async function (options) {
+Runner.prototype.stop = async (options) => {
   const self = this;
   self.bosco.log(`Stopping ${options.name.cyan}`);
 

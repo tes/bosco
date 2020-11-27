@@ -1,11 +1,10 @@
-
 const fs = require('fs');
 const path = require('path');
 const mime = require('mime');
 const sf = require('sf');
 const checksum = require('./assetChecksum');
 
-module.exports = (bosco) => {
+module.exports = function AssetHelper(bosco) {
   function resolve(boscoRepo, basePath, asset, assetKey) {
     const resolvedPath = path.join(boscoRepo.path, basePath, asset);
 
@@ -31,7 +30,7 @@ module.exports = (bosco) => {
         if (resolvedPath) {
           newAsset.serviceName = boscoRepo.serviceName;
           newAsset.buildNumber = buildNumber;
-          newAsset.mimeType = mime.lookup(asset);
+          newAsset.mimeType = mime.getType(asset);
           newAsset.assetKey = assetKey;
           newAsset.asset = asset;
           newAsset.externalBuild = externalBuild;

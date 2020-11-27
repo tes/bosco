@@ -3,7 +3,7 @@ const hb = require('handlebars');
 const fs = require('fs');
 const createKey = require('./assetCreateKey');
 
-module.exports = (bosco) => {
+module.exports = function Html(bosco) {
   function isJavascript(asset) {
     if (asset.type !== 'js') return false;
     if (asset.extname !== '.js') return false;

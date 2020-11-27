@@ -2,7 +2,6 @@ const _ = require('lodash');
 const async = require('async');
 const zlib = require('zlib');
 const mime = require('mime');
-const iltorb = require('iltorb');
 const Table = require('tty-table');
 const StaticUtils = require('../src/StaticUtils');
 
@@ -29,12 +28,7 @@ function gzip(content, next) {
 }
 
 function brotli(content, next) {
-  iltorb.compress(content)
-    .then((output) => {
-      next(null, output);
-    }).catch((err) => {
-      next(err);
-    });
+  zlib.brotliCompress(content, next);
 }
 
 function bytesToSize(bytes) {
@@ -184,7 +178,7 @@ function cmd(bosco, args, callback) {
       }
 
       const s3Filename = getS3Filename(key);
-      const mimeType = asset.mimeType || mime.lookup(key);
+      const mimeType = asset.mimeType || mime.getType(key);
 
       assetLog[s3Filename] = {
         mimeType,

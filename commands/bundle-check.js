@@ -15,7 +15,7 @@ module.exports = {
 };
 
 function cmd(bosco, args, next) {
-  const getStatistics = function (url, cb) {
+  const getStatistics = (url, cb) => {
     request(url, (err, response, body) => {
       if (err) {
         bosco.error(err.message);

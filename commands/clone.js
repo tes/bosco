@@ -19,7 +19,6 @@ module.exports = {
   }],
 };
 
-
 async function getRepoList(client, teamConfig) {
   const url = teamConfig.isUser ? '/user/repos' : `/teams/${teamConfig.id}/repos`;
   const options = { per_page: 20 };

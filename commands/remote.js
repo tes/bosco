@@ -38,7 +38,7 @@ module.exports = {
         return newConfig;
       }, {});
 
-      traverse(mergedConfig).forEach(function (item) {
+      traverse(mergedConfig).forEach((item) => {
         const currentPath = this.path.join('.');
         if (currentPath.match(remoteConfig.likelyHostConfig)) {
           if (typeof item === 'string') {

@@ -99,7 +99,6 @@ async function install(bosco, progressbar, bar, repoPath, repo) {
     });
   });
 
-
   const packageManager = getPackageManager(bosco, repoPath, interpreter);
   await new Promise((resolve) => {
     exec(packageManager.command, {

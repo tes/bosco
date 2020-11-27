@@ -45,16 +45,14 @@ function processCmdVars(optsCreate, name, cwd) {
   return toReturn;
 }
 
-function stopAndRemoveContainer(container, callback) {
-  container.inspect().then((data) => {
-    if (data.State.Running) {
-      container.stop().then(() => {
-        container.remove(callback);
-      });
-    } else {
+function stopAndRemoveContainer(container, data, callback) {
+  if (data.State === 'running') {
+    container.stop().then(() => {
       container.remove(callback);
-    }
-  });
+    });
+  } else {
+    container.remove(callback);
+  }
 }
 
 function createContainer(docker, fqn, options, next) {
@@ -90,11 +88,21 @@ function createContainer(docker, fqn, options, next) {
     if (err && err.statusCode !== 404) return next(err);
     docker.createContainer(optsCreate, next);
   }
-  const container = docker.getContainer(optsCreate.name);
-  container.inspect((err, data) => {
+
+  const optsList = {
+    limit: 1,
+    filters: {
+      name: [optsCreate.name],
+    },
+  };
+
+  docker.listContainers(optsList, (err, [data]) => {
     if (err) return doCreate();
-    if (data && data.Id) stopAndRemoveContainer(container, doCreate);
-    else doCreate();
+    if (data && data.Id) {
+      const container = docker.getContainer(data.Id);
+      return stopAndRemoveContainer(container, data, doCreate);
+    }
+    return doCreate();
   });
 }
 

@@ -26,7 +26,7 @@ function showTeams(bosco) {
 
 function getTeams(client, cb) {
   function createTeamPageRequestTask(page) {
-    return function (next) {
+    return (next) => {
       client.get('/user/teams', { page }, (err, status, body) => {
         next(err, body);
       });

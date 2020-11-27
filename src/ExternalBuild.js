@@ -3,7 +3,7 @@ const SpawnWatch = require('./ExternalBuilders/SpawnWatch');
 const ExecBuild = require('./ExternalBuilders/ExecBuild');
 const BuildUtils = require('./ExternalBuilders/utils');
 
-module.exports = function (bosco) {
+module.exports = function ExternalBuild(bosco) {
   function doBuild(service, options, interpreter, shouldBuild, next) {
     if (!service.build) return next();
 

@@ -1,7 +1,7 @@
 'use strict';
 
 var _ = require('lodash');
-var expect = require('expect.js');
+var { expect } = require('chai');
 var fs = require('fs');
 var zlib = require('zlib');
 
@@ -64,12 +64,12 @@ describe('ExternalBuild', function() {
     };
 
     doBuild(service, {}, null, true, function(err) {
-      expect(err).to.be.an(Error);
+      expect(err).to.be.an.instanceof(Error);
       expect(err).to.have.property('code', 1);
       expect(localBosco.console._log).to.eql(['hi']);
       expect(localBosco._error).to.have.length(2);
       expect(localBosco._error[0]).to.contain('with code 1');
-      expect(localBosco._error[1]).to.be('bye');
+      expect(localBosco._error[1]).to.equal('bye');
       done();
     });
   });
@@ -86,7 +86,7 @@ describe('ExternalBuild', function() {
     };
 
     doBuild(service, {}, null, true, function(err) {
-      expect(err).to.be.an(Error);
+      expect(err).to.be.an.instanceof(Error);
       expect(err).to.have.property('code', 7);
       done();
     });
@@ -163,7 +163,7 @@ describe('ExternalBuild', function() {
     };
 
     doBuild(service, options, null, true, function(err) {
-      expect(err).to.be.an(Error);
+      expect(err).to.be.an.instanceof(Error);
       expect(err).to.have.property('code', 0);
       expect(localBosco._error).to.be.an('array');
       expect(localBosco._error).to.have.length(1);
@@ -180,7 +180,7 @@ describe('ExternalBuild', function() {
       name: 'service',
       repoPath: localBosco.getRepoPath(''),
       build: {
-        command: 'echo hello; sleep 5',
+        command: 'echo hello; sleep 1',
         watch: {
           timeout: 100
         }
@@ -189,17 +189,17 @@ describe('ExternalBuild', function() {
     var options = {
       watchBuilds: true,
       watchRegex: /./,
-      watchCallback: function(err, service, output) {
-        expect(output.state).to.be('timeout');
+      watchCallback: _.once(function(err, service, output) {
+        expect(output.state).to.equal('timeout');
         expect(localBosco.process.stderr._data).to.be.an('array');
         expect(localBosco.process.stderr._data.length).to.be.greaterThan(0);
         expect(localBosco.process.stderr._data[0]).to.contain('timed out');
         done();
-      }
+      })
     };
 
     doBuild(service, options, null, true, function(err) {
-      expect(err).to.be(undefined);
+      expect(err).to.equal(undefined);
     });
   });
 
@@ -232,7 +232,7 @@ describe('ExternalBuild', function() {
       watchCallback: function(err, service, output) {
         stateTransitions.push(output.state);
         if(stateTransitions.length === 4) {
-          expect(err).to.be.an(Error);
+          expect(err).to.be.an.instanceof(Error);
           expect(err).to.have.property('code');
           expect(stateTransitions).to.eql(expectedTransitions);
           done();
@@ -241,7 +241,7 @@ describe('ExternalBuild', function() {
     };
 
     doBuild(service, options, null, true, function(err) {
-      expect(err).to.be(undefined);
+      expect(err).to.equal(undefined);
     });
   });
 
