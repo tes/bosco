@@ -166,7 +166,7 @@ function cmd(bosco, args) {
 
             const responseHeaders = _.defaults({
               'content-type': contentType,
-              'content-length': responseContent.length,
+              'content-length': Buffer.byteLength(responseContent),
             }, corsHeaders);
 
             response.writeHead(200, responseHeaders);
