@@ -8,7 +8,7 @@ const DockerUtils = require('./DockerUtils');
 function Runner() {
 }
 
-Runner.prototype.init = (bosco, next) => {
+Runner.prototype.init = function init(bosco, next) {
   this.bosco = bosco;
 
   function readCert(certPath, certFile) {
@@ -41,12 +41,12 @@ Runner.prototype.init = (bosco, next) => {
   return next ? next() : Promise.resolve();
 };
 
-Runner.prototype.disconnect = (next) => {
+Runner.prototype.disconnect = function disconnect(next) {
   if (next) return next();
   return Promise.resolve();
 };
 
-Runner.prototype.list = (detailed) => {
+Runner.prototype.list = function list(detailed) {
   const self = this;
   const { docker } = self;
 
@@ -58,7 +58,7 @@ Runner.prototype.list = (detailed) => {
   });
 };
 
-Runner.prototype.stop = async (options) => {
+Runner.prototype.stop = async function stop(options) {
   const self = this;
   const { docker } = self;
   const containers = await docker.listContainers({ all: false });
@@ -74,7 +74,7 @@ Runner.prototype.stop = async (options) => {
   return Promise.map(toStop, (container) => container.stop());
 };
 
-Runner.prototype.start = (options) => {
+Runner.prototype.start = function start(options) {
   const self = this;
   const { docker } = self;
   const optionsCopy = { ...options };
@@ -112,7 +112,7 @@ Runner.prototype.start = (options) => {
   });
 };
 
-Runner.prototype.update = (options) => {
+Runner.prototype.update = function update(options) {
   const self = this;
   const { docker } = self;
 
@@ -124,7 +124,7 @@ Runner.prototype.update = (options) => {
   ));
 };
 
-Runner.prototype.getFqn = (options) => {
+Runner.prototype.getFqn = function getFqn(options) {
   let dockerFqn = '';
   const { service } = options;
   if (service.docker) {
@@ -147,12 +147,14 @@ Runner.prototype.getFqn = (options) => {
   return `${dockerFqn + service.name}:${service.version || 'latest'}`;
 };
 
-Runner.prototype.matchWithoutVersion = (a, b) => {
+Runner.prototype.matchWithoutVersion = function matchWithoutVersion(a, b) {
   const realA = a.slice(0, a.lastIndexOf(':'));
   const realB = b.slice(0, b.lastIndexOf(':'));
   return realA === realB;
 };
 
-Runner.prototype.containerNameMatches = (container, name) => _.some(container.Names, (val) => val === `/${name}`);
+Runner.prototype.containerNameMatches = function containerNameMatches(container, name) {
+  return _.some(container.Names, (val) => val === `/${name}`);
+};
 
 module.exports = new Runner();
