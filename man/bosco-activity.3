@@ -1,49 +1,48 @@
-.TH "BOSCO\-ACTIVITY" "3" "July 2019" "" ""
+.TH "BOSCO-ACTIVITY" "3" "December 2020" "" ""
 .SH "NAME"
-\fBbosco-activity\fR \- Show a rundown of what has been happening across all the repositories\.
-.SH SYNOPSIS
+\fBbosco-activity\fR - Show a rundown of what has been happening across all the repositories.
+.SH "SYNOPSIS"
 .P
 .RS 2
 .nf
 bosco activity
-bosco activity \-r <repoPattern>
-bosco activity \-r <repoPattern> \-\-since <timestamp>
+bosco activity -r <repoPattern>
+bosco activity -r <repoPattern> --since <timestamp>
 .fi
 .RE
-.SH DESCRIPTION
+.SH "DESCRIPTION"
 .P
-This command will show a summary of all the commits across all the repositories \- used as part of the \fBmorning\fP command\.
-.SH EXAMPLES
+This command will show a summary of all the commits across all the repositories - used as part of the \fBmorning\fR command.
+.SH "EXAMPLES"
 .P
 .RS 2
 .nf
-bosco activity \-r review \-\-since 2014\-09\-22T23:36:26\-07:00
+bosco activity -r review --since 2014-09-22T23:36:26-07:00
 .fi
 .RE
-.SH COMMAND LINE OPTIONS
-.SS \-r, \-\-repo
+.SH "COMMAND LINE OPTIONS"
+.SS "-r, --repo"
 .RS 0
-.IP \(bu 2
-Default: \.*
-.IP \(bu 2
+.IP \(bu 4
+Default: .*
+.IP \(bu 4
 Type: String
+.RE 0
 
-.RE
 .P
-This sets a regex string to use to filter the repostory list\.
-.SS \-s, \-\-since
+This sets a regex string to use to filter the repostory list.
+.SS "-s, --since"
 .RS 0
-.IP \(bu 2
+.IP \(bu 4
 Default: Previous 24 hours
-.IP \(bu 2
-Type: Timestamp (e\.g\. 2014\-09\-22T23:36:26\-07:00)
+.IP \(bu 4
+Type: Timestamp (e.g. 2014-09-22T23:36:26-07:00)
+.RE 0
 
-.RE
 .P
-The amount of time to show activity from\.
-.SH SEE ALSO
+The amount of time to show activity from.
+.SH "SEE ALSO"
 .RS 0
-.IP \(bu 2
+.IP \(bu 4
 bosco help morning
-
-.RE
+.RE 0

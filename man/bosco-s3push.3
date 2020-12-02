@@ -1,60 +1,56 @@
-.TH "BOSCO\-S3PUSH" "3" "July 2019" "" ""
+.TH "BOSCO-S3PUSH" "3" "December 2020" "" ""
 .SH "NAME"
-\fBbosco-s3push\fR \- Push static assets up to S3
-.SH SYNOPSIS
+\fBbosco-s3push\fR - Push static assets up to S3
+.SH "SYNOPSIS"
 .P
 .RS 2
 .nf
-bosco \-e <environment> \-b <build> s3push
+bosco -e <environment> -b <build> s3push
 .fi
 .RE
-.SH DESCRIPTION
+.SH "DESCRIPTION"
 .P
-This command will run the bundling and minification process and
-push all of the static assets up to S3 using the AWS configuration
-supplied in the configuration file specific to the specificed
-environment\.
-.SH COMMAND LINE OPTIONS
-.SS \-e, \-\-environment
+This command will run the bundling and minification process and push all of the static assets up to S3 using the AWS configuration supplied in the configuration file specific to the specificed environment.
+.SH "COMMAND LINE OPTIONS"
+.SS "-e, --environment"
 .RS 0
-.IP \(bu 2
+.IP \(bu 4
 Default: local
-.IP \(bu 2
+.IP \(bu 4
 Type: String
+.RE 0
 
-.RE
 .P
 This sets the environment path
-.SS \-b, \-\-build
+.SS "-b, --build"
 .RS 0
-.IP \(bu 2
+.IP \(bu 4
 Default: default
-.IP \(bu 2
+.IP \(bu 4
 Type: String
+.RE 0
 
-.RE
 .P
-The build name / number to assign to this push\.
-.SH CONFIGURATION REQUIREMENTS
+The build name / number to assign to this push.
+.SH "CONFIGURATION REQUIREMENTS"
 .P
-For this command to work you must have configured the AWS configuration within the \fB\|\.bosco\fP configuration files\.  This can either be in the \fBbosco\.json\fP file (which means it is common across all environments), or in a file named \fBenvironment\.json\fP which means it is applied based on the environment name applied in the \fB\-e\fP option\.
+For this command to work you must have configured the AWS configuration within the \fB.bosco\fR configuration files. This can either be in the \fBbosco.json\fR file (which means it is common across all environments), or in a file named \fBenvironment.json\fR which means it is applied based on the environment name applied in the \fB-e\fR option.
 .P
 The configuration needs to contain the following:
 .P
 .RS 2
 .nf
 "aws": {
-    "key": "XXX\-AWS\-KEY\-XXX",
-    "secret": "XXX\-AWS\-SECRET\-XXX",
-    "bucket": "bucket\-name",
-    "region": "region\-name",
-    "cdn": "https://your\-cloudfront\.cloudfront\.net"
+    "key": "XXX-AWS-KEY-XXX",
+    "secret": "XXX-AWS-SECRET-XXX",
+    "bucket": "bucket-name",
+    "region": "region-name",
+    "cdn": "https://your-cloudfront.cloudfront.net"
 }
 .fi
 .RE
-.SH SEE ALSO
+.SH "SEE ALSO"
 .RS 0
-.IP \(bu 2
+.IP \(bu 4
 bosco help cdn
-
-.RE
+.RE 0

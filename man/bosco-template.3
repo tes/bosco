@@ -1,49 +1,49 @@
-.TH "BOSCO\-TEMPLATE" "3" "July 2019" "" ""
+.TH "BOSCO-TEMPLATE" "3" "December 2020" "" ""
 .SH "NAME"
-\fBbosco-template\fR \- Create new projects based on pre\-defined template repositories\.
-.SH SYNOPSIS
+\fBbosco-template\fR - Create new projects based on pre-defined template repositories.
+.SH "SYNOPSIS"
 .P
 .RS 2
 .nf
 bosco template
-bosco template add tes/tes\-service\-template
-bosco template remove tes/tes\-service\-template
-bosco template create tes\-service\-template service\-amazing 5001
+bosco template add tes/tes-service-template
+bosco template remove tes/tes-service-template
+bosco template create tes-service-template service-amazing 5001
 .fi
 .RE
-.SH DESCRIPTION
+.SH "DESCRIPTION"
 .P
-This command will let you manage the template projects that bosco can create, and then create those projects wherever you might be\.
-.SH CONFIGURATION REQUIREMENTS
+This command will let you manage the template projects that bosco can create, and then create those projects wherever you might be.
+.SH "CONFIGURATION REQUIREMENTS"
 .P
-For this command to work you need to have actually created a template project\.  A template project is just a normal project, but it has one extra thing \- a 'bosco\-templates\.json' file in its root\.
+For this command to work you need to have actually created a template project. A template project is just a normal project, but it has one extra thing - a 'bosco-templates.json' file in its root.
 .P
 For example:
 .P
 .RS 2
 .nf
-[
-    {"source": "templates/default\.json\.hbs", "destination": "config/default\.json"},
-    {"source": "templates/README\.md\.hbs", "destination": "README\.md"},
-    {"source": "templates/package\.json\.hbs", "destination": "package\.json"},
-    {"source": "templates/bosco\-service\.json\.hbs", "destination": "bosco\-service\.json"},
-    {"source": "templates/Makefile\.hbs", "destination": "Makefile"},
-    {"source": "templates/Dockerfile\.hbs", "destination": "Dockerfile"},
-    {"source": "templates/example\-service\.conf\.hbs", "destination": "docker/supervisor/{{serviceName}}\.conf"}
-]
+\[lB]
+    {"source": "templates/default.json.hbs", "destination": "config/default.json"},
+    {"source": "templates/README.md.hbs", "destination": "README.md"},
+    {"source": "templates/package.json.hbs", "destination": "package.json"},
+    {"source": "templates/bosco-service.json.hbs", "destination": "bosco-service.json"},
+    {"source": "templates/Makefile.hbs", "destination": "Makefile"},
+    {"source": "templates/Dockerfile.hbs", "destination": "Dockerfile"},
+    {"source": "templates/example-service.conf.hbs", "destination": "docker/supervisor/{{serviceName}}.conf"}
+\[rB]
 .fi
 .RE
 .P
-This file is just an array of files (stored in the template folder), that are processed when creating the service and any of the variables within replaced with the service name or port\.
+This file is just an array of files (stored in the template folder), that are processed when creating the service and any of the variables within replaced with the service name or port.
 .P
-The variables you can use are:  {{serviceName}}, {{serviceShortName}}, {{port}} or {{user}}\.
-.SH CREATING A NEW SERVICE
+The variables you can use are: {{serviceName}}, {{serviceShortName}}, {{port}} or {{user}}.
+.SH "CREATING A NEW SERVICE"
 .P
 Creating a new service is as simple as running the create command:
 .P
 .RS 2
 .nf
-bosco template create tes\-service\-template service\-amazing 5001
+bosco template create tes-service-template service-amazing 5001
 .fi
 .RE
 .P
@@ -55,10 +55,9 @@ bosco template create <templateName> <serviceName> <port>
 .fi
 .RE
 .P
-The template name argument can actually be any part of the name (to avoid you having to type the whole thing)\.
-.SH SEE ALSO
+The template name argument can actually be any part of the name (to avoid you having to type the whole thing).
+.SH "SEE ALSO"
 .RS 0
-.IP \(bu 2
+.IP \(bu 4
 bosco help s3push
-
-.RE
+.RE 0

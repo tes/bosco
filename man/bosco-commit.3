@@ -1,33 +1,32 @@
-.TH "BOSCO\-COMMIT" "3" "July 2019" "" ""
+.TH "BOSCO-COMMIT" "3" "December 2020" "" ""
 .SH "NAME"
-\fBbosco-commit\fR \- Run 'git commit \-am' across all repositories in your Github team\.
-.SH SYNOPSIS
+\fBbosco-commit\fR - Run 'git commit -am' across all repositories in your Github team.
+.SH "SYNOPSIS"
 .P
 .RS 2
 .nf
 bosco commit 'Commit Message'
-bosco commit \-r <repoPattern> 'Commit Message'
+bosco commit -r <repoPattern> 'Commit Message'
 .fi
 .RE
-.SH DESCRIPTION
+.SH "DESCRIPTION"
 .P
-This command is useful to commit batch updates across all of your repostories \- use with care!
+This command is useful to commit batch updates across all of your repostories - use with care!
 .P
-The typical use case here is if you want to make a small structural change across all of your services, you can quickly run through and make the change in each, then run this command, followed by \fBbosco pushall\fP to commit and then push all the changes up together with the same message\.
-.SH COMMAND LINE OPTIONS
-.SS \-r, \-\-repo
+The typical use case here is if you want to make a small structural change across all of your services, you can quickly run through and make the change in each, then run this command, followed by \fBbosco pushall\fR to commit and then push all the changes up together with the same message.
+.SH "COMMAND LINE OPTIONS"
+.SS "-r, --repo"
 .RS 0
-.IP \(bu 2
-Default: \.*
-.IP \(bu 2
+.IP \(bu 4
+Default: .*
+.IP \(bu 4
 Type: String
+.RE 0
 
-.RE
 .P
-This sets a regex string to use to filter the repostory list\.
-.SH SEE ALSO
+This sets a regex string to use to filter the repostory list.
+.SH "SEE ALSO"
 .RS 0
-.IP \(bu 2
+.IP \(bu 4
 bosco help pushall
-
-.RE
+.RE 0

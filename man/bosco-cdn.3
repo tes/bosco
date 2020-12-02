@@ -1,7 +1,7 @@
-.TH "BOSCO\-CDN" "3" "July 2019" "" ""
+.TH "BOSCO-CDN" "3" "December 2020" "" ""
 .SH "NAME"
-\fBbosco-cdn\fR \- Serve static assets locally for development\.
-.SH SYNOPSIS
+\fBbosco-cdn\fR - Serve static assets locally for development.
+.SH "SYNOPSIS"
 .P
 .RS 2
 .nf
@@ -9,34 +9,34 @@ bosco cdn
 bosco cdn minify
 .fi
 .RE
-.SH DESCRIPTION
+.SH "DESCRIPTION"
 .P
-This command will run the bundling and minification process and then serve all of the static assets locally, which defaults to \fBhttp://localhost:7334/\fP\|\.  It will watch the assets specified in the \fBbosco\-service\.json\fP file and reload if they change\.
+This command will run the bundling and minification process and then serve all of the static assets locally, which defaults to \fBhttp://localhost:7334/\fR. It will watch the assets specified in the \fBbosco-service.json\fR file and reload if they change.
 .P
-It is expected that you leave this command running while doing development on services, as if you are also using Compoxure then it provides the HTML fragments that allow the static assets to be included in other pages\.
-.SH CONFIGURATION REQUIREMENTS
+It is expected that you leave this command running while doing development on services, as if you are also using Compoxure then it provides the HTML fragments that allow the static assets to be included in other pages.
+.SH "CONFIGURATION REQUIREMENTS"
 .P
-For this command to work you must have configured the \fBbosco\-service\.json\fP file in the base of the micro services who would like to take part in the asset minification process\.
+For this command to work you must have configured the \fBbosco-service.json\fR file in the base of the micro services who would like to take part in the asset minification process.
 .P
-An example \fBbosco\-service\.json\fP file is shown below for a simple service that doesn't have its own build script:
+An example \fBbosco-service.json\fR file is shown below for a simple service that doesn't have its own build script:
 .P
 .RS 2
 .nf
 {
-    "tags": ["review"],
+    "tags": \[lB]"review"\[rB],
     "assets": {
         "basePath": "/src/public",
         "js": {
-            "bottom": [
-                "js/report\-review\.js",
-                "js/lib/lean\-modal\.min\.js",
-                "js/moderate\-review\.js"
-            ]
+            "bottom": \[lB]
+                "js/report-review.js",
+                "js/lib/lean-modal.min.js",
+                "js/moderate-review.js"
+            \[rB]
         },
         "css": {
-            "top": [
-                "css/reviews\.sass"
-            ]
+            "top": \[lB]
+                "css/reviews.sass"
+            \[rB]
         }
     }
 }
@@ -51,34 +51,33 @@ For a project that has it's own build step, you can have Bosco wrap around it:
     "build": {
         "command": "gulp build",
         "watch": {
-            "command": "gulp build \-\-watch",
+            "command": "gulp build --watch",
             "ready": "Finished 'build'"
         }
     },
     "assets": {
         "basePath": "/dist",
         "js": {
-            "upload": [
-                "js/tsl\-uploader\.js"
-            ]
+            "upload": \[lB]
+                "js/tsl-uploader.js"
+            \[rB]
         },
         "css": {
-            "upload": [
-                "css/tsl\-uploader\.css"
-            ]
+            "upload": \[lB]
+                "css/tsl-uploader.css"
+            \[rB]
         },
         "images": {
-            "upload": [
+            "upload": \[lB]
                 "img"
-            ]
+            \[rB]
         }
     }
 }
 .fi
 .RE
-.SH SEE ALSO
+.SH "SEE ALSO"
 .RS 0
-.IP \(bu 2
+.IP \(bu 4
 bosco help s3push
-
-.RE
+.RE 0

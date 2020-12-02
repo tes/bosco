@@ -1,35 +1,34 @@
-.TH "BOSCO\-STOP" "3" "July 2019" "" ""
+.TH "BOSCO-STOP" "3" "December 2020" "" ""
 .SH "NAME"
-\fBbosco-stop\fR \- Stop all of the running Node and Docker processes\.
-.SH SYNOPSIS
+\fBbosco-stop\fR - Stop all of the running Node and Docker processes.
+.SH "SYNOPSIS"
 .P
 .RS 2
 .nf
 bosco stop
-bosco stop \-r <repoPattern>
+bosco stop -r <repoPattern>
 .fi
 .RE
-.SH DESCRIPTION
+.SH "DESCRIPTION"
 .P
-This command stops all of the Node and Docker processes launched via the \fBbosco run\fP command\.
-.SH COMMAND LINE OPTIONS
-.SS \-r, \-\-repo
+This command stops all of the Node and Docker processes launched via the \fBbosco run\fR command.
+.SH "COMMAND LINE OPTIONS"
+.SS "-r, --repo"
 .RS 0
-.IP \(bu 2
-Default: \.*
-.IP \(bu 2
+.IP \(bu 4
+Default: .*
+.IP \(bu 4
 Type: String
+.RE 0
 
-.RE
 .P
-This sets a regex string to use to filter the repostory list\.
-.SH SEE ALSO
+This sets a regex string to use to filter the repostory list.
+.SH "SEE ALSO"
 .RS 0
-.IP \(bu 2
+.IP \(bu 4
 bosco help run
-.IP \(bu 2
+.IP \(bu 4
 bosco help ps
-.IP \(bu 2
+.IP \(bu 4
 bosco help tail
-
-.RE
+.RE 0
