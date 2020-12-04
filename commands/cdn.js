@@ -45,6 +45,7 @@ function cmd(bosco, args) {
   let repos;
 
   bosco.log(`Starting pseudo CDN on port: ${(`${port}`).blue}`);
+  console.log('We are tinkering!');
 
   if (bosco.options.list) {
     repos = bosco.options.list.split(',');

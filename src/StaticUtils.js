@@ -57,7 +57,19 @@ module.exports = function StaticUtils(bosco) {
     let assetBasePath;
     let minificationConfig = {};
 
-    if (boscoRepo.assets) {
+    console.log(boscoRepo.assets);
+
+    const realAssets = (boscoRepo.generateAssetsFromDist)
+      ? {
+        basePath: 'dist',
+        alreadyMinified: true,
+        js: {
+          main_home: ['main_home.js'],
+        },
+      }
+      : boscoRepo.assets;
+
+    if (realAssets) {
       assetBasePath = boscoRepo.assets.basePath || '.';
       minificationConfig = {
         alreadyMinified: !!boscoRepo.assets.alreadyMinified,
